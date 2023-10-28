@@ -1,12 +1,16 @@
 package routes
 
 import (
+	"net/http"
+
 	"github.com/gorilla/mux"
 	"github.com/mihnea1711/POS_Project/services/doctori/internal/controllers"
+	"github.com/mihnea1711/POS_Project/services/doctori/internal/middleware"
 )
 
 func SetupRoutes() *mux.Router {
 	router := mux.NewRouter()
+	router.Use(middleware.Logger)
 
 	loadCrudRoutes(router)
 
@@ -14,14 +18,16 @@ func SetupRoutes() *mux.Router {
 }
 
 // loadCrudRoutes loads all the CRUD routes for the Doctor entity
-func loadCrudRoutes(r *mux.Router) {
+func loadCrudRoutes(router *mux.Router) {
 	// Subrouter with the "/doctori" prefix
-	doctorRouter := r.PathPrefix("/doctori").Subrouter()
+	// crudRouter := r.PathPrefix("/doctori").Subrouter()
 
 	// Define routes for CRUD operations
-	doctorRouter.HandleFunc("/", controllers.GetDoctors).Methods("GET")          // Lists all doctors
-	doctorRouter.HandleFunc("/", controllers.CreateDoctor).Methods("POST")       // Creates a new doctor
-	doctorRouter.HandleFunc("/{id}", controllers.GetDoctorByID).Methods("GET")   // Fetches a specific doctor by ID
-	doctorRouter.HandleFunc("/{id}", controllers.UpdateDoctor).Methods("PUT")    // Updates a specific doctor
-	doctorRouter.HandleFunc("/{id}", controllers.DeleteDoctor).Methods("DELETE") // Deletes a doctor
+	doctorCreationHandler := http.HandlerFunc(controllers.CreateDoctor)
+	router.Handle("/doctori", middleware.ValidateDoctorCreation(doctorCreationHandler)).Methods("POST") // Creates a new doctor
+
+	router.HandleFunc("/doctori", controllers.GetDoctors).Methods("GET")           // Lists all doctors
+	router.HandleFunc("/doctori/{id}", controllers.GetDoctorByID).Methods("GET")   // Fetches a specific doctor by ID
+	router.HandleFunc("/doctori/{id}", controllers.UpdateDoctor).Methods("PUT")    // Updates a specific doctor
+	router.HandleFunc("/doctori/{id}", controllers.DeleteDoctor).Methods("DELETE") // Deletes a doctor
 }

@@ -1,5 +1,7 @@
 package models
 
+type Specializare string
+
 // se poate adauga validare pe obiect aici dar ar fi de preferat sa fie facuta intr-unmiddleware pentru flexibiliate, adaptabilitate si cuplare scazuta
 type Doctor struct {
 	IDDoctor     int    `db:"id_doctor" json:"idDoctor"`
