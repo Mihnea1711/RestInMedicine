@@ -12,7 +12,7 @@ type AppConfig struct {
 }
 
 type ServerConfig struct {
-	Port string `yaml:"port"`
+	Port int `yaml:"port"`
 }
 
 // LoadConfig loads the configuration from the given file path
