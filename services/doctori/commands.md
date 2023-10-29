@@ -1,5 +1,4 @@
 # App Doctori User Guide
-PORT = 8080
 
 ## Building the Module
 To build the module, run the following command:
@@ -56,4 +55,54 @@ To test the delete doctor by id route or to change request payload, change conte
 ```bash
 chmod +x scripts/delete.sh
 ./scripts/delete.sh
+```
+
+## MySQL info
+### Pull the image with:
+
+```bash
+docker pull mysql:8.2.0
+```
+
+### Run the image with:
+
+```bash
+docker run --network="host" --name mysql-container -e MYSQL_ROOT_PASSWORD=my-secret-pw -d -p 3306:3306 mysql:8.2.0
+```
+or
+```bash
+docker run --name mysql-container -e MYSQL_ROOT_PASSWORD=my-secret-pw -d -p 3306:3306 mysql:8.2.0
+```
+
+### Stop the image with:
+
+```bash
+docker stop mysql-container     # or docker stop <CONTAINER_ID>
+```
+
+### Exec the mysql (Get into mysql cli) with:
+
+```bash
+docker exec -it mysql-container mysql -u root -p
+```
+
+### Useful commands
+CREATE DATABASE your_database_name;
+SHOW DATABASES;
+USE your_database_name;
+SHOW TABLES;
+DESCRIBE your_table_name;
+SELECT * FROM your_table_name;
+EXIT;
+
+CREATE USER 'username'@'host' IDENTIFIED BY 'password';
+GRANT ALL PRIVILEGES ON your_database_name.* TO 'username'@'host';
+FLUSH PRIVILEGES;
+
+## Deploy with Docker Compose
+
+```bash
+docker compose down
+docker compose build 
+docker compose up --force-recreate
 ```

@@ -1,14 +1,27 @@
 package controllers
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
 )
 
-func GetDoctors(w http.ResponseWriter, r *http.Request) {
-	// Placeholder: Get the list of doctors
-	w.Write([]byte("List of doctors\n"))
+func (dController *DoctorController) GetDoctors(w http.ResponseWriter, r *http.Request) {
+	doctors, err := dController.DbConn.FetchDoctors()
+	if err != nil {
+		err_msg := fmt.Sprintf("internal server error: %s", err)
+		http.Error(w, err_msg, http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(doctors); err != nil {
+		err_msg := fmt.Sprintf("internal server error: %s", err)
+		http.Error(w, err_msg, http.StatusInternalServerError)
+		return
+	}
 }
 
 func GetDoctorByID(w http.ResponseWriter, r *http.Request) {

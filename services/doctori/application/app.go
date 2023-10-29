@@ -3,28 +3,41 @@ package application
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
+	"github.com/mihnea1711/POS_Project/services/doctori/internal/database"
 	"github.com/mihnea1711/POS_Project/services/doctori/internal/routes"
 	"github.com/mihnea1711/POS_Project/services/doctori/pkg/config"
 )
 
 type App struct {
-	router http.Handler
+	router  http.Handler
+	mysqlDB *database.MySQLDatabase
 	// rdb    *redis.Client
 	config *config.AppConfig
 }
 
-func New(config *config.AppConfig) *App {
+func New(config *config.AppConfig) (*App, error) {
 	app := &App{
 		config: config,
 	}
 
-	router := routes.SetupRoutes()
+	// setup mysql connection for the app
+	mysqlDB, err := database.NewMySQL(&config.MySQL)
+	if err != nil {
+		log.Printf("Error initializing MySQL: %v", err)
+		return nil, fmt.Errorf("failed to initialize MySQL: %w", err)
+	}
+	app.mysqlDB = mysqlDB
+
+	// setup router for the app
+	router := routes.SetupRoutes(app.mysqlDB)
 	app.router = router
 
-	return app
+	log.Println("Application successfully initialized.")
+	return app, nil
 }
 
 func (a *App) Start(ctx context.Context) error {
@@ -44,7 +57,7 @@ func (a *App) Start(ctx context.Context) error {
 	// 	}
 	// }()
 
-	fmt.Println("Starting server..")
+	log.Println("Starting server...") // Logging the server start
 
 	// Log the message just before starting the server in the goroutine
 	fmt.Printf("Server started and listening on port %d\n", a.config.Server.Port)
@@ -63,12 +76,17 @@ func (a *App) Start(ctx context.Context) error {
 		// second value is called open
 		if !open {
 			//channel is closed
-			fmt.Println("context channel error. channel is closed")
+			log.Println("Context channel error. Channel is closed.")
 		}
 		return err
 	case <-ctx.Done():
 		// Log the message indicating the server is in the process of shutting down
-		fmt.Println("\nServer shutting down...")
+		log.Println("Server shutting down...")
+
+		// Close MySQL database connection gracefully
+		if err := a.mysqlDB.Close(); err != nil {
+			log.Printf("Failed to close the MySQL database gracefully: %v", err)
+		}
 
 		timeout, cancel := context.WithTimeout(context.Background(), time.Second*10)
 		defer cancel()
