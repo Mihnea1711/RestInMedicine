@@ -7,7 +7,7 @@ import (
 )
 
 // Logger is a middleware that logs the start and end of each request, along with some useful data about the request.
-func Logger(next http.Handler) http.Handler {
+func RouteLogger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 

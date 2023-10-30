@@ -6,14 +6,14 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/mihnea1711/POS_Project/services/doctori/internal/controllers"
-	"github.com/mihnea1711/POS_Project/services/doctori/internal/database/mysql"
+	"github.com/mihnea1711/POS_Project/services/doctori/internal/database"
 	"github.com/mihnea1711/POS_Project/services/doctori/internal/middleware"
 )
 
-func SetupRoutes(dbConn *mysql.MySQLDatabase) *mux.Router {
+func SetupRoutes(dbConn database.Database) *mux.Router {
 	log.Println("Setting up routes...")
 	router := mux.NewRouter()
-	router.Use(middleware.Logger)
+	router.Use(middleware.RouteLogger)
 
 	doctorController := &controllers.DoctorController{
 		DbConn: dbConn,

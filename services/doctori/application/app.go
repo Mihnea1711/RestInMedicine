@@ -7,14 +7,15 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/mihnea1711/POS_Project/services/doctori/internal/database"
 	"github.com/mihnea1711/POS_Project/services/doctori/internal/database/mysql"
 	"github.com/mihnea1711/POS_Project/services/doctori/internal/routes"
 	"github.com/mihnea1711/POS_Project/services/doctori/pkg/config"
 )
 
 type App struct {
-	router  http.Handler
-	mysqlDB *mysql.MySQLDatabase
+	router   http.Handler
+	database database.Database
 	// rdb    *redis.Client
 	config *config.AppConfig
 }
@@ -30,10 +31,10 @@ func New(config *config.AppConfig) (*App, error) {
 		log.Printf("Error initializing MySQL: %v", err)
 		return nil, fmt.Errorf("failed to initialize MySQL: %w", err)
 	}
-	app.mysqlDB = mysqlDB
+	app.database = mysqlDB
 
 	// setup router for the app
-	router := routes.SetupRoutes(app.mysqlDB)
+	router := routes.SetupRoutes(app.database)
 	app.router = router
 
 	log.Println("Application successfully initialized.")
@@ -84,7 +85,7 @@ func (a *App) Start(ctx context.Context) error {
 		log.Println("Server shutting down...")
 
 		// Close MySQL database connection gracefully
-		if err := a.mysqlDB.Close(); err != nil {
+		if err := a.database.Close(); err != nil {
 			log.Printf("Failed to close the MySQL database gracefully: %v", err)
 		}
 

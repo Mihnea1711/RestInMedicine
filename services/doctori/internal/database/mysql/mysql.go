@@ -7,6 +7,7 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql" // Import MySQL driver
+	"github.com/mihnea1711/POS_Project/services/doctori/internal/database"
 	"github.com/mihnea1711/POS_Project/services/doctori/pkg/config"
 )
 
@@ -14,7 +15,7 @@ type MySQLDatabase struct {
 	*sql.DB
 }
 
-func NewMySQL(config *config.MySQLConfig) (*MySQLDatabase, error) {
+func NewMySQL(config *config.MySQLConfig) (database.Database, error) {
 	connStr := fmt.Sprintf(
 		"%s:%s@tcp(%s:%d)/%s?charset=%s&parseTime=%v",
 		config.User,
@@ -43,4 +44,8 @@ func NewMySQL(config *config.MySQLConfig) (*MySQLDatabase, error) {
 	}
 
 	return &MySQLDatabase{DB: db}, nil
+}
+
+func (db *MySQLDatabase) Close() error {
+	return db.DB.Close()
 }
