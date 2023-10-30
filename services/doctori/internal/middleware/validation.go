@@ -10,11 +10,12 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/gorilla/mux"
 	"github.com/mihnea1711/POS_Project/services/doctori/internal/models"
 	"github.com/mihnea1711/POS_Project/services/doctori/pkg/utils"
 )
 
-func ValidateDoctorCreation(next http.Handler) http.Handler {
+func ValidateDoctorInfo(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var doctor models.Doctor
 		dec := json.NewDecoder(r.Body)
@@ -79,6 +80,7 @@ func checkErrorOnDecode(err error, w http.ResponseWriter) bool {
 	// easier for the client to fix.
 	case errors.As(err, &syntaxError):
 		msg := fmt.Sprintf("Request body contains badly-formed JSON (at position %d)", syntaxError.Offset)
+		log.Println(msg)
 		http.Error(w, msg, http.StatusBadRequest)
 
 	// In some circumstances Decode() may also return an
@@ -87,6 +89,7 @@ func checkErrorOnDecode(err error, w http.ResponseWriter) bool {
 	// https://github.com/golang/go/issues/25956.
 	case errors.Is(err, io.ErrUnexpectedEOF):
 		msg := "Request body contains badly-formed JSON"
+		log.Println(msg)
 		http.Error(w, msg, http.StatusBadRequest)
 
 	// Catch any type errors, like trying to assign a string in the
@@ -95,6 +98,7 @@ func checkErrorOnDecode(err error, w http.ResponseWriter) bool {
 	// message to make it easier for the client to fix.
 	case errors.As(err, &unmarshalTypeError):
 		msg := fmt.Sprintf("Request body contains an invalid value for the %q field (at position %d)", unmarshalTypeError.Field, unmarshalTypeError.Offset)
+		log.Println(msg)
 		http.Error(w, msg, http.StatusBadRequest)
 
 	// Catch the error caused by extra unexpected fields in the request
@@ -105,12 +109,14 @@ func checkErrorOnDecode(err error, w http.ResponseWriter) bool {
 	case strings.HasPrefix(err.Error(), "json: unknown field "):
 		fieldName := strings.TrimPrefix(err.Error(), "json: unknown field ")
 		msg := fmt.Sprintf("Request body contains unknown field %s", fieldName)
+		log.Println(msg)
 		http.Error(w, msg, http.StatusBadRequest)
 
 	// An io.EOF error is returned by Decode() if the request body is
 	// empty.
 	case errors.Is(err, io.EOF):
 		msg := "Request body must not be empty"
+		log.Println(msg)
 		http.Error(w, msg, http.StatusBadRequest)
 
 	// Catch the error caused by the request body being too large. Again
@@ -118,15 +124,36 @@ func checkErrorOnDecode(err error, w http.ResponseWriter) bool {
 	// error at https://github.com/golang/go/issues/30715.
 	case err.Error() == "http: request body too large":
 		msg := "Request body must not be larger than 1MB"
+		log.Println(msg)
 		http.Error(w, msg, http.StatusRequestEntityTooLarge)
 
 	// Otherwise default to logging the error and sending a 500 Internal
 	// Server Error response.
 	default:
-		log.Print(err.Error())
+		log.Println(err.Error())
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 	}
 	return true
+}
+
+func ValidateEmail(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		email, ok := vars["email"]
+		if !ok {
+			log.Println("Email not provided in request:", r.RequestURI)
+			http.Error(w, "Email not provided", http.StatusBadRequest)
+			return
+		}
+
+		if !utils.EmailRegex.MatchString(email) {
+			log.Printf("Invalid email format for email: %s in request: %s", email, r.RequestURI)
+			http.Error(w, "Invalid email format", http.StatusBadRequest)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
 }
 
 // add similar validation middlewares for Update, Delete, etc.

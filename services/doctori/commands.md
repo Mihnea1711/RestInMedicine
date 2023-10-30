@@ -1,13 +1,13 @@
 # App Doctori User Guide
 
-## Building the Module
+## Building the Module Locally
 To build the module, run the following command:
 
 ```bash
 go build -o app_doctori
 ```
 
-## Running the Module
+## Running the Module Locally
 To run the module, run the following command:
 
 ```bash
@@ -57,14 +57,14 @@ chmod +x scripts/delete.sh
 ./scripts/delete.sh
 ```
 
-## MySQL info
-### Pull the image with:
+## MySQL Info
+### Pull the image locally with:
 
 ```bash
 docker pull mysql:8.2.0
 ```
 
-### Run the image with:
+### Run the image locally with:
 
 ```bash
 docker run --network="host" --name mysql-container -e MYSQL_ROOT_PASSWORD=my-secret-pw -d -p 3306:3306 mysql:8.2.0
@@ -84,6 +84,15 @@ docker stop mysql-container     # or docker stop <CONTAINER_ID>
 
 ```bash
 docker exec -it mysql-container mysql -u root -p
+docker exec -it mysql-container mysql -u mihnea_pos -p
+```
+
+or
+
+```bash
+docker exec -it <Container_DB_Id> /bin/bash         # get container id from docker ps command
+mysql -u mihnea_pos -pmihnea_pos pos_db
+
 ```
 
 ### Useful commands

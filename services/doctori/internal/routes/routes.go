@@ -6,11 +6,11 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/mihnea1711/POS_Project/services/doctori/internal/controllers"
-	"github.com/mihnea1711/POS_Project/services/doctori/internal/database"
+	"github.com/mihnea1711/POS_Project/services/doctori/internal/database/mysql"
 	"github.com/mihnea1711/POS_Project/services/doctori/internal/middleware"
 )
 
-func SetupRoutes(dbConn *database.MySQLDatabase) *mux.Router {
+func SetupRoutes(dbConn *mysql.MySQLDatabase) *mux.Router {
 	log.Println("Setting up routes...")
 	router := mux.NewRouter()
 	router.Use(middleware.Logger)
@@ -28,28 +28,37 @@ func SetupRoutes(dbConn *database.MySQLDatabase) *mux.Router {
 // loadCrudRoutes loads all the CRUD routes for the Doctor entity
 func loadCrudRoutes(router *mux.Router, doctorController *controllers.DoctorController) {
 	log.Println("Loading CRUD routes for Doctor entity...")
-	/*
-		// Subrouter with the "/doctori" prefix
-		crudRouter := r.PathPrefix("/doctori").Subrouter()
-	*/
 
-	// Define routes for CRUD operations
-	// Define routes for CRUD operations
+	// ---------------------------------------------------------- Create --------------------------------------------------------------
 	doctorCreationHandler := http.HandlerFunc(doctorController.CreateDoctor)
-	router.Handle("/doctori", middleware.ValidateDoctorCreation(doctorCreationHandler)).Methods("POST") // Creates a new doctor
+	router.Handle("/doctori", middleware.ValidateDoctorInfo(doctorCreationHandler)).Methods("POST") // Creates a new doctor
 	log.Println("Route POST /doctori registered.")
 
+	// ---------------------------------------------------------- Retrieve --------------------------------------------------------------
 	doctorFetchAllHandler := http.HandlerFunc(doctorController.GetDoctors)
 	router.HandleFunc("/doctori", doctorFetchAllHandler).Methods("GET") // Lists all doctors
 	log.Println("Route GET /doctori registered.")
 
-	router.HandleFunc("/doctori/{id}", controllers.GetDoctorByID).Methods("GET") // Fetches a specific doctor by ID
+	doctorFetchByIDHandler := http.HandlerFunc(doctorController.GetDoctorByID)
+	router.HandleFunc("/doctori/{id}", doctorFetchByIDHandler).Methods("GET") // Lists all doctors
 	log.Println("Route GET /doctori/{id} registered.")
 
-	router.HandleFunc("/doctori/{id}", controllers.UpdateDoctor).Methods("PUT") // Updates a specific doctor
+	doctorFetchByEmailHandler := http.HandlerFunc(doctorController.GetDoctorByEmail)
+	router.Handle("/doctori/email/{email}", middleware.ValidateEmail(doctorFetchByEmailHandler)).Methods("GET")
+	log.Println("Route GET /doctori/email/{email} registered.")
+
+	doctorFetchByUserIDHandler := http.HandlerFunc(doctorController.GetDoctorByUserID)
+	router.HandleFunc("/doctori/users/{id}", doctorFetchByUserIDHandler).Methods("GET")
+	log.Println("Route GET /doctori/users/{id} registered.")
+
+	// ---------------------------------------------------------- Update --------------------------------------------------------------
+	doctorUpdateByIDHandler := http.HandlerFunc(doctorController.UpdateDoctorByID)
+	router.Handle("/doctori/{id}", middleware.ValidateDoctorInfo(doctorUpdateByIDHandler)).Methods("PUT") // Updates a specific doctor
 	log.Println("Route PUT /doctori/{id} registered.")
 
-	router.HandleFunc("/doctori/{id}", controllers.DeleteDoctor).Methods("DELETE") // Deletes a doctor
+	// ---------------------------------------------------------- Delete --------------------------------------------------------------
+	doctorDeleteByIDHandler := http.HandlerFunc(doctorController.DeleteDoctorByID)
+	router.Handle("/doctori/{id}", doctorDeleteByIDHandler).Methods("DELETE") // Deletes a doctor
 	log.Println("Route DELETE /doctori/{id} registered.")
 
 	log.Println("All CRUD routes for Doctor entity loaded successfully.")

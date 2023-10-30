@@ -7,14 +7,14 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/mihnea1711/POS_Project/services/doctori/internal/database"
+	"github.com/mihnea1711/POS_Project/services/doctori/internal/database/mysql"
 	"github.com/mihnea1711/POS_Project/services/doctori/internal/routes"
 	"github.com/mihnea1711/POS_Project/services/doctori/pkg/config"
 )
 
 type App struct {
 	router  http.Handler
-	mysqlDB *database.MySQLDatabase
+	mysqlDB *mysql.MySQLDatabase
 	// rdb    *redis.Client
 	config *config.AppConfig
 }
@@ -25,7 +25,7 @@ func New(config *config.AppConfig) (*App, error) {
 	}
 
 	// setup mysql connection for the app
-	mysqlDB, err := database.NewMySQL(&config.MySQL)
+	mysqlDB, err := mysql.NewMySQL(&config.MySQL)
 	if err != nil {
 		log.Printf("Error initializing MySQL: %v", err)
 		return nil, fmt.Errorf("failed to initialize MySQL: %w", err)

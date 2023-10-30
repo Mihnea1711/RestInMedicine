@@ -1,7 +1,7 @@
 package controllers
 
-import "github.com/mihnea1711/POS_Project/services/doctori/internal/database"
+import "github.com/mihnea1711/POS_Project/services/doctori/internal/database/mysql"
 
 type DoctorController struct {
-	DbConn *database.MySQLDatabase
+	DbConn *mysql.MySQLDatabase
 }
