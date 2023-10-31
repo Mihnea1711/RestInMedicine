@@ -6,15 +6,20 @@ import (
 	"time"
 )
 
-func LoggingMiddleware(next http.Handler) http.Handler {
+// Logger is a middleware that logs the start and end of each request, along with some useful data about the request.
+func RouteLogger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Do stuff here
-		startTime := time.Now()
-		log.Printf("Started %s %s", r.Method, r.URL.Path)
+		start := time.Now()
 
-		// Call the next handler, which can be another middleware or the final handler.
+		// Continue to the next handler.
 		next.ServeHTTP(w, r)
 
-		log.Printf("Completed %s in %v", r.URL.Path, time.Since(startTime))
+		log.Printf(
+			"[PACIENTI] %s\t%s\t%s\t%s\n",
+			r.Method,
+			r.RequestURI,
+			r.RemoteAddr,
+			time.Since(start),
+		)
 	})
 }
