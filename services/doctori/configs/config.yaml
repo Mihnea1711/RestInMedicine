@@ -4,9 +4,9 @@ server:
 mysql_db:
   host: mysql 
   port: 3306 
-  user: mihnea_pos
-  password: mihnea_pos
-  dbname: pos_db
+  user: ${MYSQL_USER}
+  password: ${MYSQL_PASSWORD}
+  dbname: ${MYSQL_DATABASE}
   charset: utf8mb4 
   parseTime: true 
   maxOpenConns: 10 
@@ -16,5 +16,5 @@ mysql_db:
 redis:
   host: redis
   port: 6379
-  password: my_secure_password
+  password: ${REDIS_PASSWORD}
   db: 0

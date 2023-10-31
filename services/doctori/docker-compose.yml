@@ -9,6 +9,8 @@ services:
     depends_on:
       - mysql
       - redis
+    env_file:
+      - .env
     environment:
       DATABASE_HOST: mysql
       REDIS_PASSWORD: ${REDIS_PASSWORD}
