@@ -112,6 +112,10 @@ FLUSH PRIVILEGES;
 
 ```bash
 docker compose down
+
+docker volume rm doctori_mysql_data
+docker volume rm doctori_redis_data
+
 docker compose build 
 docker compose up --force-recreate
 ```

@@ -12,19 +12,21 @@ import (
 )
 
 func main() {
-	// Setup logging
-	logFile, err := os.OpenFile("app.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		log.Fatalf("Error opening log file: %v", err)
-		return
-	}
-	defer func() {
-		if err := logFile.Close(); err != nil {
-			log.Printf("Error closing log file: %v", err)
-		}
-	}()
+	/*
+		// // Setup logging
+		// logFile, err := os.OpenFile("app.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+		// if err != nil {
+		// 	log.Fatalf("Error opening log file: %v", err)
+		// 	return
+		// }
+		// defer func() {
+		// 	if err := logFile.Close(); err != nil {
+		// 		log.Printf("Error closing log file: %v", err)
+		// 	}
+		// }()
+	*/
 
-	log.SetOutput(logFile) // Set log output to the file
+	log.SetOutput(os.Stdout) // Set log output to the stdout
 	log.Println("Application starting...")
 
 	config, err := config.LoadConfig(utils.CONFIG_PATH)

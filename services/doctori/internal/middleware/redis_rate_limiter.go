@@ -3,6 +3,8 @@ package middleware
 import (
 	"context"
 	"fmt"
+	"log"
+	"net"
 	"net/http"
 	"time"
 
@@ -31,19 +33,34 @@ func (r *RedisRateLimiter) Limit(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		ctx := context.Background()
 
-		key := r.getKey(req.RemoteAddr)
+		ip, _, err := net.SplitHostPort(req.RemoteAddr)
+		if err != nil {
+			log.Printf("Error splitting remote addr %s", err) // Logging the error
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+		key := r.getKey(ip)
 
 		val, err := r.rdb.Incr(ctx, key).Result()
 		if err != nil {
+			log.Printf("Error incrementing rate limit key %s: %v", key, err) // Logging the error
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
 		if val == 1 {
 			// The key is new, set its TTL
-			r.rdb.Expire(ctx, key, r.windowDuration)
+			expireCmd := r.rdb.Expire(ctx, key, r.windowDuration)
+			if expireCmd.Err() != nil {
+				log.Printf("Error setting TTL for rate limit key %s: %v", key, expireCmd.Err())
+			} else if !expireCmd.Val() {
+				log.Printf("Key %s does not exist, could not set TTL.", key)
+			} else {
+				log.Printf("New key %s created with TTL of %v", key, r.windowDuration)
+			}
 		}
 
 		if val > int64(r.rate) {
+			log.Printf("Rate limit exceeded for IP %s", req.RemoteAddr)
 			http.Error(w, "Too Many Requests", http.StatusTooManyRequests)
 			return
 		}

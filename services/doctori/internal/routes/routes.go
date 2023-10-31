@@ -3,16 +3,22 @@ package routes
 import (
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/mihnea1711/POS_Project/services/doctori/internal/controllers"
 	"github.com/mihnea1711/POS_Project/services/doctori/internal/database"
 	"github.com/mihnea1711/POS_Project/services/doctori/internal/middleware"
+	"github.com/redis/go-redis/v9"
 )
 
-func SetupRoutes(dbConn database.Database) *mux.Router {
+func SetupRoutes(dbConn database.Database, rdb *redis.Client) *mux.Router {
+	log.Println("Setting up rate limiter...")
+	rateLimiter := middleware.NewRedisRateLimiter(rdb, 10, time.Minute) // Here, I'm allowing 10 requests per minute.
+
 	log.Println("Setting up routes...")
 	router := mux.NewRouter()
+	router.Use(rateLimiter.Limit)
 	router.Use(middleware.RouteLogger)
 
 	doctorController := &controllers.DoctorController{

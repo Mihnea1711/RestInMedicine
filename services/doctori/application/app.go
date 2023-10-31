@@ -11,13 +11,13 @@ import (
 	"github.com/mihnea1711/POS_Project/services/doctori/internal/database/mysql"
 	"github.com/mihnea1711/POS_Project/services/doctori/internal/routes"
 	"github.com/mihnea1711/POS_Project/services/doctori/pkg/config"
+	"github.com/redis/go-redis/v9"
 )
 
 type App struct {
 	router   http.Handler
 	database database.Database
-	// rdb    *redis.Client
-	config *config.AppConfig
+	config   *config.AppConfig
 }
 
 func New(config *config.AppConfig) (*App, error) {
@@ -33,8 +33,31 @@ func New(config *config.AppConfig) (*App, error) {
 	}
 	app.database = mysqlDB
 
+	redis_addr := fmt.Sprintf("%s:%d", config.Redis.Host, config.Redis.Port)
+	// setup redis and init cnnection
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     redis_addr,            // Redis address
+		Password: config.Redis.Password, // Password for db
+		DB:       config.Redis.DB,       // Default DB
+	})
+
+	_, err = rdb.Ping(context.Background()).Result()
+	if err != nil {
+		log.Fatalf("Failed to connect to Redis: %s", err)
+	}
+
+	// defer close redis conn func (nu e necesara pentru ping)
+	/*
+		// nu aici !! (o las pt ca ar putea fi folosita)
+		defer func() {
+			if err := a.rdb.Close(); err != nil {
+				fmt.Println("failed to close redis...", err)
+			}
+		}()
+	*/
+
 	// setup router for the app
-	router := routes.SetupRoutes(app.database)
+	router := routes.SetupRoutes(app.database, rdb)
 	app.router = router
 
 	log.Println("Application successfully initialized.")
@@ -46,17 +69,6 @@ func (a *App) Start(ctx context.Context) error {
 		Addr:    fmt.Sprintf(":%d", a.config.Server.Port),
 		Handler: a.router,
 	}
-
-	// err := a.rdb.Ping(ctx).Err()
-	// if err != nil {
-	// 	return fmt.Errorf("failed to connect to redis: %w", err)
-	// }
-
-	// defer func() {
-	// 	if err := a.rdb.Close(); err != nil {
-	// 		fmt.Println("failed to close redis...", err)
-	// 	}
-	// }()
 
 	log.Println("Starting server...") // Logging the server start
 

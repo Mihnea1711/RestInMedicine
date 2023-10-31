@@ -8,11 +8,12 @@ services:
       - "8080:8080"
     depends_on:
       - mysql
+      - redis
     environment:
       DATABASE_HOST: mysql
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
     volumes:
       - .:/workspace/
-
 
   mysql:
     image: mysql:8.2.0
@@ -21,10 +22,10 @@ services:
       context: .
       dockerfile: docker/mysql.Dockerfile
     environment:
-      MYSQL_ROOT_PASSWORD: mihnea_pos
-      MYSQL_DATABASE: pos_db
-      MYSQL_USER: mihnea_pos
-      MYSQL_PASSWORD: mihnea_pos
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
       - "3306:3306"
     restart: always
@@ -32,8 +33,20 @@ services:
       - mysql_data:/var/lib/mysql
     command: --default-authentication-plugin=caching_sha2_password
 
+  redis:
+    image: redis:latest
+    container_name: "redis"
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+
 volumes:
   mysql_data:
+  redis_data:
 
 networks:
   default:
