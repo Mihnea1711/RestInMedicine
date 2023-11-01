@@ -14,16 +14,24 @@ RUN go mod download
 COPY . .
 
 # Build the application targeting the main.go in the cmd directory
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o app_programari ./cmd/
+RUN CGO_ENABLED=0 GOOS=linux go build -o app_programari ./main.go
 
 # Start a new stage with a minimal image for smaller size
 FROM alpine:latest
 
+# Add ca-certificates for secure connections and bash for the entrypoint script
+RUN apk --no-cache add ca-certificates bash netcat-openbsd
+
 # Copy the binary from the builder stage to the current stage
 COPY --from=builder /workspace/app_programari /app_programari
+COPY --from=builder /workspace/configs/config.yaml /configs/config.yaml
+
+# Copy the entrypoint script
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 # Expose any necessary ports (if required)
 EXPOSE 8080
 
 # Command to run the application
-CMD ["/app_programari"]
+ENTRYPOINT ["/entrypoint.sh"]
