@@ -14,47 +14,47 @@ import (
 )
 
 func (dController *PacientController) UpdatePacientByID(w http.ResponseWriter, r *http.Request) {
-	log.Println("[PACIENTI] Attempting to update a doctor.")
+	log.Println("[PACIENTI] Attempting to update a pacient.")
 
-	// Decode the doctor details from the context (assuming you've set it in the middleware)
+	// Decode the pacient details from the context (assuming you've set it in the middleware)
 	pacient := r.Context().Value(utils.DECODED_PACIENT).(*models.Pacient)
 
-	// Get the doctor ID from the request path
+	// Get the pacient ID from the request path
 	vars := mux.Vars(r)
 	idStr := vars["id"]
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		err_msg := fmt.Sprintf("Invalid doctor ID: %s", idStr)
+		err_msg := fmt.Sprintf("Invalid pacient ID: %s", idStr)
 		log.Printf("[PACIENTI] %s", err_msg)
 		http.Error(w, err_msg, http.StatusBadRequest)
 		return
 	}
 
-	// Assign the ID to the doctor object
-	pacient.IDUser = id
+	// Assign the ID to the pacient object
+	pacient.IDPacient = id
 
 	// Ensure a database operation doesn't take longer than 5 seconds
 	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 	defer cancel()
 
-	// Use dController.DbConn to update the doctor in the database
+	// Use dController.DbConn to update the pacient in the database
 	rowsAffected, err := dController.DbConn.UpdatePacientByID(ctx, pacient)
 	if err != nil {
 		err_msg := fmt.Sprintf("internal server error: %s", err)
-		log.Printf("[PACIENTI] Failed to update doctor in the database: %s\n", err_msg)
+		log.Printf("[PACIENTI] Failed to update pacient in the database: %s\n", err_msg)
 		http.Error(w, err_msg, http.StatusInternalServerError)
 		return
 	}
 
 	// Check if any rows were updated
 	if rowsAffected == 0 {
-		err_msg := fmt.Sprintf("No doctor found with ID: %d", pacient.IDUser)
+		err_msg := fmt.Sprintf("No pacient found with ID: %d", pacient.IDPacient)
 		log.Printf("[PACIENTI] %s", err_msg)
 
 		http.Error(w, err_msg, http.StatusNotFound)
 		return
 	}
 
-	log.Printf("[PACIENTI] Successfully updated doctor %d", pacient.IDUser)
-	w.Write([]byte("Doctor updated\n"))
+	log.Printf("[PACIENTI] Successfully updated pacient %d", pacient.IDPacient)
+	w.Write([]byte("Pacient updated\n"))
 }

@@ -14,7 +14,7 @@ RUN go mod download
 COPY . .
 
 # Build the application targeting the main.go in the cmd directory
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o app_pacienti ./cmd/
+RUN CGO_ENABLED=0 GOOS=linux go build -o app_pacienti ./main.go
 
 # Start a new stage with a minimal image for smaller size
 FROM alpine:latest

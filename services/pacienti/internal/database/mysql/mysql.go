@@ -27,6 +27,8 @@ func NewMySQL(config *config.MySQLConfig) (database.Database, error) {
 		config.ParseTime,
 	)
 
+	fmt.Println(connStr)
+
 	db, err := sql.Open("mysql", connStr)
 	if err != nil {
 		log.Printf("[PACIENTI] Error connecting to MySQL: %v", err)

@@ -23,4 +23,4 @@ wait_for_redis
 
 # Start your Go application
 echo "[PACIENTI] Starting the application..."
-/app_doctori
+/app_pacienti

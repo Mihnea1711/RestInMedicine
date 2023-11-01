@@ -25,27 +25,23 @@ func ValidatePacientInfo(next http.Handler) http.Handler {
 
 		err := dec.Decode(&pacient)
 		if checkErrorOnDecode(err, w) {
+			http.Error(w, "Failed to decode pacient", http.StatusBadRequest)
 			return
 		}
 
 		// Basic validation for each field
-		if pacient.CNP == "" || len(pacient.CNP) != 13 {
-			http.Error(w, "Invalid or missing CNP", http.StatusBadRequest)
-			return
-		}
-
-		if pacient.Nume == "" || len(pacient.Nume) > 50 {
+		if pacient.Nume == "" || len(pacient.Nume) > 255 {
 			http.Error(w, "Invalid or missing Nume", http.StatusBadRequest)
 			return
 		}
 
-		if pacient.Prenume == "" || len(pacient.Prenume) > 50 {
+		if pacient.Prenume == "" || len(pacient.Prenume) > 255 {
 			http.Error(w, "Invalid or missing Prenume", http.StatusBadRequest)
 			return
 		}
 
 		// Validate email format using regex
-		if !utils.EmailRegex.MatchString(pacient.Email) || len(pacient.Email) > 70 {
+		if !utils.EmailRegex.MatchString(pacient.Email) || len(pacient.Email) > 255 {
 			http.Error(w, "Invalid or missing Email", http.StatusBadRequest)
 			return
 		}
@@ -62,6 +58,14 @@ func ValidatePacientInfo(next http.Handler) http.Handler {
 			http.Error(w, "Invalid DataNasterii (must be at least 18 years ago)", http.StatusBadRequest)
 			return
 		}
+
+		// In your ValidatePacientInfo middleware
+		if !validateCNPBirthdate(pacient.CNP, pacient.DataNasterii) {
+			http.Error(w, "CNP birthdate does not match DataNasterii", http.StatusBadRequest)
+			return
+		}
+
+		log.Println("sunt aici 2")
 
 		// If all validations pass, proceed to the actual controller
 		ctx := context.WithValue(r.Context(), utils.DECODED_PACIENT, &pacient)
@@ -135,6 +139,25 @@ func checkErrorOnDecode(err error, w http.ResponseWriter) bool {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 	}
 	return true
+}
+
+// Function to validate the CNP birthdate against DataNasterii
+func validateCNPBirthdate(cnp string, dataNasterii time.Time) bool {
+	if len(cnp) != 13 || cnp == "" {
+		log.Println("[PACIENTI] Incorrect CNP format")
+		return false
+	}
+
+	// Extract birthdate from CNP
+	cnpBirthdateStr := cnp[1:7] // Extract the 6-digit date of birth from the CNP
+	cnpBirthdate, err := time.Parse("060102", cnpBirthdateStr)
+	if err != nil {
+		log.Println("[PACIENTI] CNP not matching birthdate")
+		return false
+	}
+
+	// Compare the extracted CNP birthdate with DataNasterii
+	return cnpBirthdate.Equal(dataNasterii)
 }
 
 func ValidateEmail(next http.Handler) http.Handler {

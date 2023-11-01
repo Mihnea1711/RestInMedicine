@@ -28,6 +28,6 @@ func (dController *PacientController) CreatePacient(w http.ResponseWriter, r *ht
 		return
 	}
 
-	log.Printf("[PACIENTI] Successfully created doctor %d", doctor.IDUser)
+	log.Printf("[PACIENTI] Successfully created doctor %d", doctor.IDPacient)
 	w.Write([]byte("Doctor created\n"))
 }

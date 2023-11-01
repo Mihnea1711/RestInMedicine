@@ -9,7 +9,7 @@ import (
 )
 
 func (db *MySQLDatabase) FetchPacienti(ctx context.Context) ([]models.Pacient, error) {
-	query := `SELECT cnp, id_user, nume, prenume, email, telefon, data_nasterii, is_active FROM pacient`
+	query := `SELECT id_pacient, id_user, nume, prenume, email, telefon, cnp, data_nasterii, is_active FROM pacient`
 
 	rows, err := db.QueryContext(ctx, query)
 	if err != nil {
@@ -22,7 +22,7 @@ func (db *MySQLDatabase) FetchPacienti(ctx context.Context) ([]models.Pacient, e
 
 	for rows.Next() {
 		var pacient models.Pacient
-		err := rows.Scan(&pacient.CNP, &pacient.IDUser, &pacient.Nume, &pacient.Prenume, &pacient.Email, &pacient.Telefon, &pacient.DataNasterii, &pacient.IsActive)
+		err := rows.Scan(&pacient.IDPacient, &pacient.IDUser, &pacient.Nume, &pacient.Prenume, &pacient.Email, &pacient.Telefon, &pacient.CNP, &pacient.DataNasterii, &pacient.IsActive)
 		if err != nil {
 			log.Printf("[PACIENTI] Error scanning pacient row: %v", err)
 			return nil, err
@@ -41,16 +41,30 @@ func (db *MySQLDatabase) FetchPacienti(ctx context.Context) ([]models.Pacient, e
 }
 
 func (db *MySQLDatabase) FetchPacientByID(ctx context.Context, id int) (*models.Pacient, error) {
-	return nil, nil
-	// TODO
+	query := `SELECT id_pacient, id_user, nume, prenume, email, telefon, cnp, data_nasterii, is_active FROM pacient WHERE id_pacient = ?`
+	row := db.QueryRowContext(ctx, query, id)
+
+	var pacient models.Pacient
+	err := row.Scan(&pacient.IDPacient, &pacient.IDUser, &pacient.Nume, &pacient.Prenume, &pacient.Email, &pacient.Telefon, &pacient.CNP, &pacient.DataNasterii, &pacient.IsActive)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			log.Printf("[PACIENTI] Pacient with ID %d not found.", id)
+			return nil, nil
+		}
+		log.Printf("[PACIENTI] Error fetching pacient by ID %d: %v", id, err)
+		return nil, err
+	}
+
+	log.Printf("[PACIENTI] Fetched pacient by ID %d successfully.", id)
+	return &pacient, nil
 }
 
 func (db *MySQLDatabase) FetchPacientByEmail(ctx context.Context, email string) (*models.Pacient, error) {
-	query := `SELECT cnp, id_user, nume, prenume, email, telefon, data_nasterii, is_active FROM pacient WHERE email = ?`
+	query := `SELECT id_pacient, id_user, nume, prenume, email, telefon, cnp, data_nasterii, is_active FROM pacient WHERE email = ?`
 	row := db.QueryRowContext(ctx, query, email)
 
 	var pacient models.Pacient
-	err := row.Scan(&pacient.CNP, &pacient.IDUser, &pacient.Nume, &pacient.Prenume, &pacient.Email, &pacient.Telefon, &pacient.DataNasterii, &pacient.IsActive)
+	err := row.Scan(&pacient.IDPacient, &pacient.IDUser, &pacient.Nume, &pacient.Prenume, &pacient.Email, &pacient.Telefon, &pacient.CNP, &pacient.DataNasterii, &pacient.IsActive)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			log.Printf("[PACIENTI] Pacient with email %s not found.", email)
@@ -65,11 +79,11 @@ func (db *MySQLDatabase) FetchPacientByEmail(ctx context.Context, email string) 
 }
 
 func (db *MySQLDatabase) FetchPacientByUserID(ctx context.Context, userID int) (*models.Pacient, error) {
-	query := `SELECT cnp, id_user, nume, prenume, email, telefon, data_nasterii, is_active FROM pacient WHERE id_user = ?`
+	query := `SELECT id_pacient, id_user, nume, prenume, email, telefon, cnp, data_nasterii, is_active FROM pacient WHERE id_user = ?`
 	row := db.QueryRowContext(ctx, query, userID)
 
 	var pacient models.Pacient
-	err := row.Scan(&pacient.CNP, &pacient.IDUser, &pacient.Nume, &pacient.Prenume, &pacient.Email, &pacient.Telefon, &pacient.DataNasterii, &pacient.IsActive)
+	err := row.Scan(&pacient.IDPacient, &pacient.IDUser, &pacient.Nume, &pacient.Prenume, &pacient.Email, &pacient.Telefon, &pacient.CNP, &pacient.DataNasterii, &pacient.IsActive)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			log.Printf("[PACIENTI] Pacient with user ID %d not found.", userID)

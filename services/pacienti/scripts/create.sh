@@ -7,12 +7,13 @@ curl \
     -X POST http://localhost:"$PORT"/pacienti \
     -H "Content-Type: application/json" \
     -d '{
-        "cnp": "1234567890123",
-        "id_user": 1,
+        "id_user": 5,
         "nume": "John",
         "prenume": "Doe",
-        "email": "johndoe@example.com",
+        "email": "johndoe@exasmple.com",
         "telefon": "0712345678",
-        "data_nasterii": "2000-01-01",
+        "cnp": "1000101190123",
+        "data_nasterii": "2000-01-01T00:00:00Z",
         "is_active": true
     }'
+
