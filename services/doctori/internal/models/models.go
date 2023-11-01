@@ -12,3 +12,17 @@ type Doctor struct {
 	Telefon      string `db:"telefon" json:"telefon"`
 	Specializare string `db:"specializare" json:"specializare"`
 }
+
+/*
+
+type Doctor struct {
+    IDDoctor     int       `db:"id_doctor" json:"idDoctor" sql:"type:int primary key generated always as identity"`
+    IDUser       int       `db:"id_user" json:"idUser" sql:"type:int references Utilizatori"`
+    Nume         string    `db:"nume" json:"nume" sql:"type:varchar(50)"`
+    Prenume      string    `db:"prenume" json:"prenume" sql:"type:varchar(50)"`
+    Email        string    `db:"email" json:"email" sql:"type:varchar(70) unique"`
+    Telefon      string    `db:"telefon" json:"telefon" sql:"type:char(10) check (telefon ~ '^[0-9]{10}$')"`
+    Specializare Specializare `db:"specializare" json:"specializare" sql:"type:enum"`
+}
+
+*/

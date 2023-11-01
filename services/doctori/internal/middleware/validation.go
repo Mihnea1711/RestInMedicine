@@ -18,8 +18,10 @@ import (
 func ValidateDoctorInfo(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var doctor models.Doctor
+
 		dec := json.NewDecoder(r.Body)
 		dec.DisallowUnknownFields()
+
 		err := dec.Decode(&doctor)
 		if checkErrorOnDecode(err, w) {
 			return
@@ -43,7 +45,7 @@ func ValidateDoctorInfo(next http.Handler) http.Handler {
 		}
 
 		// Validate Romanian phone number format
-		if !utils.PhoneRegex.MatchString(doctor.Telefon) {
+		if !utils.PhoneRegex.MatchString(doctor.Telefon) || len(doctor.Telefon) != 10 {
 			http.Error(w, "Invalid or missing Telefon", http.StatusBadRequest)
 			return
 		}

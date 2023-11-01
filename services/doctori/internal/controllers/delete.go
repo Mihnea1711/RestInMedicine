@@ -18,12 +18,12 @@ func (dController *DoctorController) DeleteDoctorByID(w http.ResponseWriter, r *
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		err_msg := fmt.Sprintf("Invalid doctor ID: %s", idStr)
-		log.Println(err_msg)
+		log.Println("[DOCTOR] " + err_msg)
 		http.Error(w, err_msg, http.StatusBadRequest)
 		return
 	}
 
-	log.Printf("Attempting to delete doctor with ID: %d...", id)
+	log.Printf("[DOCTOR] Attempting to delete doctor with ID: %d...", id)
 
 	// Ensure a database operation doesn't take longer than 5 seconds
 	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
@@ -32,18 +32,18 @@ func (dController *DoctorController) DeleteDoctorByID(w http.ResponseWriter, r *
 	rowsAffected, err := dController.DbConn.DeleteDoctorByID(ctx, id)
 	if err != nil {
 		err_msg := fmt.Sprintf("Failed to delete doctor with ID %d: %s", id, err)
-		log.Println(err_msg)
+		log.Println("[DOCTOR] " + err_msg)
 		http.Error(w, err_msg, http.StatusInternalServerError)
 		return
 	}
 
 	if rowsAffected == 0 {
 		err_msg := fmt.Sprintf("No doctor found with ID: %d", id)
-		log.Println(err_msg)
+		log.Println("[DOCTOR] " + err_msg)
 		http.Error(w, err_msg, http.StatusNotFound)
 		return
 	}
 
-	log.Printf("Successfully deleted doctor with ID: %d", id)
+	log.Printf("[DOCTOR] Successfully deleted doctor with ID: %d", id)
 	w.Write([]byte(fmt.Sprintf("Doctor with ID: %d deleted successfully\n", id)))
 }

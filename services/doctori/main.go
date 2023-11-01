@@ -28,21 +28,21 @@ func main() {
 
 	// setup logger
 	log.SetOutput(os.Stdout) // Set log output to the stdout
-	log.Println("Application starting...")
+	log.Println("[DOCTOR] Application starting...")
 
 	// load config file
 	conf, err := config.LoadConfig(utils.CONFIG_PATH)
 	if err != nil {
-		log.Fatalf("Error loading the config file: %s", err)
+		log.Fatalf("[DOCTOR] Error loading the config file: %s", err)
 	} else {
-		log.Println("Successfully loaded the config file.")
+		log.Println("[DOCTOR] Successfully loaded the config file.")
 	}
 
 	/*
 		// // load .env vars (ONLY WHEN TESTING LOCALLY)
 		// err = godotenv.Load()
 		// if err != nil {
-		// 	log.Fatal("Error loading .env file")
+		// 	log.Fatal("[DOCTOR] Error loading .env file")
 		// }
 	*/
 
@@ -52,21 +52,21 @@ func main() {
 	// init the app
 	app, err := application.New(conf)
 	if err != nil {
-		log.Fatalf("Error creating and initializing the application: %s", err)
+		log.Fatalf("[DOCTOR] Error creating and initializing the application: %s", err)
 	} else {
-		log.Println("Application successfully initialized.")
+		log.Println("[DOCTOR] Application successfully initialized.")
 	}
 
 	// catch interrupt signal
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
-	log.Println("OS interrupt signals captured. Application will gracefully shut down on interruption...")
+	log.Println("[DOCTOR] OS interrupt signals captured. Application will gracefully shut down on interruption...")
 
 	// start the app with the created context
 	err = app.Start(ctx)
 	if err != nil {
-		log.Fatalf("Error starting the app: %v", err)
+		log.Fatalf("[DOCTOR] Error starting the app: %v", err)
 	} else {
-		log.Println("Application started successfully!")
+		log.Println("[DOCTOR] Application started successfully!")
 	}
 }

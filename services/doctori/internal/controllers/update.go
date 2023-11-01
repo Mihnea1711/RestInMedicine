@@ -14,7 +14,7 @@ import (
 )
 
 func (dController *DoctorController) UpdateDoctorByID(w http.ResponseWriter, r *http.Request) {
-	log.Println("Attempting to update a doctor.")
+	log.Println("[DOCTOR] Attempting to update a doctor.")
 
 	// Decode the doctor details from the context (assuming you've set it in the middleware)
 	doctor := r.Context().Value(utils.DECODED_DOCTOR).(*models.Doctor)
@@ -25,7 +25,7 @@ func (dController *DoctorController) UpdateDoctorByID(w http.ResponseWriter, r *
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		err_msg := fmt.Sprintf("Invalid doctor ID: %s", idStr)
-		log.Println(err_msg)
+		log.Println("[DOCTOR] " + err_msg)
 		http.Error(w, err_msg, http.StatusBadRequest)
 		return
 	}
@@ -41,7 +41,7 @@ func (dController *DoctorController) UpdateDoctorByID(w http.ResponseWriter, r *
 	rowsAffected, err := dController.DbConn.UpdateDoctorByID(ctx, doctor)
 	if err != nil {
 		err_msg := fmt.Sprintf("internal server error: %s", err)
-		log.Printf("Failed to update doctor in the database: %s\n", err_msg)
+		log.Printf("[DOCTOR] Failed to update doctor in the database: %s\n", err_msg)
 		http.Error(w, err_msg, http.StatusInternalServerError)
 		return
 	}
@@ -49,11 +49,11 @@ func (dController *DoctorController) UpdateDoctorByID(w http.ResponseWriter, r *
 	// Check if any rows were updated
 	if rowsAffected == 0 {
 		err_msg := fmt.Sprintf("No doctor found with ID: %d", doctor.IDDoctor)
-		log.Println(err_msg)
+		log.Println("[DOCTOR] " + err_msg)
 		http.Error(w, err_msg, http.StatusNotFound)
 		return
 	}
 
-	log.Printf("Successfully updated doctor %d", doctor.IDDoctor)
+	log.Printf("[DOCTOR] Successfully updated doctor %d", doctor.IDDoctor)
 	w.Write([]byte("Doctor updated\n"))
 }
