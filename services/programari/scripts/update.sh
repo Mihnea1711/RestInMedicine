@@ -2,16 +2,16 @@
 # Extract port from config.yaml
 PORT=$(yq e '.server.port' configs/config.yaml)
 
-# Use the extracted port in curl or other commands
-curl -X PUT http://localhost:"$PORT"/doctori/1 \
-     -H "Content-Type: application/json" \
-     -d '{
-        "idDoctor": 1, 
-        "idUser": 123, 
-        "nume": "Popescu", 
-        "prenume": "Alexandru", 
-        "email": "alex.popescu@example.com", 
-        "telefon": "0743991354", 
-        "specializare": "Neurologie"
-        }'
+# Specify the Programare ID you want to update
+PROGRAMARE_ID=1
 
+# Use the extracted port in curl or other commands
+curl \
+      -X PUT http://localhost:"$PORT"/programari/"$PROGRAMARE_ID" \
+      -H "Content-Type: application/json"    \
+      -d '{
+          "idPacient": 2, 
+          "idDoctor": 1, 
+          "date": "2023-11-15T15:30:00Z", 
+          "status": "anulata"
+      }' 

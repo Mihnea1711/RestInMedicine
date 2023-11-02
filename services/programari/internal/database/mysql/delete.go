@@ -9,7 +9,7 @@ import (
 )
 
 func (db *MySQLDatabase) DeleteProgramareByID(ctx context.Context, id int) (int64, error) {
-	query := fmt.Sprintf(`DELETE FROM %s WHERE id = ?`, utils.PROGRAMARE_TABLE)
+	query := fmt.Sprintf(`DELETE FROM %s WHERE id_programare = ?`, utils.PROGRAMARE_TABLE)
 
 	res, err := db.ExecContext(ctx, query, id)
 	if err != nil {

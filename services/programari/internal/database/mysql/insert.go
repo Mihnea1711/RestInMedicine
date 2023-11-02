@@ -10,9 +10,13 @@ import (
 )
 
 func (db *MySQLDatabase) SaveProgramare(ctx context.Context, programare *models.Programare) error {
-	query := fmt.Sprintf(`INSERT INTO %s (id_pacient, id_doctor, data, status) VALUES (?, ?, ?, ?)`, utils.PROGRAMARE_TABLE)
+	query := fmt.Sprintf(`INSERT INTO %s (id_pacient, id_doctor, date, status) VALUES (?, ?, ?, ?)`, utils.PROGRAMARE_TABLE)
 
-	_, err := db.ExecContext(ctx, query, programare.IDPacient, programare.IDDoctor, programare.Data, programare.Status)
+	log.Println(query)
+
+	log.Printf("INSERT: %d / %d / %s / %s", programare.IDPacient, programare.IDDoctor, programare.Date.GoString(), programare.Status)
+
+	_, err := db.ExecContext(ctx, query, programare.IDPacient, programare.IDDoctor, programare.Date, programare.Status)
 	if err != nil {
 		log.Printf("[PROGRAMARE] Error executing query to save programare: %v", err)
 		return err

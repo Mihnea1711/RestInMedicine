@@ -10,9 +10,9 @@ import (
 )
 
 func (db *MySQLDatabase) UpdateProgramareByID(ctx context.Context, programare *models.Programare) (int64, error) {
-	query := fmt.Sprintf(`UPDATE %s SET id_pacient = ?, id_doctor = ?, data = ?, status = ? WHERE id_programare = ?`, utils.PROGRAMARE_TABLE)
+	query := fmt.Sprintf(`UPDATE %s SET id_pacient = ?, id_doctor = ?, date = ?, status = ? WHERE id_programare = ?`, utils.PROGRAMARE_TABLE)
 
-	res, err := db.ExecContext(ctx, query, programare.IDPacient, programare.IDDoctor, programare.Data, programare.Status, programare.IDProgramare)
+	res, err := db.ExecContext(ctx, query, programare.IDPacient, programare.IDDoctor, programare.Date, programare.Status, programare.IDProgramare)
 	if err != nil {
 		log.Printf("[PROGRAMARE] Error executing query to update programare: %v", err)
 		return 0, err

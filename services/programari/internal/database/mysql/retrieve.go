@@ -31,7 +31,7 @@ func (db *MySQLDatabase) FetchProgramari(ctx context.Context, page, limit int) (
 			&programare.IDProgramare,
 			&programare.IDPacient,
 			&programare.IDDoctor,
-			&programare.Data,
+			&programare.Date,
 			&programare.Status,
 		); err != nil {
 			log.Printf("[PROGRAMARE] Error scanning programare: %v", err)
@@ -59,7 +59,7 @@ func (db *MySQLDatabase) FetchProgramareByID(ctx context.Context, id int) (*mode
 		&programare.IDProgramare,
 		&programare.IDPacient,
 		&programare.IDDoctor,
-		&programare.Data,
+		&programare.Date,
 		&programare.Status,
 	); err != nil {
 		if err == sql.ErrNoRows {
@@ -92,7 +92,7 @@ func (db *MySQLDatabase) FetchProgramariByPacientID(ctx context.Context, id, pag
 			&programare.IDProgramare,
 			&programare.IDPacient,
 			&programare.IDDoctor,
-			&programare.Data,
+			&programare.Date,
 			&programare.Status,
 		); err != nil {
 			log.Printf("[PROGRAMARE] Error scanning programare by pacient ID: %v", err)
@@ -129,7 +129,7 @@ func (db *MySQLDatabase) FetchProgramariByDoctorID(ctx context.Context, id, page
 			&programare.IDProgramare,
 			&programare.IDPacient,
 			&programare.IDDoctor,
-			&programare.Data,
+			&programare.Date,
 			&programare.Status,
 		); err != nil {
 			log.Printf("[PROGRAMARE] Error scanning programari by doctor ID: %v", err)
@@ -150,7 +150,7 @@ func (db *MySQLDatabase) FetchProgramariByDoctorID(ctx context.Context, id, page
 func (db *MySQLDatabase) FetchProgramariByDate(ctx context.Context, date time.Time, page, limit int) ([]models.Programare, error) {
 	offset := (page - 1) * limit
 
-	query := fmt.Sprintf("SELECT * FROM %s WHERE data = ? LIMIT ? OFFSET ?", utils.PROGRAMARE_TABLE)
+	query := fmt.Sprintf("SELECT * FROM %s WHERE date = ? LIMIT ? OFFSET ?", utils.PROGRAMARE_TABLE)
 
 	rows, err := db.QueryContext(ctx, query, date, limit, offset)
 	if err != nil {
@@ -166,7 +166,7 @@ func (db *MySQLDatabase) FetchProgramariByDate(ctx context.Context, date time.Ti
 			&programare.IDProgramare,
 			&programare.IDPacient,
 			&programare.IDDoctor,
-			&programare.Data,
+			&programare.Date,
 			&programare.Status,
 		); err != nil {
 			log.Printf("[PROGRAMARE] Error scanning programari by date: %v", err)
@@ -203,7 +203,7 @@ func (db *MySQLDatabase) FetchProgramariByStatus(ctx context.Context, state stri
 			&programare.IDProgramare,
 			&programare.IDPacient,
 			&programare.IDDoctor,
-			&programare.Data,
+			&programare.Date,
 			&programare.Status,
 		); err != nil {
 			log.Printf("[PROGRAMARE] Error scanning programari by state: %v", err)
