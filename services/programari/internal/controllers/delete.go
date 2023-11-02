@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/mihnea1711/POS_Project/services/programari/pkg/utils"
 )
 
 // Delete a programare by ID
@@ -41,7 +42,5 @@ func (pController *ProgramareController) DeleteProgramareByID(w http.ResponseWri
 	}
 
 	log.Printf("[PROGRAMARE] Successfully deleted programare %d", id)
-	w.Write([]byte("Programare deleted\n"))
-
-	// utils.RespondWithJSON()
+	utils.RespondWithJSON(w, http.StatusOK, "Programare deleted")
 }

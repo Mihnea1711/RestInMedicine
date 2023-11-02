@@ -59,12 +59,12 @@ func loadCrudRoutes(router *mux.Router, programareController *controllers.Progra
 	log.Println("[PROGRAMARE] Route GET /programari/pacient/{id} registered.")
 
 	programareFetchByDateHandler := http.HandlerFunc(programareController.GetProgramariByDate)
-	router.HandleFunc("/programari/pacient/{id}", programareFetchByDateHandler).Methods("GET") // Get programari by date
-	log.Println("[PROGRAMARE] Route GET /programari/pacient/{id} registered.")
+	router.HandleFunc("/programari/date/{date}", programareFetchByDateHandler).Methods("GET") // Get programari by date
+	log.Println("[PROGRAMARE] Route GET /programari/date/{date} registered.")
 
 	programareFetchByStatusHandler := http.HandlerFunc(programareController.GetProgramariByStatus)
-	router.HandleFunc("/programari/pacient/{id}", programareFetchByStatusHandler).Methods("GET") // Get programari by status
-	log.Println("[PROGRAMARE] Route GET /programari/pacient/{id} registered.")
+	router.HandleFunc("/programari/status/{status}", programareFetchByStatusHandler).Methods("GET") // Get programari by status
+	log.Println("[PROGRAMARE] Route GET /programari/status/{status} registered.")
 
 	// ---------------------------------------------------------- Update --------------------------------------------------------------
 	programareUpdateByIDHandler := http.HandlerFunc(programareController.UpdateProgramareByID)

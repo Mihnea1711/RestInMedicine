@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 )
@@ -9,6 +10,7 @@ import (
 func RespondWithJSON(w http.ResponseWriter, status int, payload interface{}) {
 	response, err := json.Marshal(payload)
 	if err != nil {
+		log.Printf("[PROGRAMARE] Internal Server Error: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("Internal Server Error"))
 		return
@@ -16,6 +18,7 @@ func RespondWithJSON(w http.ResponseWriter, status int, payload interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	w.Write(response)
+	w.Write([]byte("\n"))
 }
 
 // Extract pagination parameters from the request
@@ -43,7 +46,7 @@ func ExtractPaginationParams(r *http.Request) (int, int) {
 			page = DEFAULT_PAGINATION_PAGE // Use a default page value
 		}
 	} else {
-		page = DEFAULT_PAGINATION_LIMIT // Set it to the first page if not provided
+		page = DEFAULT_PAGINATION_PAGE // Set it to the first page if not provided
 	}
 
 	return limit, page

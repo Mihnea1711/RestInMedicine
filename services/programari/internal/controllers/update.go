@@ -45,7 +45,5 @@ func (pController *ProgramareController) UpdateProgramareByID(w http.ResponseWri
 	}
 
 	log.Printf("[PROGRAMARE] Successfully updated programare %d", programare.IDProgramare)
-	w.Write([]byte("Programare updated\n"))
-
-	// utils.RespondWithJSON()
+	utils.RespondWithJSON(w, http.StatusOK, "Programare updated")
 }

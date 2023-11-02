@@ -31,7 +31,5 @@ func (pController *ProgramareController) CreateProgramare(w http.ResponseWriter,
 	}
 
 	log.Printf("[PROGRAMARE] Successfully created programare %d", programare.IDProgramare)
-	w.Write([]byte("Programare created\n"))
-
-	// utils.RespondWithJSON(w, http.StatusCreated, programare)
+	utils.RespondWithJSON(w, http.StatusOK, "Programare created")
 }

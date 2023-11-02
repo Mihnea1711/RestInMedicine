@@ -151,6 +151,7 @@ func (db *MySQLDatabase) FetchProgramariByDate(ctx context.Context, date time.Ti
 	offset := (page - 1) * limit
 
 	query := fmt.Sprintf("SELECT * FROM %s WHERE date = ? LIMIT ? OFFSET ?", utils.PROGRAMARE_TABLE)
+	log.Printf("%s / %s / %d / %d", query, date, page, limit)
 
 	rows, err := db.QueryContext(ctx, query, date, limit, offset)
 	if err != nil {

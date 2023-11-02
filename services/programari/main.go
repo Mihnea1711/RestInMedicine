@@ -71,4 +71,7 @@ func main() {
 	} else {
 		log.Println("[PROGRAMARE] Application started successfully!")
 	}
+
+	// now := time.Now()
+	// fmt.Println(now.Format("2006-01-012"))
 }
