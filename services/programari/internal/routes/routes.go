@@ -52,29 +52,29 @@ func loadCrudRoutes(router *mux.Router, programareController *controllers.Progra
 
 	programareFetchByDoctorIDHandler := http.HandlerFunc(programareController.GetProgramariByDoctorID)
 	router.HandleFunc("/programari/doctor/{id}", programareFetchByDoctorIDHandler).Methods("GET") // Get programari by doctor ID
-	log.Println("Route GET /programari/doctor/{id} registered.")
+	log.Println("[PROGRAMARE] Route GET /programari/doctor/{id} registered.")
 
 	programareFetchByPacientIDHandler := http.HandlerFunc(programareController.GetProgramariByPacientID)
 	router.HandleFunc("/programari/pacient/{id}", programareFetchByPacientIDHandler).Methods("GET") // Get programari by pacient ID
-	log.Println("Route GET /programari/pacient/{id} registered.")
+	log.Println("[PROGRAMARE] Route GET /programari/pacient/{id} registered.")
 
 	programareFetchByDateHandler := http.HandlerFunc(programareController.GetProgramariByDate)
 	router.HandleFunc("/programari/pacient/{id}", programareFetchByDateHandler).Methods("GET") // Get programari by date
-	log.Println("Route GET /programari/pacient/{id} registered.")
+	log.Println("[PROGRAMARE] Route GET /programari/pacient/{id} registered.")
 
 	programareFetchByStatusHandler := http.HandlerFunc(programareController.GetProgramariByStatus)
 	router.HandleFunc("/programari/pacient/{id}", programareFetchByStatusHandler).Methods("GET") // Get programari by status
-	log.Println("Route GET /programari/pacient/{id} registered.")
+	log.Println("[PROGRAMARE] Route GET /programari/pacient/{id} registered.")
 
 	// ---------------------------------------------------------- Update --------------------------------------------------------------
 	programareUpdateByIDHandler := http.HandlerFunc(programareController.UpdateProgramareByID)
 	router.Handle("/programari/{id}", middleware.ValidateProgramareInfo(programareUpdateByIDHandler)).Methods("PUT") // Updates a specific programare
-	log.Println("Route PUT /programari/{id} registered.")
+	log.Println("[PROGRAMARE] Route PUT /programari/{id} registered.")
 
 	// ---------------------------------------------------------- Delete --------------------------------------------------------------
 	programareDeleteByIDHandler := http.HandlerFunc(programareController.DeleteProgramareByID)
 	router.Handle("/programari/{id}", programareDeleteByIDHandler).Methods("DELETE") // Deletes a programare
-	log.Println("Route DELETE /programari/{id} registered.")
+	log.Println("[PROGRAMARE] Route DELETE /programari/{id} registered.")
 
 	log.Println("[PROGRAMARE] All CRUD routes for Programare entity loaded successfully.")
 }

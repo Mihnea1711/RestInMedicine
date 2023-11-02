@@ -25,35 +25,37 @@ func ValidateProgramareInfo(next http.Handler) http.Handler {
 		if checkErrorOnDecode(err, w) {
 			return
 		}
-
-		log.Printf("VALIDATION: %d / %d / %s / %s", programare.IDPacient, programare.IDDoctor, programare.Date.GoString(), programare.Status)
-
 		// Validate the IDProgramare (assuming it should be greater than 0)
 		if programare.IDProgramare < 0 {
+			log.Println("[PROGRAMARE] Invalid IDProgramare")
 			http.Error(w, "Invalid IDProgramare", http.StatusBadRequest)
 			return
 		}
 
 		// Validate the IDPacient (assuming it should be greater than 0)
 		if programare.IDPacient <= 0 {
+			log.Println("[PROGRAMARE] Invalid IDPacient")
 			http.Error(w, "Invalid IDPacient", http.StatusBadRequest)
 			return
 		}
 
 		// Validate the IDDoctor (assuming it should be greater than 0)
 		if programare.IDDoctor <= 0 {
+			log.Println("[PROGRAMARE] Invalid IDDoctor")
 			http.Error(w, "Invalid IDDoctor", http.StatusBadRequest)
 			return
 		}
 
 		// Validate the Date (assuming it should be a valid date)
 		if programare.Date.IsZero() {
+			log.Println("[PROGRAMARE] Invalid Date")
 			http.Error(w, "Invalid Date", http.StatusBadRequest)
 			return
 		}
 
 		// Validate the Status (assuming it should not be empty)
 		if programare.Status == "" {
+			log.Println("[PROGRAMARE] Invalid Status")
 			http.Error(w, "Invalid Status", http.StatusBadRequest)
 			return
 		}
