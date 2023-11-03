@@ -25,29 +25,34 @@ func ValidatePacientInfo(next http.Handler) http.Handler {
 
 		err := dec.Decode(&pacient)
 		if checkErrorOnDecode(err, w) {
+			log.Printf("[MIDDLEWARE] Failed to decode pacient in request: %s", r.RequestURI)
 			http.Error(w, "Failed to decode pacient", http.StatusBadRequest)
 			return
 		}
 
 		// Basic validation for each field
 		if pacient.Nume == "" || len(pacient.Nume) > 255 {
+			log.Printf("[MIDDLEWARE] Invalid or missing Nume in request: %s", r.RequestURI)
 			http.Error(w, "Invalid or missing Nume", http.StatusBadRequest)
 			return
 		}
 
 		if pacient.Prenume == "" || len(pacient.Prenume) > 255 {
+			log.Printf("[MIDDLEWARE] Invalid or missing Prenume in request: %s", r.RequestURI)
 			http.Error(w, "Invalid or missing Prenume", http.StatusBadRequest)
 			return
 		}
 
 		// Validate email format using regex
 		if !utils.EmailRegex.MatchString(pacient.Email) || len(pacient.Email) > 255 {
+			log.Printf("[MIDDLEWARE] Invalid or missing Email in request: %s", r.RequestURI)
 			http.Error(w, "Invalid or missing Email", http.StatusBadRequest)
 			return
 		}
 
 		// Validate Romanian phone number format
 		if !utils.PhoneRegex.MatchString(pacient.Telefon) || len(pacient.Telefon) != 10 {
+			log.Printf("[MIDDLEWARE] Invalid or missing Telefon in request: %s", r.RequestURI)
 			http.Error(w, "Invalid or missing Telefon", http.StatusBadRequest)
 			return
 		}
@@ -55,17 +60,19 @@ func ValidatePacientInfo(next http.Handler) http.Handler {
 		// Check if DataNasterii is valid (18 years in the past)
 		minimumBirthDate := time.Now().AddDate(-18, 0, 0)
 		if pacient.DataNasterii.After(minimumBirthDate) {
+			log.Printf("[MIDDLEWARE] Invalid DataNasterii (must be at least 18 years ago) in request: %s", r.RequestURI)
 			http.Error(w, "Invalid DataNasterii (must be at least 18 years ago)", http.StatusBadRequest)
 			return
 		}
 
 		// In your ValidatePacientInfo middleware
 		if !validateCNPBirthdate(pacient.CNP, pacient.DataNasterii) {
+			log.Printf("[MIDDLEWARE] CNP birthdate does not match DataNasterii in request: %s", r.RequestURI)
 			http.Error(w, "CNP birthdate does not match DataNasterii", http.StatusBadRequest)
 			return
 		}
 
-		log.Println("sunt aici 2")
+		log.Printf("[MIDDLEWARE] Pacient info validated successfully in request: %s", r.RequestURI)
 
 		// If all validations pass, proceed to the actual controller
 		ctx := context.WithValue(r.Context(), utils.DECODED_PACIENT, &pacient)
@@ -77,6 +84,8 @@ func checkErrorOnDecode(err error, w http.ResponseWriter) bool {
 	if err == nil {
 		return false
 	}
+	var errMsg string
+
 	var syntaxError *json.SyntaxError
 	var unmarshalTypeError *json.UnmarshalTypeError
 	switch {
@@ -84,60 +93,49 @@ func checkErrorOnDecode(err error, w http.ResponseWriter) bool {
 	// which interpolates the location of the problem to make it
 	// easier for the client to fix.
 	case errors.As(err, &syntaxError):
-		msg := fmt.Sprintf("Request body contains badly-formed JSON (at position %d)", syntaxError.Offset)
-		log.Printf("[PACIENTI] %s", msg)
-		http.Error(w, msg, http.StatusBadRequest)
+		errMsg = fmt.Sprintf("Request body contains badly-formed JSON (at position %d)", syntaxError.Offset)
 
 	// In some circumstances Decode() may also return an
 	// io.ErrUnexpectedEOF error for syntax errors in the JSON. There
 	// is an open issue regarding this at
 	// https://github.com/golang/go/issues/25956.
 	case errors.Is(err, io.ErrUnexpectedEOF):
-		msg := "Request body contains badly-formed JSON"
-		log.Printf("[PACIENTI] %s", msg)
-		http.Error(w, msg, http.StatusBadRequest)
+		errMsg = "Request body contains badly-formed JSON"
 
 	// Catch any type errors, like trying to assign a string in the
 	// JSON request body to a int field in our Person struct. We can
 	// interpolate the relevant field name and position into the error
 	// message to make it easier for the client to fix.
 	case errors.As(err, &unmarshalTypeError):
-		msg := fmt.Sprintf("Request body contains an invalid value for the %q field (at position %d)", unmarshalTypeError.Field, unmarshalTypeError.Offset)
-		log.Printf("[PACIENTI] %s", msg)
-		http.Error(w, msg, http.StatusBadRequest)
+		errMsg = fmt.Sprintf("Request body contains an invalid value for the %q field (at position %d)", unmarshalTypeError.Field, unmarshalTypeError.Offset)
 
 	// Catch the error caused by extra unexpected fields in the request
 	// body. We extract the field name from the error message and
 	// interpolate it in our custom error message. There is an open
-	// issue at https://github.com/golang/go/issues/29035 regarding
-	// turning this into a sentinel error.
+	// issue regarding turning this into a sentinel error.
 	case strings.HasPrefix(err.Error(), "json: unknown field "):
 		fieldName := strings.TrimPrefix(err.Error(), "json: unknown field ")
-		msg := fmt.Sprintf("Request body contains unknown field %s", fieldName)
-		log.Printf("[PACIENTI] %s", msg)
-		http.Error(w, msg, http.StatusBadRequest)
+		errMsg = fmt.Sprintf("Request body contains unknown field %s", fieldName)
 
 	// An io.EOF error is returned by Decode() if the request body is
 	// empty.
 	case errors.Is(err, io.EOF):
-		msg := "Request body must not be empty"
-		log.Printf("[PACIENTI] %s", msg)
-		http.Error(w, msg, http.StatusBadRequest)
+		errMsg = "Request body must not be empty"
 
 	// Catch the error caused by the request body being too large. Again
 	// there is an open issue regarding turning this into a sentinel
 	// error at https://github.com/golang/go/issues/30715.
 	case err.Error() == "http: request body too large":
-		msg := "Request body must not be larger than 1MB"
-		log.Printf("[PACIENTI] %s", msg)
-		http.Error(w, msg, http.StatusRequestEntityTooLarge)
+		errMsg = "Request body must not be larger than 1MB"
 
 	// Otherwise default to logging the error and sending a 500 Internal
 	// Server Error response.
 	default:
-		log.Println("[PACIENTI] " + err.Error())
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		errMsg = err.Error()
 	}
+
+	log.Printf("[MIDDLEWARE] %s", errMsg)
+	http.Error(w, errMsg, http.StatusBadRequest)
 	return true
 }
 

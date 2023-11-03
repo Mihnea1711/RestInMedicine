@@ -28,7 +28,7 @@ func New(config *config.AppConfig) (*App, error) {
 	// setup mysql connection for the app
 	mysqlDB, err := mysql.NewMySQL(&config.MySQL)
 	if err != nil {
-		log.Printf("[PACIENTI] Error initializing MySQL: %v", err)
+		log.Printf("[PACIENT] Error initializing MySQL: %v", err)
 		return nil, fmt.Errorf("failed to initialize MySQL: %w", err)
 	}
 	app.database = mysqlDB
@@ -43,7 +43,7 @@ func New(config *config.AppConfig) (*App, error) {
 
 	_, err = rdb.Ping(context.Background()).Result()
 	if err != nil {
-		log.Fatalf("[PACIENTI] Failed to connect to Redis: %s", err)
+		log.Fatalf("[PACIENT] Failed to connect to Redis: %s", err)
 	}
 
 	// defer close redis conn func (nu e necesara pentru ping)
@@ -51,7 +51,7 @@ func New(config *config.AppConfig) (*App, error) {
 		// nu aici !! (o las pt ca ar putea fi folosita)
 		defer func() {
 			if err := a.rdb.Close(); err != nil {
-				fmt.Println("[PACIENTI] Failed to close redis...", err)
+				fmt.Println("[PACIENT] Failed to close redis...", err)
 			}
 		}()
 	*/
@@ -60,7 +60,7 @@ func New(config *config.AppConfig) (*App, error) {
 	router := routes.SetupRoutes(app.database, rdb)
 	app.router = router
 
-	log.Println("[PACIENTI] Application successfully initialized.")
+	log.Println("[PACIENT] Application successfully initialized.")
 	return app, nil
 }
 
@@ -70,10 +70,10 @@ func (a *App) Start(ctx context.Context) error {
 		Handler: a.router,
 	}
 
-	log.Println("[PACIENTI] Starting server...") // Logging the server start
+	log.Println("[PACIENT] Starting server...") // Logging the server start
 
 	// Log the message just before starting the server in the goroutine
-	fmt.Printf("[PACIENTI] Server started and listening on port %d\n", a.config.Server.Port)
+	fmt.Printf("[PACIENT] Server started and listening on port %d\n", a.config.Server.Port)
 
 	channel := make(chan error, 1)
 	go func() {
@@ -89,16 +89,16 @@ func (a *App) Start(ctx context.Context) error {
 		// second value is called open
 		if !open {
 			//channel is closed
-			log.Println("[PACIENTI] Context channel error. Channel is closed.")
+			log.Println("[PACIENT] Context channel error. Channel is closed.")
 		}
 		return err
 	case <-ctx.Done():
 		// Log the message indicating the server is in the process of shutting down
-		log.Println("[PACIENTI] Server shutting down...")
+		log.Println("[PACIENT] Server shutting down...")
 
 		// Close MySQL database connection gracefully
 		if err := a.database.Close(); err != nil {
-			log.Printf("[PACIENTI] Failed to close the MySQL database gracefully: %v", err)
+			log.Printf("[PACIENT] Failed to close the MySQL database gracefully: %v", err)
 		}
 
 		timeout, cancel := context.WithTimeout(context.Background(), time.Second*10)

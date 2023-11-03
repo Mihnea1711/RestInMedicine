@@ -14,21 +14,21 @@ func (db *MySQLDatabase) UpdatePacientByID(ctx context.Context, pacient *models.
 	// Execute the SQL statement
 	result, err := db.ExecContext(ctx, query, pacient.IDUser, pacient.Nume, pacient.Prenume, pacient.Email, pacient.Telefon, pacient.CNP, pacient.DataNasterii, pacient.IsActive, pacient.IDPacient)
 	if err != nil {
-		log.Printf("[PACIENTI] Error executing query to update pacient with ID %d: %v", pacient.IDPacient, err)
+		log.Printf("[PACIENT] Error executing query to update pacient with ID %d: %v", pacient.IDPacient, err)
 		return 0, err
 	}
 
 	// Get the number of rows affected by the update operation
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		log.Printf("[PACIENTI] Error fetching rows affected for update query of pacient with ID %d: %v", pacient.IDPacient, err)
+		log.Printf("[PACIENT] Error fetching rows affected for update query of pacient with ID %d: %v", pacient.IDPacient, err)
 		return 0, err
 	}
 
 	if rowsAffected == 0 {
-		log.Printf("[PACIENTI] No pacient found with ID %d to update.", pacient.IDPacient)
+		log.Printf("[PACIENT] No pacient found with ID %d to update.", pacient.IDPacient)
 	} else {
-		log.Printf("[PACIENTI] Successfully updated pacient with ID %d.", pacient.IDPacient)
+		log.Printf("[PACIENT] Successfully updated pacient with ID %d.", pacient.IDPacient)
 	}
 
 	return rowsAffected, nil

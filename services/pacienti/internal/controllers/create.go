@@ -12,7 +12,7 @@ import (
 )
 
 func (dController *PacientController) CreatePacient(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[PACIENTI] Attempting to create a new PACIENT.")
+	log.Printf("[PACIENT] Attempting to create a new PACIENT.")
 	doctor := r.Context().Value(utils.DECODED_PACIENT).(*models.Pacient)
 
 	// Ensure a database operation doesn't take longer than 5 seconds
@@ -23,11 +23,11 @@ func (dController *PacientController) CreatePacient(w http.ResponseWriter, r *ht
 	err := dController.DbConn.SavePacient(ctx, doctor)
 	if err != nil {
 		err_msg := fmt.Sprintf("internal server error: %s", err)
-		log.Printf("[PACIENTI] Failed to save doctor to the database: %s\n", err_msg)
+		log.Printf("[PACIENT] Failed to save doctor to the database: %s\n", err_msg)
 		http.Error(w, err_msg, http.StatusInternalServerError)
 		return
 	}
 
-	log.Printf("[PACIENTI] Successfully created doctor %d", doctor.IDPacient)
+	log.Printf("[PACIENT] Successfully created doctor %d", doctor.IDPacient)
 	w.Write([]byte("Doctor created\n"))
 }

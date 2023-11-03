@@ -13,7 +13,7 @@ func (db *MySQLDatabase) FetchPacienti(ctx context.Context) ([]models.Pacient, e
 
 	rows, err := db.QueryContext(ctx, query)
 	if err != nil {
-		log.Printf("[PACIENTI] Error executing query to fetch pacienti: %v", err)
+		log.Printf("[PACIENT] Error executing query to fetch pacienti: %v", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -24,7 +24,7 @@ func (db *MySQLDatabase) FetchPacienti(ctx context.Context) ([]models.Pacient, e
 		var pacient models.Pacient
 		err := rows.Scan(&pacient.IDPacient, &pacient.IDUser, &pacient.Nume, &pacient.Prenume, &pacient.Email, &pacient.Telefon, &pacient.CNP, &pacient.DataNasterii, &pacient.IsActive)
 		if err != nil {
-			log.Printf("[PACIENTI] Error scanning pacient row: %v", err)
+			log.Printf("[PACIENT] Error scanning pacient row: %v", err)
 			return nil, err
 		}
 		pacients = append(pacients, pacient)
@@ -32,11 +32,11 @@ func (db *MySQLDatabase) FetchPacienti(ctx context.Context) ([]models.Pacient, e
 
 	err = rows.Err()
 	if err != nil {
-		log.Printf("[PACIENTI] Error after iterating over rows: %v", err)
+		log.Printf("[PACIENT] Error after iterating over rows: %v", err)
 		return nil, err
 	}
 
-	log.Printf("[PACIENTI] Successfully fetched %d pacienti.", len(pacients))
+	log.Printf("[PACIENT] Successfully fetched %d pacienti.", len(pacients))
 	return pacients, nil
 }
 
@@ -48,14 +48,14 @@ func (db *MySQLDatabase) FetchPacientByID(ctx context.Context, id int) (*models.
 	err := row.Scan(&pacient.IDPacient, &pacient.IDUser, &pacient.Nume, &pacient.Prenume, &pacient.Email, &pacient.Telefon, &pacient.CNP, &pacient.DataNasterii, &pacient.IsActive)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			log.Printf("[PACIENTI] Pacient with ID %d not found.", id)
+			log.Printf("[PACIENT] Pacient with ID %d not found.", id)
 			return nil, nil
 		}
-		log.Printf("[PACIENTI] Error fetching pacient by ID %d: %v", id, err)
+		log.Printf("[PACIENT] Error fetching pacient by ID %d: %v", id, err)
 		return nil, err
 	}
 
-	log.Printf("[PACIENTI] Fetched pacient by ID %d successfully.", id)
+	log.Printf("[PACIENT] Fetched pacient by ID %d successfully.", id)
 	return &pacient, nil
 }
 
@@ -67,14 +67,14 @@ func (db *MySQLDatabase) FetchPacientByEmail(ctx context.Context, email string) 
 	err := row.Scan(&pacient.IDPacient, &pacient.IDUser, &pacient.Nume, &pacient.Prenume, &pacient.Email, &pacient.Telefon, &pacient.CNP, &pacient.DataNasterii, &pacient.IsActive)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			log.Printf("[PACIENTI] Pacient with email %s not found.", email)
+			log.Printf("[PACIENT] Pacient with email %s not found.", email)
 			return nil, nil
 		}
-		log.Printf("[PACIENTI] Error fetching pacient by email %s: %v", email, err)
+		log.Printf("[PACIENT] Error fetching pacient by email %s: %v", email, err)
 		return nil, err
 	}
 
-	log.Printf("[PACIENTI] Fetched pacient by email %s successfully.", email)
+	log.Printf("[PACIENT] Fetched pacient by email %s successfully.", email)
 	return &pacient, nil
 }
 
@@ -86,13 +86,13 @@ func (db *MySQLDatabase) FetchPacientByUserID(ctx context.Context, userID int) (
 	err := row.Scan(&pacient.IDPacient, &pacient.IDUser, &pacient.Nume, &pacient.Prenume, &pacient.Email, &pacient.Telefon, &pacient.CNP, &pacient.DataNasterii, &pacient.IsActive)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			log.Printf("[PACIENTI] Pacient with user ID %d not found.", userID)
+			log.Printf("[PACIENT] Pacient with user ID %d not found.", userID)
 			return nil, nil
 		}
-		log.Printf("[PACIENTI] Error fetching pacient by user ID %d: %v", userID, err)
+		log.Printf("[PACIENT] Error fetching pacient by user ID %d: %v", userID, err)
 		return nil, err
 	}
 
-	log.Printf("[PACIENTI] Fetched pacient by user ID %d successfully.", userID)
+	log.Printf("[PACIENT] Fetched pacient by user ID %d successfully.", userID)
 	return &pacient, nil
 }

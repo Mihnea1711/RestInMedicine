@@ -12,21 +12,21 @@ func (db *MySQLDatabase) DeletePacientByID(ctx context.Context, id int) (int64, 
 	// Execute the SQL statement
 	result, err := db.ExecContext(ctx, query, id)
 	if err != nil {
-		log.Printf("[PACIENTI] Error executing query to delete pacient with ID %d: %v", id, err)
+		log.Printf("[PACIENT] Error executing query to delete pacient with ID %d: %v", id, err)
 		return 0, err
 	}
 
 	// Get the number of rows affected by the delete operation
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		log.Printf("[PACIENTI] Error fetching rows affected for delete query of pacient with ID %d: %v", id, err)
+		log.Printf("[PACIENT] Error fetching rows affected for delete query of pacient with ID %d: %v", id, err)
 		return 0, err
 	}
 
 	if rowsAffected == 0 {
-		log.Printf("[PACIENTI] No pacient found with ID %d to delete.", id)
+		log.Printf("[PACIENT] No pacient found with ID %d to delete.", id)
 	} else {
-		log.Printf("[PACIENTI] Successfully deleted pacient with ID %d.", id)
+		log.Printf("[PACIENT] Successfully deleted pacient with ID %d.", id)
 	}
 
 	return rowsAffected, nil
