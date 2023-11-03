@@ -1,0 +1,8 @@
+server:
+  port: 8080
+
+redis:
+  host: redis
+  port: 6379
+  password: ${REDIS_CONSULTATII_PASSWORD}
+  db: 0
