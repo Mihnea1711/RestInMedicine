@@ -29,7 +29,7 @@ func NewMySQL(config *config.MySQLConfig) (database.Database, error) {
 
 	db, err := sql.Open("mysql", connStr)
 	if err != nil {
-		log.Printf("Error connecting to MySQL: %v", err)
+		log.Printf("[DOCTOR] Error connecting to MySQL: %v", err)
 		return nil, fmt.Errorf("failed to connect to MySQL: %v", err)
 	}
 
@@ -39,7 +39,7 @@ func NewMySQL(config *config.MySQLConfig) (database.Database, error) {
 
 	// Test the connection
 	if err := db.Ping(); err != nil {
-		log.Printf("Error pinging MySQL: %v", err)
+		log.Printf("[DOCTOR] Error pinging MySQL: %v", err)
 		return nil, fmt.Errorf("failed to ping MySQL: %v", err)
 	}
 

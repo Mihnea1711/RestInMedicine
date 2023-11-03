@@ -15,7 +15,7 @@ func RouteLogger(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 
 		log.Printf(
-			"%s\t%s\t%s\t%s\n",
+			"[DOCTOR] %s\t%s\t%s\t%s\n",
 			r.Method,
 			r.RequestURI,
 			r.RemoteAddr,

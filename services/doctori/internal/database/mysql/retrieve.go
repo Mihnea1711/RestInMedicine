@@ -16,7 +16,7 @@ func (db *MySQLDatabase) FetchDoctors(ctx context.Context) ([]models.Doctor, err
 	// Execute the SQL query with context
 	rows, err := db.QueryContext(ctx, query)
 	if err != nil {
-		log.Printf("Error executing query to fetch doctors: %v", err)
+		log.Printf("[DOCTOR] Error executing query to fetch doctors: %v", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -27,7 +27,7 @@ func (db *MySQLDatabase) FetchDoctors(ctx context.Context) ([]models.Doctor, err
 		var doctor models.Doctor
 		err := rows.Scan(&doctor.IDDoctor, &doctor.IDUser, &doctor.Nume, &doctor.Prenume, &doctor.Email, &doctor.Telefon, &doctor.Specializare)
 		if err != nil {
-			log.Printf("Error scanning doctor row: %v", err)
+			log.Printf("[DOCTOR] Error scanning doctor row: %v", err)
 			return nil, err
 		}
 		doctors = append(doctors, doctor)
@@ -36,11 +36,11 @@ func (db *MySQLDatabase) FetchDoctors(ctx context.Context) ([]models.Doctor, err
 	// Check for errors from iterating over rows.
 	err = rows.Err()
 	if err != nil {
-		log.Printf("Error after iterating over rows: %v", err)
+		log.Printf("[DOCTOR] Error after iterating over rows: %v", err)
 		return nil, err
 	}
 
-	log.Printf("Successfully fetched %d doctors.", len(doctors))
+	log.Printf("[DOCTOR] Successfully fetched %d doctors.", len(doctors))
 	return doctors, nil
 }
 
@@ -53,62 +53,53 @@ func (db *MySQLDatabase) FetchDoctorByID(ctx context.Context, id int) (*models.D
 	if err != nil {
 		if err == sql.ErrNoRows {
 			// Not found
+			log.Printf("[DOCTOR] Doctor with ID %d not found.", id)
 			return nil, nil
 		}
+		log.Printf("[DOCTOR] Error fetching doctor by ID %d: %v", id, err)
 		return nil, err
 	}
 
+	log.Printf("[DOCTOR] Successfully fetched doctor by ID %d.", id)
 	return &doctor, nil
 }
 
 func (db *MySQLDatabase) FetchDoctorByEmail(ctx context.Context, email string) (*models.Doctor, error) {
-	// Define the SQL query to retrieve a doctor based on the email
 	query := fmt.Sprintf(`SELECT id_doctor, id_user, nume, prenume, email, telefon, specializare FROM %s WHERE email = ?`, utils.DOCTOR_TABLE)
-
-	// Execute the SQL query with the provided email
 	row := db.QueryRowContext(ctx, query, email)
 
-	// Create an instance of the Doctor model to hold the retrieved data
 	var doctor models.Doctor
-
-	// Scan the result into the Doctor instance
 	err := row.Scan(&doctor.IDDoctor, &doctor.IDUser, &doctor.Nume, &doctor.Prenume, &doctor.Email, &doctor.Telefon, &doctor.Specializare)
-
 	if err != nil {
 		if err == sql.ErrNoRows {
-			// If no results are returned
+			// Not found
+			log.Printf("[DOCTOR] Doctor with email %s not found.", email)
 			return nil, nil
 		}
-		// Return any other errors
+		log.Printf("[DOCTOR] Error fetching doctor by email %s: %v", email, err)
 		return nil, err
 	}
 
-	// Return the retrieved doctor
+	log.Printf("[DOCTOR] Successfully fetched doctor by email %s.", email)
 	return &doctor, nil
 }
 
 func (db *MySQLDatabase) FetchDoctorByUserID(ctx context.Context, userID int) (*models.Doctor, error) {
-	// Define the SQL query to retrieve a doctor based on the id_user
 	query := fmt.Sprintf(`SELECT id_doctor, id_user, nume, prenume, email, telefon, specializare FROM %s WHERE id_user = ?`, utils.DOCTOR_TABLE)
-
-	// Execute the SQL query with the provided userID
 	row := db.QueryRowContext(ctx, query, userID)
 
-	// Create an instance of the Doctor model to hold the retrieved data
 	var doctor models.Doctor
-
-	// Scan the result into the Doctor instance
 	err := row.Scan(&doctor.IDDoctor, &doctor.IDUser, &doctor.Nume, &doctor.Prenume, &doctor.Email, &doctor.Telefon, &doctor.Specializare)
-
 	if err != nil {
 		if err == sql.ErrNoRows {
-			// If no results are returned
+			// Not found
+			log.Printf("[DOCTOR] Doctor with user ID %d not found.", userID)
 			return nil, nil
 		}
-		// Return any other errors
+		log.Printf("[DOCTOR] Error fetching doctor by user ID %d: %v", userID, err)
 		return nil, err
 	}
 
-	// Return the retrieved doctor
+	log.Printf("[DOCTOR] Successfully fetched doctor by user ID %d.", userID)
 	return &doctor, nil
 }
