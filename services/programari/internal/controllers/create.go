@@ -15,8 +15,6 @@ func (pController *ProgramareController) CreateProgramare(w http.ResponseWriter,
 	log.Printf("[PROGRAMARE] Attempting to create a new programare.")
 	programare := r.Context().Value(utils.DECODED_PROGRAMARE).(*models.Programare)
 
-	log.Printf("CREATE: %d / %d / %s / %s", programare.IDPacient, programare.IDDoctor, programare.Date.GoString(), programare.Status)
-
 	// Ensure a database operation doesn't take longer than 5 seconds
 	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 	defer cancel()
