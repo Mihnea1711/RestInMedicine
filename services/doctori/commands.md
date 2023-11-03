@@ -67,11 +67,11 @@ docker pull mysql:8.2.0
 ### Run the image locally with:
 
 ```bash
-docker run --network="host" --name mysql-container -e MYSQL_ROOT_PASSWORD=my-secret-pw -d -p 3306:3306 mysql:8.2.0
+docker run --network="host" --name mysql-container -e MYSQL_ROOT_PASSWORD=mihnea_pos -d -p 3306:3306 mysql:8.2.0
 ```
 or
 ```bash
-docker run --name mysql-container -e MYSQL_ROOT_PASSWORD=my-secret-pw -d -p 3306:3306 mysql:8.2.0
+docker run --name mysql-container -e MYSQL_ROOT_PASSWORD=mihnea_pos -d -p 3306:3306 mysql:8.2.0
 ```
 
 ### Stop the image with:

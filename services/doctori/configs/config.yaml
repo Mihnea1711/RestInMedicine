@@ -16,5 +16,5 @@ mysql_db:
 redis:
   host: redis
   port: 6379
-  password: ${REDIS_PASSWORD}
+  password: ${REDIS_DOCTORI_PASSWORD}
   db: 0
