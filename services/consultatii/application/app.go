@@ -8,55 +8,48 @@ import (
 	"time"
 
 	"github.com/mihnea1711/POS_Project/services/consultatii/internal/database"
+	"github.com/mihnea1711/POS_Project/services/consultatii/internal/database/mongo"
+	"github.com/mihnea1711/POS_Project/services/consultatii/internal/database/redis"
 	"github.com/mihnea1711/POS_Project/services/consultatii/internal/routes"
 	"github.com/mihnea1711/POS_Project/services/consultatii/pkg/config"
-	"github.com/redis/go-redis/v9"
 )
 
 type App struct {
 	router   http.Handler
 	database database.Database
 	config   *config.AppConfig
+	rdb      *redis.RedisClient
 }
 
-func New(config *config.AppConfig) (*App, error) {
+func New(config *config.AppConfig, parentCtx context.Context) (*App, error) {
 	app := &App{
 		config: config,
 	}
 
-	// // setup mysql connection for the app
-	// mysqlDB, err := mysql.NewMySQL(&config.MySQL)
-	// if err != nil {
-	// 	log.Printf("[CONSULTATIE] Error initializing MySQL: %v", err)
-	// 	return nil, fmt.Errorf("failed to initialize MySQL: %w", err)
-	// }
-	// app.database = mysqlDB
+	// Create a child context for MongoDB connection
+	ctx, cancel := context.WithTimeout(parentCtx, 10*time.Second)
+	defer cancel()
 
-	redis_addr := fmt.Sprintf("%s:%d", config.Redis.Host, config.Redis.Port)
-	// setup redis and init cnnection
-	rdb := redis.NewClient(&redis.Options{
-		Addr:     redis_addr,            // Redis address
-		Password: config.Redis.Password, // Password for db
-		DB:       config.Redis.DB,       // Default DB
-	})
-
-	_, err := rdb.Ping(context.Background()).Result()
+	// Create a MongoDB connection
+	mongoDB, err := mongo.NewMongoDB(&config.Mongo, ctx)
 	if err != nil {
-		log.Fatalf("[CONSULTATIE] Failed to connect to Redis: %s", err)
+		log.Printf("[CONSULTATIE] Error initializing MongoDB: %v", err)
+		return nil, fmt.Errorf("failed to initialize MongoDB: %w", err)
 	}
+	app.database = mongoDB
 
-	// defer close redis conn func (nu e necesara pentru ping)
-	/*
-		// nu aici !! (o las pt ca ar putea fi folosita)
-		defer func() {
-			if err := a.rdb.Close(); err != nil {
-				fmt.Println("[CONSULTATIE] Failed to close redis...", err)
-			}
-		}()
-	*/
+	// Create a child context for Redis connection
+	ctx, cancel = context.WithTimeout(parentCtx, 10*time.Second)
+	defer cancel()
+	// Create a Redis connection
+	rdb, err := redis.NewRedisClient(&config.Redis, ctx)
+	if err != nil {
+		return nil, err
+	}
+	app.rdb = rdb
 
 	// setup router for the app
-	router := routes.SetupRoutes(app.database, rdb)
+	router := routes.SetupRoutes(app.database, app.rdb)
 	app.router = router
 
 	log.Println("[CONSULTATIE] Application successfully initialized.")
@@ -96,8 +89,12 @@ func (a *App) Start(ctx context.Context) error {
 		log.Println("[CONSULTATIE] Server shutting down...")
 
 		// Close database connection gracefully
-		if err := a.database.Close(); err != nil {
+		if err := a.database.Close(ctx); err != nil {
 			log.Printf("[CONSULTATIE] Failed to close the database gracefully: %v", err)
+		}
+
+		if err := a.rdb.Close(); err != nil {
+			fmt.Println("[CONSULTATIE] Failed to close redis gracefully...", err)
 		}
 
 		timeout, cancel := context.WithTimeout(context.Background(), time.Second*10)

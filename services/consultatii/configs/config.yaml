@@ -6,3 +6,10 @@ redis:
   port: 6379
   password: ${REDIS_CONSULTATII_PASSWORD}
   db: 0
+
+mongodb:
+  host: mongodb                               # The hostname or IP address of your MongoDB server
+  port: 27017                                 # The MongoDB server port (default is 27017)
+  user: ${MONGO_CONSULTATII_USER}             # (Optional) MongoDB username for authentication
+  password: ${MONGO_CONSULTATII_PASSWORD}     # (Optional) MongoDB password for authentication
+  database: ${MONGO_CONSULTATII_DB}           # MongoDB database name

@@ -4,15 +4,14 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"reflect"
-	"strings"
 
 	"gopkg.in/yaml.v2"
 )
 
 type AppConfig struct {
-	Server ServerConfig `yaml:"server"`
-	Redis  RedisConfig  `yaml:"redis"`
+	Server ServerConfig  `yaml:"server"`
+	Mongo  MongoDBConfig `yaml:"mongodb"`
+	Redis  RedisConfig   `yaml:"redis"`
 }
 
 type ServerConfig struct {
@@ -24,6 +23,14 @@ type RedisConfig struct {
 	Port     int    `yaml:"port"`
 	Password string `yaml:"password"`
 	DB       int    `yaml:"db"` // usually 0 unless you're using multiple databases
+}
+
+type MongoDBConfig struct {
+	Host     string
+	Port     int
+	User     string
+	Password string
+	Database string
 }
 
 // LoadConfig loads the configuration from the given file path
@@ -45,36 +52,4 @@ func LoadConfig(filePath string) (*AppConfig, error) {
 
 	log.Printf("[DOCTOR] Configuration loaded successfully from %s\n", filePath)
 	return &conf, nil
-}
-
-func ReplaceWithEnvVars(input string) string {
-	if strings.HasPrefix(input, "${") && strings.HasSuffix(input, "}") {
-		envVar := strings.TrimSuffix(strings.TrimPrefix(input, "${"), "}")
-		return os.Getenv(envVar)
-	}
-	return input
-}
-
-func ReplacePlaceholdersInStruct(s interface{}) {
-	val := reflect.ValueOf(s)
-
-	// Check if pointer and get the underlying value
-	if val.Kind() == reflect.Ptr {
-		val = val.Elem()
-	}
-
-	for i := 0; i < val.NumField(); i++ {
-		field := val.Field(i)
-		fieldType := field.Type()
-
-		switch fieldType.Kind() {
-		case reflect.String:
-			if field.CanSet() {
-				updatedValue := ReplaceWithEnvVars(field.String())
-				field.SetString(updatedValue)
-			}
-		case reflect.Struct, reflect.Ptr:
-			ReplacePlaceholdersInStruct(field.Addr().Interface())
-		}
-	}
 }

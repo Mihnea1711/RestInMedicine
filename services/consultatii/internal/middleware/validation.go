@@ -9,18 +9,34 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
+	"github.com/mihnea1711/POS_Project/services/consultatii/internal/models"
 	"github.com/mihnea1711/POS_Project/services/consultatii/pkg/utils"
 )
 
-func ValidateDoctorInfo(next http.Handler) http.Handler {
+func ValidateConsultatieInfo(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var consultatie models.Consultatie
 
-		err := errors.New("text")
-		flag := checkErrorOnDecode(err, w)
+		dec := json.NewDecoder(r.Body)
+		dec.DisallowUnknownFields()
+
+		err := dec.Decode(&consultatie)
+		if checkErrorOnDecode(err, w) {
+			return
+		}
+
+		// Validate the Consultatie
+		if err := validateConsultatie(&consultatie); err != nil {
+			// Handle the validation error, e.g., return an error response
+			log.Printf("[MIDDLEWARE] Validation error: %s", err)
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 
 		// If all validations pass, proceed to the actual controller
-		ctx := context.WithValue(r.Context(), utils.DECODED_CONSULTATIE, flag)
+		ctx := context.WithValue(r.Context(), utils.DECODED_CONSULTATIE, &consultatie)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
@@ -84,4 +100,41 @@ func checkErrorOnDecode(err error, w http.ResponseWriter) bool {
 	return true
 }
 
-// add similar validation middlewares for Update, Delete, etc.
+func validateConsultatie(consultatie *models.Consultatie) error {
+	if consultatie.IDPacient <= 0 {
+		return errors.New("invalid pacient id")
+	}
+
+	if consultatie.IDDoctor <= 0 {
+		return errors.New("invalid doctor id")
+	}
+
+	if consultatie.Date.IsZero() {
+		return errors.New("invalid date")
+	}
+
+	currentMoment := time.Now()
+	if consultatie.Date.Before(currentMoment) {
+		return errors.New("date should not be in the past")
+	}
+
+	if consultatie.Diagnostic == "" {
+		return errors.New("invalid diagnostic")
+	}
+
+	for _, inv := range consultatie.Investigatii {
+		if inv.Denumire == "" {
+			return errors.New("invalid investigatie denumire")
+		}
+
+		if inv.DurataProcesare <= 0 {
+			return errors.New("invalid investigatie durata de procesare")
+		}
+
+		if inv.Rezultat == "" {
+			return errors.New("invalid investigatie rezultat")
+		}
+	}
+
+	return nil
+}
