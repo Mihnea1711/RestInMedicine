@@ -19,7 +19,7 @@ type MongoDB struct {
 }
 
 func NewMongoDB(cfg *config.MongoDBConfig, ctx context.Context) (database.Database, error) {
-	log.Printf("[MONGO] MongoDB Configuration: %+v", cfg)
+	// log.Printf("[MONGO] MongoDB Configuration: %+v", cfg)
 
 	clientOptions := options.Client().
 		ApplyURI(fmt.Sprintf("mongodb://%s:%s@%s:%d", cfg.User, cfg.Password, cfg.Host, cfg.Port))

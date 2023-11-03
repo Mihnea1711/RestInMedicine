@@ -35,21 +35,21 @@ type MongoDBConfig struct {
 
 // LoadConfig loads the configuration from the given file path
 func LoadConfig(filePath string) (*AppConfig, error) {
-	log.Println("[DOCTOR] Loading configuration...")
+	log.Println("[CONSULTATIE] Loading configuration...")
 	var conf AppConfig
 
 	data, err := os.ReadFile(filePath)
 	if err != nil {
-		log.Printf("[DOCTOR] Error reading config file %s: %v\n", filePath, err)
+		log.Printf("[CONSULTATIE] Error reading config file %s: %v\n", filePath, err)
 		return nil, fmt.Errorf("error reading config file: %w", err)
 	}
 
 	err = yaml.Unmarshal(data, &conf)
 	if err != nil {
-		log.Printf("[DOCTOR] Error unmarshaling config file %s: %v\n", filePath, err)
+		log.Printf("[CONSULTATIE] Error unmarshaling config file %s: %v\n", filePath, err)
 		return nil, fmt.Errorf("error unmarshaling config file: %w", err)
 	}
 
-	log.Printf("[DOCTOR] Configuration loaded successfully from %s\n", filePath)
+	log.Printf("[CONSULTATIE] Configuration loaded successfully from %s\n", filePath)
 	return &conf, nil
 }
