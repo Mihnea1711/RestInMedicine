@@ -16,8 +16,12 @@ import (
 func (cController *ConsultatieController) UpdateConsultatieByID(w http.ResponseWriter, r *http.Request) {
 	log.Printf("[CONSULTATIE] Attempting to update a consultatie by ID.")
 	vars := mux.Vars(r)
+
+	log.Printf("Vars: %v", vars)
+
 	id, err := primitive.ObjectIDFromHex(vars[utils.UPDATE_CONSULTATIE_BY_ID_PARAMETER])
 	if err != nil {
+		log.Printf("Invalid consultatie ID: %s", id)
 		utils.RespondWithJSON(w, http.StatusBadRequest, "Invalid consultatie ID")
 		return
 	}

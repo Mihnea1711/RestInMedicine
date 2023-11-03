@@ -10,12 +10,12 @@ JSON_PAYLOAD='
 {
   "id_pacient": 1,
   "id_doctor": 2,
-  "data": "2023-11-03T14:30:00Z",
+  "date": "2023-11-04T14:30:00Z",
   "diagnostic": "Updated diagnostic",
   "investigatii": [
     {
       "denumire": "Updated Investigatie 1",
-      "durata_de_procesare": 90,
+      "durata_procesare": 90,
       "rezultat": "Updated Rezultat 1"
     }
   ]
@@ -23,6 +23,6 @@ JSON_PAYLOAD='
 
 # Use curl to update a Consultatie by ID
 curl \
-    -X PUT http://localhost:"$PORT"/consultatii/"$CONSULTATIE_ID" \
+    -X PUT "http://localhost:$PORT/consultatii/$CONSULTATIE_ID" \
     -H "Content-Type: application/json" \
     -d "$JSON_PAYLOAD" 

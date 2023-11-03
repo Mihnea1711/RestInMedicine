@@ -7,12 +7,12 @@ JSON_PAYLOAD='
 {
   "id_pacient": 1,
   "id_doctor": 2,
-  "data": "2023-11-03T00:00:00Z",
+  "date": "2023-11-04T00:00:00Z",
   "diagnostic": "Sample diagnostic",
   "investigatii": [
     {
       "denumire": "Investigatie 1",
-      "durata_de_procesare": 60,
+      "durata_procesare": 60,
       "rezultat": "Rezultat 1"
     }
   ]
