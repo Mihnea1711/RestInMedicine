@@ -6,6 +6,7 @@ const CONFIG_PATH = "configs/config.yaml"
 
 const DECODED_CONSULTATIE contextKey = "decodedConsultatie"
 
+const DATABASE_NAME = "consultatii_db"
 const CONSULTATIE_TABLE = "consultatie"
 
 const (
@@ -41,6 +42,8 @@ const (
 	INSERT_CONSULTATIE_ENDPOINT = "/consultatii"
 
 	FETCH_ALL_CONSULTATII_ENDPOINT = "/consultatii"
+
+	FILTER_CONSULTATII_ENDPOINT = "/consultatii/filter"
 
 	FETCH_CONSULTATIE_BY_DOCTOR_ID_ENDPOINT  = "/consultatii/doctor/{" + FETCH_CONSULTATIE_BY_DOCTOR_ID_PARAMETER + "}"
 	FETCH_CONSULTATIE_BY_DOCTOR_ID_PARAMETER = "id_doctor"

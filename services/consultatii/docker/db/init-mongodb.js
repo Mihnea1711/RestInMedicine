@@ -11,7 +11,7 @@ var collectionName = "consultatie";
 var consultatie1 = {
     id_pacient: 1,
     id_doctor: 1,
-    date: new ISODate("2023-11-10T00:00:00Z"),
+    date: new ISODate("2023-11-10"),
     diagnostic: "Diagnostic for Consultatie 1",
     investigatii: [
         {
@@ -25,7 +25,7 @@ var consultatie1 = {
 var consultatie2 = {
     id_pacient: 2,
     id_doctor: 2,
-    date: new ISODate("2023-11-15T00:00:00Z"),
+    date: new ISODate("2023-11-15"),
     diagnostic: "Diagnostic for Consultatie 2",
     investigatii: [
         {

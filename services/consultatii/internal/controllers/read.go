@@ -176,3 +176,34 @@ func (cController *ConsultatieController) GetConsultatiiByDate(w http.ResponseWr
 	// Serialize the consultatii to JSON and send the response
 	utils.RespondWithJSON(w, http.StatusOK, consultatii)
 }
+
+func (cController *ConsultatieController) GetFilteredConsultatii(w http.ResponseWriter, r *http.Request) {
+	log.Printf("[CONSULTATIE] Attempting to retrieve filtered consultatii.")
+
+	// Extract query filter params
+	filter := utils.ExtractQueryParams(r)
+
+	// Extract the limit and page query parameters from the request
+	limit, page := utils.ExtractPaginationParams(r)
+
+	// Ensure a database operation doesn't take longer than utils.REQUEST_TIMEOUT_DURATION seconds
+	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_TIMEOUT_DURATION*time.Second)
+	defer cancel()
+
+	// Use cController.DbConn to fetch filtered consultatii from the database
+	consultatii, err := cController.DbConn.FetchConsultatiiByFilter(ctx, filter, page, limit)
+	if err != nil {
+		errMsg := fmt.Sprintf("internal server error: %s", err)
+		log.Printf("[CONSULTATIE] Failed to fetch filtered consultatii: %s\n", errMsg)
+		utils.RespondWithJSON(w, http.StatusInternalServerError, errMsg)
+		return
+	}
+
+	if len(consultatii) != 0 {
+		log.Printf("[CONSULTATIE] Successfully fetched filtered consultatii")
+	} else {
+		log.Printf("[CONSULTATIE] No consultatii found with the filter: %v", filter)
+	}
+	// Serialize the filtered consultatii to JSON and send the response
+	utils.RespondWithJSON(w, http.StatusOK, consultatii)
+}

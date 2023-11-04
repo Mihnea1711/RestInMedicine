@@ -5,9 +5,9 @@ PORT=$(yq e '.server.port' configs/config.yaml)
 # Specify the JSON payload for creating a Consultatie
 JSON_PAYLOAD='
 {
-  "id_pacient": 1,
-  "id_doctor": 2,
-  "date": "2023-11-04T00:00:00Z",
+  "id_pacient": 3,
+  "id_doctor": 3,
+  "date": "2023-11-17T00:00:00Z",
   "diagnostic": "Sample diagnostic",
   "investigatii": [
     {

@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/mihnea1711/POS_Project/services/consultatii/internal/models"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 func ReplaceWithEnvVars(input string) string {
@@ -108,4 +109,25 @@ func ExtractPaginationParams(r *http.Request) (int, int) {
 	}
 
 	return limit, page
+}
+
+func ExtractQueryParams(r *http.Request) bson.D {
+	filter := bson.D{}
+
+	queryParameters := r.URL.Query()
+	for key, values := range queryParameters {
+		if len(values) > 0 {
+			// Convert the key to its BSON counterpart (replace hyphens with underscores)
+			bsonKey := strings.ReplaceAll(key, "-", "_")
+
+			// Check for equality filters (when there's only one value)
+			if len(values) == 1 {
+				filter = append(filter, bson.E{Key: bsonKey, Value: values[0]})
+			} else {
+				// If there are multiple values for the same key, create an "in" filter
+				filter = append(filter, bson.E{Key: bsonKey, Value: bson.M{"$in": values}})
+			}
+		}
+	}
+	return filter
 }
