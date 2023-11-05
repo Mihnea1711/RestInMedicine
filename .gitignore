@@ -1,0 +1,67 @@
+# Compiled Object files, Static and Dynamic libs (Shared Objects)
+*.o
+*.a
+*.so
+
+# Folders
+_obj
+_test
+
+# Architecture-specific extensions/prefixes
+*.[568vq]
+[568vq].out
+
+*.cgo1.go
+*.cgo2.c
+_cgo_defun.c
+_cgo_gotypes.go
+_cgo_export.*
+
+_testmain.go
+
+# Go build output
+bin/
+
+# Go module directory and module cache
+go.sum
+go.mod
+pkg/mod/
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+*.bak
+
+# OS-specific ignore
+.DS_Store
+Thumbs.db
+
+# Docker
+*.log
+
+# Docker build output
+docker-compose.override.yml
+docker-compose.*.override.yml
+
+# Certificates
+*.crt
+*.key
+*.pem
+
+# Backup & swap files
+*.bak
+*.swp
+*~
+
+# Log files
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# Env file
+.env
