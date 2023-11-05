@@ -1,23 +1,20 @@
 package models
 
-import "github.com/mihnea1711/POS_Project/services/idm/pkg/utils"
-
 type User struct {
-	ID       int            `db:"id" json:"id"`
-	Username string         `db:"username" json:"username"`
-	Password string         `db:"password" json:"-"`
-	Role     utils.UserRole `db:"role" json:"role"`
+	IDUser   int    `db:"id_user" json:"id_user"`
+	Username string `db:"username" json:"username"`
+	Password string `db:"password" json:"-"`
+	Token    string `db:"token" json:"token"`
 }
 
-type JWSToken struct {
-	ID     int    `db:"id" json:"id"`
-	UserID int    `db:"user_id" json:"userId"`
-	Token  string `db:"token" json:"token"`
-	Valid  bool   `db:"valid" json:"valid"`
+type Role struct {
+	IDRole int    `db:"id_role" json:"id_role"`
+	IDUser int    `db:"id_user" json:"id_user"`
+	Role   string `db:"role" json:"role"`
 }
 
 type BlacklistToken struct {
-	ID     int    `db:"id" json:"id"`
-	UserID int    `db:"user_id" json:"userId"`
-	Token  string `db:"token" json:"token"`
+	IDBToken int    `db:"id_btoken" json:"id_btoken"`
+	IDUser   int    `db:"user_id" json:"user_id"`
+	Token    string `db:"token" json:"token"`
 }
