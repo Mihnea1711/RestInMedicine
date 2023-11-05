@@ -1,0 +1,209 @@
+package controllers
+
+import (
+	"context"
+	"fmt"
+	"log"
+	"net/http"
+	"strconv"
+	"time"
+
+	"github.com/gorilla/mux"
+	"github.com/mihnea1711/POS_Project/services/consultatii/pkg/utils"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
+
+// Retrieve all consultatii
+func (cController *ConsultatieController) GetConsultatii(w http.ResponseWriter, r *http.Request) {
+	log.Printf("[CONSULTATIE] Attempting to retrieve consultatii.")
+
+	// Extract the limit and page query parameters from the request
+	limit, page := utils.ExtractPaginationParams(r)
+
+	// Ensure a database operation doesn't take longer than utils.REQUEST_TIMEOUT_DURATION seconds
+	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_TIMEOUT_DURATION*time.Second)
+	defer cancel()
+
+	// Use pController.DbConn to fetch all consultatii from the database
+	consultatii, err := cController.DbConn.FetchAllConsultatii(ctx, page, limit)
+	if err != nil {
+		errMsg := fmt.Sprintf("internal server error: %s", err)
+		log.Printf("[CONSULTATIE] Failed to fetch consultatii: %s\n", errMsg)
+		utils.RespondWithJSON(w, http.StatusInternalServerError, errMsg)
+		return
+	}
+
+	log.Printf("[CONSULTATIE] Successfully fetched all consultatii")
+	// Serialize the consultatii to JSON and send the response
+	utils.RespondWithJSON(w, http.StatusOK, consultatii)
+}
+
+// Retrieve a consultatie by ID
+func (cController *ConsultatieController) GetConsultatieByID(w http.ResponseWriter, r *http.Request) {
+	log.Printf("[CONSULTATIE] Attempting to retrieve a consultatie by ID.")
+
+	vars := mux.Vars(r)
+	id := vars[utils.FETCH_CONSULTATIE_BY_ID_PARAMETER]
+
+	// Convert the ID to a primitive.ObjectID
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		utils.RespondWithJSON(w, http.StatusBadRequest, "Invalid consultatie ID")
+		return
+	}
+
+	// Ensure a database operation doesn't take longer than utils.REQUEST_TIMEOUT_DURATION seconds
+	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_TIMEOUT_DURATION*time.Second)
+	defer cancel()
+
+	// Use cController.DbConn to fetch the consultatie by ID from the database
+	consultatie, err := cController.DbConn.FetchConsultatieByID(ctx, objectID)
+	if err != nil {
+		errMsg := fmt.Sprintf("internal server error: %s", err)
+		log.Printf("[CONSULTATIE] Failed to fetch consultatie by ID: %s\n", errMsg)
+		utils.RespondWithJSON(w, http.StatusInternalServerError, errMsg)
+		return
+	}
+
+	// Check if the consultatie exists
+	if consultatie == nil {
+		utils.RespondWithJSON(w, http.StatusNotFound, "Consultatie not found")
+		return
+	}
+
+	log.Printf("[CONSULTATIE] Successfully fetched consultatie %s", consultatie.IDConsultatie)
+	// Serialize the consultatie to JSON and send the response
+	utils.RespondWithJSON(w, http.StatusOK, consultatie)
+}
+
+// Retrieve consultatii by doctor ID
+func (cController *ConsultatieController) GetConsultatiiByDoctorID(w http.ResponseWriter, r *http.Request) {
+	log.Printf("[CONSULTATIE] Attempting to retrieve consultatii by Doctor ID.")
+	vars := mux.Vars(r)
+	doctorID, err := strconv.Atoi(vars[utils.FETCH_CONSULTATIE_BY_DOCTOR_ID_PARAMETER])
+	if err != nil {
+		utils.RespondWithJSON(w, http.StatusBadRequest, "Invalid Doctor ID")
+		return
+	}
+
+	log.Printf("READ: %d", doctorID)
+
+	// Extract the limit and page query parameters from the request
+	limit, page := utils.ExtractPaginationParams(r)
+
+	// Ensure a database operation doesn't take longer than utils.REQUEST_TIMEOUT_DURATION seconds
+	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_TIMEOUT_DURATION*time.Second)
+	defer cancel()
+
+	// Use cController.DbConn to fetch consultatii by Doctor ID from the database
+	consultatii, err := cController.DbConn.FetchConsultatiiByDoctorID(ctx, doctorID, page, limit)
+	if err != nil {
+		errMsg := fmt.Sprintf("internal server error: %s", err)
+		log.Printf("[CONSULTATIE] Failed to fetch consultatii by Doctor ID: %s\n", errMsg)
+		utils.RespondWithJSON(w, http.StatusInternalServerError, errMsg)
+		return
+	}
+
+	log.Printf("[CONSULTATIE] Successfully fetched consultatii of doctor %d", doctorID)
+	// Serialize the consultatii to JSON and send the response
+	utils.RespondWithJSON(w, http.StatusOK, consultatii)
+}
+
+// Retrieve consultatii by pacient ID
+func (cController *ConsultatieController) GetConsultatiiByPacientID(w http.ResponseWriter, r *http.Request) {
+	log.Printf("[CONSULTATIE] Attempting to retrieve consultatii by Pacient ID.")
+	vars := mux.Vars(r)
+	pacientID, err := strconv.Atoi(vars[utils.FETCH_CONSULTATIE_BY_PACIENT_ID_PARAMETER])
+	if err != nil {
+		utils.RespondWithJSON(w, http.StatusBadRequest, "Invalid Pacient ID")
+		return
+	}
+
+	// Extract the limit and page query parameters from the request
+	limit, page := utils.ExtractPaginationParams(r)
+
+	// Ensure a database operation doesn't take longer than utils.REQUEST_TIMEOUT_DURATION seconds
+	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_TIMEOUT_DURATION*time.Second)
+	defer cancel()
+
+	// Use cController.DbConn to fetch consultatii by Pacient ID from the database
+	consultatii, err := cController.DbConn.FetchConsultatiiByPacientID(ctx, pacientID, page, limit)
+	if err != nil {
+		errMsg := fmt.Sprintf("internal server error: %s", err)
+		log.Printf("[CONSULTATIE] Failed to fetch consultatii by Pacient ID: %s\n", errMsg)
+		utils.RespondWithJSON(w, http.StatusInternalServerError, errMsg)
+		return
+	}
+
+	log.Printf("[CONSULTATIE] Successfully fetched consultatii of pacient %d", pacientID)
+	// Serialize the consultatii to JSON and send the response
+	utils.RespondWithJSON(w, http.StatusOK, consultatii)
+}
+
+// Retrieve consultatii by date
+func (cController *ConsultatieController) GetConsultatiiByDate(w http.ResponseWriter, r *http.Request) {
+	log.Printf("[CONSULTATIE] Attempting to retrieve consultatii by date.")
+
+	// Use mux.Vars to get the date parameter from the route
+	vars := mux.Vars(r)
+	dateStr := vars[utils.FETCH_CONSULTATIE_BY_DATE_PARAMETER]
+
+	// Parse the date string into a time.Time object
+	date, err := time.Parse(utils.TIME_FORMAT, dateStr)
+	if err != nil {
+		log.Printf("[CONSULTATIE] Failed to convert date string: %s\n", err)
+		utils.RespondWithJSON(w, http.StatusBadRequest, "Invalid date format")
+		return
+	}
+
+	// Extract the limit and page query parameters from the request
+	limit, page := utils.ExtractPaginationParams(r)
+
+	// Ensure a database operation doesn't take longer than utils.REQUEST_TIMEOUT_DURATION seconds
+	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_TIMEOUT_DURATION*time.Second)
+	defer cancel()
+
+	// Use cController.DbConn to fetch consultatii by date from the database
+	consultatii, err := cController.DbConn.FetchConsultatiiByDate(ctx, date, page, limit)
+	if err != nil {
+		errMsg := fmt.Sprintf("internal server error: %s", err)
+		log.Printf("[CONSULTATIE] Failed to fetch consultatii by date: %s\n", errMsg)
+		utils.RespondWithJSON(w, http.StatusInternalServerError, errMsg)
+		return
+	}
+
+	log.Printf("[CONSULTATIE] Successfully fetched consultatii from %s", date)
+	// Serialize the consultatii to JSON and send the response
+	utils.RespondWithJSON(w, http.StatusOK, consultatii)
+}
+
+func (cController *ConsultatieController) GetFilteredConsultatii(w http.ResponseWriter, r *http.Request) {
+	log.Printf("[CONSULTATIE] Attempting to retrieve filtered consultatii.")
+
+	// Extract query filter params
+	filter := utils.ExtractQueryParams(r)
+
+	// Extract the limit and page query parameters from the request
+	limit, page := utils.ExtractPaginationParams(r)
+
+	// Ensure a database operation doesn't take longer than utils.REQUEST_TIMEOUT_DURATION seconds
+	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_TIMEOUT_DURATION*time.Second)
+	defer cancel()
+
+	// Use cController.DbConn to fetch filtered consultatii from the database
+	consultatii, err := cController.DbConn.FetchConsultatiiByFilter(ctx, filter, page, limit)
+	if err != nil {
+		errMsg := fmt.Sprintf("internal server error: %s", err)
+		log.Printf("[CONSULTATIE] Failed to fetch filtered consultatii: %s\n", errMsg)
+		utils.RespondWithJSON(w, http.StatusInternalServerError, errMsg)
+		return
+	}
+
+	if len(consultatii) != 0 {
+		log.Printf("[CONSULTATIE] Successfully fetched filtered consultatii")
+	} else {
+		log.Printf("[CONSULTATIE] No consultatii found with the filter: %v", filter)
+	}
+	// Serialize the filtered consultatii to JSON and send the response
+	utils.RespondWithJSON(w, http.StatusOK, consultatii)
+}
