@@ -7,12 +7,11 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/mihnea1711/POS_Project/services/idm/internal/controllers"
 	"github.com/mihnea1711/POS_Project/services/idm/internal/database"
+	"github.com/mihnea1711/POS_Project/services/idm/internal/database/redis"
 	"github.com/mihnea1711/POS_Project/services/idm/internal/middleware"
-
-	"github.com/redis/go-redis/v9"
 )
 
-func SetupRoutes(dbConn database.Database, rdb *redis.Client) *mux.Router {
+func SetupRoutes(dbConn database.Database, rdb *redis.RedisClient) *mux.Router {
 	log.Println("[PROGRAMARE] Setting up rate limiter...")
 	rateLimiter := middleware.NewRedisRateLimiter(rdb, 10, time.Minute) // Here, I'm allowing 10 requests per minute.
 

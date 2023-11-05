@@ -49,20 +49,20 @@ func main() {
 	*/
 
 	// load .env vars into the config
-	config.ReplacePlaceholdersInStruct(conf)
-
-	// init the app
-	app, err := application.New(conf)
-	if err != nil {
-		log.Fatalf("[IDM] Error creating and initializing the application: %s", err)
-	} else {
-		log.Println("[IDM] Application successfully initialized.")
-	}
+	utils.ReplacePlaceholdersInStruct(conf)
 
 	// catch interrupt signal
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 	log.Println("[IDM] OS interrupt signals captured. Application will gracefully shut down on interruption...")
+
+	// init the app
+	app, err := application.New(conf, ctx)
+	if err != nil {
+		log.Fatalf("[IDM] Error creating and initializing the application: %s", err)
+	} else {
+		log.Println("[IDM] Application successfully initialized.")
+	}
 
 	// start the app with the created context
 	err = app.Start(ctx)

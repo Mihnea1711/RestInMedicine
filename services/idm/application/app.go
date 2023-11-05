@@ -9,52 +9,40 @@ import (
 
 	"github.com/mihnea1711/POS_Project/services/idm/internal/database"
 	"github.com/mihnea1711/POS_Project/services/idm/internal/database/mysql"
+	"github.com/mihnea1711/POS_Project/services/idm/internal/database/redis"
 	"github.com/mihnea1711/POS_Project/services/idm/internal/routes"
 	"github.com/mihnea1711/POS_Project/services/idm/pkg/config"
-	"github.com/redis/go-redis/v9"
 )
 
 type App struct {
 	router   http.Handler
 	database database.Database
 	config   *config.AppConfig
+	rdb      *redis.RedisClient
 }
 
-func New(config *config.AppConfig) (*App, error) {
+func New(config *config.AppConfig, parentCtx context.Context) (*App, error) {
 	app := &App{
 		config: config,
 	}
 
 	// setup mysql connection for the app
-	mysqlDB, err := mysql.NewMySQL(&config.MySQL)
+	mysqlDB, err := mysql.NewMySQL(&config.MySQL, parentCtx)
 	if err != nil {
 		log.Printf("[IDM] Error initializing MySQL: %v", err)
 		return nil, fmt.Errorf("failed to initialize MySQL: %w", err)
 	}
 	app.database = mysqlDB
 
-	redis_addr := fmt.Sprintf("%s:%d", config.Redis.Host, config.Redis.Port)
-	// setup redis and init cnnection
-	rdb := redis.NewClient(&redis.Options{
-		Addr:     redis_addr,            // Redis address
-		Password: config.Redis.Password, // Password for db
-		DB:       config.Redis.DB,       // Default DB
-	})
-
-	_, err = rdb.Ping(context.Background()).Result()
+	// Create a child context for Redis connection
+	ctx, cancel := context.WithTimeout(parentCtx, 10*time.Second)
+	defer cancel()
+	// Create a Redis connection
+	rdb, err := redis.NewRedisClient(&config.Redis, ctx)
 	if err != nil {
-		log.Fatalf("[IDM] Failed to connect to Redis: %s", err)
+		return nil, err
 	}
-
-	// defer close redis conn func (nu e necesara pentru ping)
-	/*
-		// nu aici !! (o las pt ca ar putea fi folosita)
-		defer func() {
-			if err := a.rdb.Close(); err != nil {
-				fmt.Println("[IDM] Failed to close redis...", err)
-			}
-		}()
-	*/
+	app.rdb = rdb
 
 	// setup router for the app
 	router := routes.SetupRoutes(app.database, rdb)
@@ -99,6 +87,10 @@ func (a *App) Start(ctx context.Context) error {
 		// Close MySQL database connection gracefully
 		if err := a.database.Close(); err != nil {
 			log.Printf("[IDM] Failed to close the MySQL database gracefully: %v", err)
+		}
+
+		if err := a.rdb.Close(); err != nil {
+			fmt.Println("[IDM] Failed to close redis...", err)
 		}
 
 		timeout, cancel := context.WithTimeout(context.Background(), time.Second*10)

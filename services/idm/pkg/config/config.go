@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"reflect"
-	"strings"
 	"time"
 
 	"gopkg.in/yaml.v2"
@@ -60,36 +58,4 @@ func LoadConfig(filePath string) (*AppConfig, error) {
 
 	log.Printf("[IDM] Configuration loaded successfully from %s\n", filePath)
 	return &conf, nil
-}
-
-func ReplaceWithEnvVars(input string) string {
-	if strings.HasPrefix(input, "${") && strings.HasSuffix(input, "}") {
-		envVar := strings.TrimSuffix(strings.TrimPrefix(input, "${"), "}")
-		return os.Getenv(envVar)
-	}
-	return input
-}
-
-func ReplacePlaceholdersInStruct(s interface{}) {
-	val := reflect.ValueOf(s)
-
-	// Check if pointer and get the underlying value
-	if val.Kind() == reflect.Ptr {
-		val = val.Elem()
-	}
-
-	for i := 0; i < val.NumField(); i++ {
-		field := val.Field(i)
-		fieldType := field.Type()
-
-		switch fieldType.Kind() {
-		case reflect.String:
-			if field.CanSet() {
-				updatedValue := ReplaceWithEnvVars(field.String())
-				field.SetString(updatedValue)
-			}
-		case reflect.Struct, reflect.Ptr:
-			ReplacePlaceholdersInStruct(field.Addr().Interface())
-		}
-	}
 }

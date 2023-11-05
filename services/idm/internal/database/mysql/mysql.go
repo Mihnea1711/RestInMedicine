@@ -1,6 +1,7 @@
 package mysql
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log"
@@ -15,7 +16,7 @@ type MySQLDatabase struct {
 	*sql.DB
 }
 
-func NewMySQL(config *config.MySQLConfig) (database.Database, error) {
+func NewMySQL(config *config.MySQLConfig, ctx context.Context) (database.Database, error) {
 	connStr := fmt.Sprintf(
 		"%s:%s@tcp(%s:%d)/%s?charset=%s&parseTime=%v",
 		config.User,
@@ -29,7 +30,7 @@ func NewMySQL(config *config.MySQLConfig) (database.Database, error) {
 
 	db, err := sql.Open("mysql", connStr)
 	if err != nil {
-		log.Printf("[PROGRAMARE] Error connecting to MySQL: %v", err)
+		log.Printf("[IDM] Error connecting to MySQL: %v", err)
 		return nil, fmt.Errorf("failed to connect to MySQL: %v", err)
 	}
 
@@ -38,8 +39,8 @@ func NewMySQL(config *config.MySQLConfig) (database.Database, error) {
 	db.SetConnMaxLifetime(config.ConnMaxLifetime * time.Second)
 
 	// Test the connection
-	if err := db.Ping(); err != nil {
-		log.Printf("[PROGRAMARE] Error pinging MySQL: %v", err)
+	if err := db.PingContext(ctx); err != nil {
+		log.Printf("[IDM] Error pinging MySQL: %v", err)
 		return nil, fmt.Errorf("failed to ping MySQL: %v", err)
 	}
 

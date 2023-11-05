@@ -8,16 +8,16 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/redis/go-redis/v9"
+	"github.com/mihnea1711/POS_Project/services/idm/internal/database/redis"
 )
 
 type RedisRateLimiter struct {
-	rdb            *redis.Client
+	rdb            *redis.RedisClient
 	rate           int
 	windowDuration time.Duration
 }
 
-func NewRedisRateLimiter(rdb *redis.Client, rate int, windowDuration time.Duration) *RedisRateLimiter {
+func NewRedisRateLimiter(rdb *redis.RedisClient, rate int, windowDuration time.Duration) *RedisRateLimiter {
 	return &RedisRateLimiter{
 		rdb:            rdb,
 		rate:           rate,
@@ -41,7 +41,7 @@ func (r *RedisRateLimiter) Limit(next http.Handler) http.Handler {
 		}
 		key := r.getKey(ip)
 
-		val, err := r.rdb.Incr(ctx, key).Result()
+		val, err := r.rdb.GetClient().Incr(ctx, key).Result()
 		if err != nil {
 			log.Printf("[PROGRAMARE] Error incrementing rate limit key %s: %v", key, err) // Logging the error
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -49,7 +49,7 @@ func (r *RedisRateLimiter) Limit(next http.Handler) http.Handler {
 		}
 		if val == 1 {
 			// The key is new, set its TTL
-			expireCmd := r.rdb.Expire(ctx, key, r.windowDuration)
+			expireCmd := r.rdb.GetClient().Expire(ctx, key, r.windowDuration)
 			if expireCmd.Err() != nil {
 				log.Printf("[PROGRAMARE] Error setting TTL for rate limit key %s: %v", key, expireCmd.Err())
 			} else if !expireCmd.Val() {
