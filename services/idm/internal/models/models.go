@@ -15,6 +15,6 @@ type Role struct {
 
 type BlacklistToken struct {
 	IDBToken int    `db:"id_btoken" json:"id_btoken"`
-	IDUser   int    `db:"user_id" json:"user_id"`
+	IDUser   int    `db:"id_user" json:"id_user"`
 	Token    string `db:"token" json:"token"`
 }

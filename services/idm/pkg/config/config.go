@@ -13,6 +13,7 @@ type AppConfig struct {
 	Server ServerConfig `yaml:"server"`
 	MySQL  MySQLConfig  `yaml:"mysql_db"`
 	Redis  RedisConfig  `yaml:"redis"`
+	JWT    JWTConfig    `yaml:"jwt"`
 }
 
 type ServerConfig struct {
@@ -37,6 +38,10 @@ type RedisConfig struct {
 	Port     int    `yaml:"port"`
 	Password string `yaml:"password"`
 	DB       int    `yaml:"db"` // usually 0 unless you're using multiple databases
+}
+
+type JWTConfig struct {
+	Secret string `yaml:"secret"`
 }
 
 // LoadConfig loads the configuration from the given file path

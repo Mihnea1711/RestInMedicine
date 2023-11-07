@@ -2,6 +2,6 @@ package controllers
 
 import "github.com/mihnea1711/POS_Project/services/idm/internal/database"
 
-type ProgramareController struct {
+type IDMController struct {
 	DbConn database.Database
 }

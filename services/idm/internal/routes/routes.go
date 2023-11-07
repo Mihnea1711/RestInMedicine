@@ -2,6 +2,7 @@ package routes
 
 import (
 	"log"
+	"net/http"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -20,60 +21,79 @@ func SetupRoutes(dbConn database.Database, rdb *redis.RedisClient) *mux.Router {
 	router.Use(rateLimiter.Limit)
 	router.Use(middleware.RouteLogger)
 
-	programariController := &controllers.ProgramareController{
+	programariController := &controllers.IDMController{
 		DbConn: dbConn,
 	}
 
-	loadCrudRoutes(router, programariController)
+	loadRoutes(router, programariController)
 
 	log.Println("[PROGRAMARE] Routes setup completed.")
 	return router
 }
 
-// loadCrudRoutes loads all the CRUD routes for the Doctor entity
-func loadCrudRoutes(router *mux.Router, programareController *controllers.ProgramareController) {
-	log.Println("[PROGRAMARE] Loading CRUD routes for Programare entity...")
+// loadRoutes loads all the CRUD routes for the IDM module
+func loadRoutes(router *mux.Router, idmController *controllers.IDMController) {
+	log.Println("[IDM] Loading CRUD routes for IDM module...")
 
-	// // ---------------------------------------------------------- Create --------------------------------------------------------------
-	// programareCreationHandler := http.HandlerFunc(programareController.CreateProgramare)
-	// router.Handle("/programari", middleware.ValidateProgramareInfo(programareCreationHandler)).Methods("POST") // Creates a new programare
-	// log.Println("[PROGRAMARE] Route POST /programari registered.")
+	// User Registration
+	userRegistrationHandler := http.HandlerFunc(idmController.RegisterUser)
+	router.Handle("/idm/register", userRegistrationHandler).Methods("POST")
+	log.Println("[IDM] Route POST /idm/register registered.")
 
-	// // ---------------------------------------------------------- Retrieve --------------------------------------------------------------
-	// // implement pagination for these
-	// programareFetchAllHandler := http.HandlerFunc(programareController.GetProgramari)
-	// router.HandleFunc("/programari", programareFetchAllHandler).Methods("GET") // Lists all programari
-	// log.Println("[PROGRAMARE] Route GET /programari registered.")
+	// User Login
+	userLoginHandler := http.HandlerFunc(idmController.LoginUser)
+	router.Handle("/idm/login", userLoginHandler).Methods("POST")
+	log.Println("[IDM] Route POST /idm/login registered.")
 
-	// programareFetchByIDHandler := http.HandlerFunc(programareController.GetProgramareByID)
-	// router.HandleFunc("/programari/{id}", programareFetchByIDHandler).Methods("GET") // Get a specific programare by ID
-	// log.Println("[PROGRAMARE] Route GET /programari/{id} registered.")
+	// Get Users
+	getUsersHandler := http.HandlerFunc(idmController.GetUsers)
+	router.Handle("/idm/user", getUsersHandler).Methods("GET")
+	log.Println("[IDM] Route GET /idm/user registered.")
 
-	// programareFetchByDoctorIDHandler := http.HandlerFunc(programareController.GetProgramariByDoctorID)
-	// router.HandleFunc("/programari/doctor/{id}", programareFetchByDoctorIDHandler).Methods("GET") // Get programari by doctor ID
-	// log.Println("[PROGRAMARE] Route GET /programari/doctor/{id} registered.")
+	// Get User by ID
+	getUserByIDHandler := http.HandlerFunc(idmController.GetUserByID)
+	router.Handle("/idm/user/{id}", getUserByIDHandler).Methods("GET")
+	log.Println("[IDM] Route GET /idm/user/{id} registered.")
 
-	// programareFetchByPacientIDHandler := http.HandlerFunc(programareController.GetProgramariByPacientID)
-	// router.HandleFunc("/programari/pacient/{id}", programareFetchByPacientIDHandler).Methods("GET") // Get programari by pacient ID
-	// log.Println("[PROGRAMARE] Route GET /programari/pacient/{id} registered.")
+	// Update User by ID
+	updateUserByIDHandler := http.HandlerFunc(idmController.UpdateUserByID)
+	router.Handle("/idm/user/{id}", updateUserByIDHandler).Methods("PUT")
+	log.Println("[IDM] Route PUT /idm/user/{id} registered.")
 
-	// programareFetchByDateHandler := http.HandlerFunc(programareController.GetProgramariByDate)
-	// router.HandleFunc("/programari/date/{date}", programareFetchByDateHandler).Methods("GET") // Get programari by date
-	// log.Println("[PROGRAMARE] Route GET /programari/date/{date} registered.")
+	// Delete User by ID
+	deleteUserByIDHandler := http.HandlerFunc(idmController.DeleteUserByID)
+	router.Handle("/idm/user/{id}", deleteUserByIDHandler).Methods("DELETE")
+	log.Println("[IDM] Route DELETE /idm/user/{id} registered.")
 
-	// programareFetchByStatusHandler := http.HandlerFunc(programareController.GetProgramariByStatus)
-	// router.HandleFunc("/programari/status/{status}", programareFetchByStatusHandler).Methods("GET") // Get programari by status
-	// log.Println("[PROGRAMARE] Route GET /programari/status/{status} registered.")
+	// Get User Role
+	getUserRoleHandler := http.HandlerFunc(idmController.GetUserRole)
+	router.Handle("/idm/user/{id}/role", getUserRoleHandler).Methods("GET")
+	log.Println("[IDM] Route GET /idm/user/{id}/role registered.")
 
-	// // ---------------------------------------------------------- Update --------------------------------------------------------------
-	// programareUpdateByIDHandler := http.HandlerFunc(programareController.UpdateProgramareByID)
-	// router.Handle("/programari/{id}", middleware.ValidateProgramareInfo(programareUpdateByIDHandler)).Methods("PUT") // Updates a specific programare
-	// log.Println("[PROGRAMARE] Route PUT /programari/{id} registered.")
+	// Get User Token
+	getUserTokenHandler := http.HandlerFunc(idmController.GetUserToken)
+	router.Handle("/idm/user/{id}/token", getUserTokenHandler).Methods("GET")
+	log.Println("[IDM] Route GET /idm/user/{id}/token registered.")
 
-	// // ---------------------------------------------------------- Delete --------------------------------------------------------------
-	// programareDeleteByIDHandler := http.HandlerFunc(programareController.DeleteProgramareByID)
-	// router.Handle("/programari/{id}", programareDeleteByIDHandler).Methods("DELETE") // Deletes a programare
-	// log.Println("[PROGRAMARE] Route DELETE /programari/{id} registered.")
+	// Add User to Blacklist
+	addUserToBlacklistHandler := http.HandlerFunc(idmController.AddUserToBlacklist)
+	router.Handle("/idm/blacklist/add", addUserToBlacklistHandler).Methods("POST")
+	log.Println("[IDM] Route POST /idm/blacklist/add registered.")
 
-	log.Println("[PROGRAMARE] All CRUD routes for Programare entity loaded successfully.")
+	// Remove User from Blacklist
+	removeUserFromBlacklistHandler := http.HandlerFunc(idmController.RemoveUserFromBlacklist)
+	router.Handle("/idm/blacklist/remove", removeUserFromBlacklistHandler).Methods("POST")
+	log.Println("[IDM] Route POST /idm/blacklist/remove registered.")
+
+	// Change User Password
+	changeUserPasswordHandler := http.HandlerFunc(idmController.ChangeUserPassword)
+	router.Handle("/idm/user/{id}/password", changeUserPasswordHandler).Methods("PUT")
+	log.Println("[IDM] Route PUT /idm/user/{id}/password registered.")
+
+	// Change User Role
+	changeUserRoleHandler := http.HandlerFunc(idmController.ChangeUserRole)
+	router.Handle("/idm/user/{id}/role", changeUserRoleHandler).Methods("PUT")
+	log.Println("[IDM] Route PUT /idm/user/{id}/role registered.")
+
+	log.Println("[IDM] All CRUD routes for IDM module loaded successfully.")
 }

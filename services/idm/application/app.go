@@ -17,8 +17,8 @@ import (
 type App struct {
 	router   http.Handler
 	database database.Database
-	config   *config.AppConfig
 	rdb      *redis.RedisClient
+	config   *config.AppConfig
 }
 
 func New(config *config.AppConfig, parentCtx context.Context) (*App, error) {
@@ -34,11 +34,8 @@ func New(config *config.AppConfig, parentCtx context.Context) (*App, error) {
 	}
 	app.database = mysqlDB
 
-	// Create a child context for Redis connection
-	ctx, cancel := context.WithTimeout(parentCtx, 10*time.Second)
-	defer cancel()
-	// Create a Redis connection
-	rdb, err := redis.NewRedisClient(&config.Redis, ctx)
+	// setup redis connection
+	rdb, err := redis.NewRedisClient(&config.Redis, parentCtx)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +87,7 @@ func (a *App) Start(ctx context.Context) error {
 		}
 
 		if err := a.rdb.Close(); err != nil {
-			fmt.Println("[IDM] Failed to close redis...", err)
+			fmt.Println("[IDM] Failed to close redis gracefully...", err)
 		}
 
 		timeout, cancel := context.WithTimeout(context.Background(), time.Second*10)
