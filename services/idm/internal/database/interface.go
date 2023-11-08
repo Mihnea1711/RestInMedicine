@@ -3,25 +3,30 @@ package database
 import "github.com/mihnea1711/POS_Project/services/idm/internal/models"
 
 type Database interface {
-	AddUserToDB(newUser models.User) error
+	AddUser(newUser models.UserRegistration, userToken string) (int, error)
 
-	GetAllUsersFromDB() ([]models.User, error)
-	GetUserFromDBByID(userID int) (models.User, error)
-	GetUserFromDBByUsername(username string) (models.User, error)
+	GetAllUsers() ([]models.User, error)
+	GetUserByID(userID int) (models.User, error)
+	GetUserByUsername(username string) (models.User, error)
 
-	UpdateUserInDB(updatedUser models.User) error
+	UpdateUserByID(updatedUser models.User) (int, error)
 
-	DeleteUserFromDBByID(userID int) error
+	DeleteUserByID(userID int) (int, error)
 
 	GetUserPasswordByUsername(username string) (string, error)
+
 	GetUserRoleByUserID(userID int) (string, error)
 	GetUserRoleByUsername(username string) (string, error)
 
-	ChangeUserRoleByUserID(userID int, newRole string) error
-	ChangeUserRoleByUsername(username string, newRole string) error
+	GetUserTokenByID(userID int) (string, error)
 
-	ChangeUserPasswordByUserID(userID int, newPassword string) error
-	ChangeUserPasswordByUsername(username string, newPassword string) error
+	UpdateUserRoleByUserID(userID int, newRole string) (int, error)
+	UpdateUserRoleByUsername(username string, newRole string) (int, error)
+
+	UpdateUserPasswordByUserID(userID int, newPassword string) (int, error)
+	UpdateUserPasswordByUsername(username string, newPassword string) (int, error)
+
+	UpdateUserTokenByID(userID int, newToken string) (int, error)
 
 	Close() error
 }

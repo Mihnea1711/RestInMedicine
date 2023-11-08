@@ -13,21 +13,22 @@ import (
 )
 
 func SetupRoutes(dbConn database.Database, rdb *redis.RedisClient) *mux.Router {
-	log.Println("[PROGRAMARE] Setting up rate limiter...")
+	log.Println("[IDM] Setting up rate limiter...")
 	rateLimiter := middleware.NewRedisRateLimiter(rdb, 10, time.Minute) // Here, I'm allowing 10 requests per minute.
 
-	log.Println("[PROGRAMARE] Setting up routes...")
+	log.Println("[IDM] Setting up routes...")
 	router := mux.NewRouter()
 	router.Use(rateLimiter.Limit)
 	router.Use(middleware.RouteLogger)
 
-	programariController := &controllers.IDMController{
-		DbConn: dbConn,
+	idmController := &controllers.IDMController{
+		DbConn:    dbConn,
+		RedisConn: rdb,
 	}
 
-	loadRoutes(router, programariController)
+	loadRoutes(router, idmController)
 
-	log.Println("[PROGRAMARE] Routes setup completed.")
+	log.Println("[IDM] Routes setup completed.")
 	return router
 }
 
@@ -37,7 +38,7 @@ func loadRoutes(router *mux.Router, idmController *controllers.IDMController) {
 
 	// User Registration
 	userRegistrationHandler := http.HandlerFunc(idmController.RegisterUser)
-	router.Handle("/idm/register", userRegistrationHandler).Methods("POST")
+	router.Handle("/idm/register", middleware.ValidateRegisterUserInfo(userRegistrationHandler)).Methods("POST")
 	log.Println("[IDM] Route POST /idm/register registered.")
 
 	// User Login
@@ -86,12 +87,12 @@ func loadRoutes(router *mux.Router, idmController *controllers.IDMController) {
 	log.Println("[IDM] Route POST /idm/blacklist/remove registered.")
 
 	// Change User Password
-	changeUserPasswordHandler := http.HandlerFunc(idmController.ChangeUserPassword)
+	changeUserPasswordHandler := http.HandlerFunc(idmController.UpdateUserPassword)
 	router.Handle("/idm/user/{id}/password", changeUserPasswordHandler).Methods("PUT")
 	log.Println("[IDM] Route PUT /idm/user/{id}/password registered.")
 
 	// Change User Role
-	changeUserRoleHandler := http.HandlerFunc(idmController.ChangeUserRole)
+	changeUserRoleHandler := http.HandlerFunc(idmController.UpdateUserRole)
 	router.Handle("/idm/user/{id}/role", changeUserRoleHandler).Methods("PUT")
 	log.Println("[IDM] Route PUT /idm/user/{id}/role registered.")
 

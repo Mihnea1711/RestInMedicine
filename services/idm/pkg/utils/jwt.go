@@ -11,21 +11,26 @@ import (
 )
 
 type MyCustomClaims struct {
+	Role string `json:"role"`
 	jwt.RegisteredClaims
 }
 
-func CreateJWT(userRole string, jwtConfig config.JWTConfig) (string, error) {
+func CreateJWT(userId int, userRole string, jwtConfig config.JWTConfig) (string, error) {
 	hmacSampleSecret := []byte(jwtConfig.Secret)
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims{
-		// A usual scenario is to set the expiration time relative to the current time
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * 30 * time.Hour)), // expiry date set to 30 days from now
-		IssuedAt:  jwt.NewNumericDate(time.Now()),                          // issue data
-		NotBefore: jwt.NewNumericDate(time.Now()),                          // not valid before
-		Subject:   userRole,                                                // data to be included in the jwt body
-	})
+	// Create claims with multiple fields populated
+	claims := MyCustomClaims{
+		userRole,
+		jwt.RegisteredClaims{
+			// A usual scenario is to set the expiration time relative to the current time
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * 30 * time.Hour)), // expiry date set to 30 days from now
+			IssuedAt:  jwt.NewNumericDate(time.Now()),                          // issue data
+			NotBefore: jwt.NewNumericDate(time.Now()),                          // not valid before
+			Subject:   fmt.Sprint(userId),                                      // sbject of the request is the user with this userID
+		},
+	}
 
-	// Sign and get the complete encoded token as a string using the secret
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString(hmacSampleSecret)
 	if err != nil {
 		err_msg := fmt.Sprintf("error signing token: %v", err)
@@ -54,18 +59,21 @@ func ParseJWT(tokenString string, jwtConfig config.JWTConfig) (*MyCustomClaims, 
 
 	if claims, ok := token.Claims.(*MyCustomClaims); ok && token.Valid {
 		/*
-			// sub, err := claims.GetSubject()
-			// if err != nil {
-			// 	err_msg := fmt.Sprintf("error getting subject: %v", err)
-			// 	log.Printf("[IDM] %s", err_msg)
-			// }
-			// exp, err := claims.GetExpirationTime()
-			// if err != nil {
-			// 	err_msg := fmt.Sprintf("error getting expiry date: %v", err)
-			// 	log.Printf("[IDM] %s", err_msg)
-			// }
-			// date := exp.Format("2006-01-02")
-			// log.Printf("[IDM] Subject: %v, Expiry Date: %v", sub, date)
+			sub, err := claims.GetSubject()
+			if err != nil {
+				err_msg := fmt.Sprintf("error getting subject: %v", err)
+				log.Printf("[IDM] %s", err_msg)
+			}
+
+			role := claims.Role
+
+			exp, err := claims.GetExpirationTime()
+			if err != nil {
+				err_msg := fmt.Sprintf("error getting expiry date: %v", err)
+				log.Printf("[IDM] %s", err_msg)
+			}
+			date := exp.Format("2006-01-02")
+			log.Printf("[IDM] Subject: %s, Expiry Date: %s, Role: %s", sub, date, role)
 		*/
 		return claims, nil
 	} else if errors.Is(err, jwt.ErrTokenMalformed) {
@@ -82,5 +90,4 @@ func ParseJWT(tokenString string, jwtConfig config.JWTConfig) (*MyCustomClaims, 
 		log.Printf("[IDM] %s", err_msg)
 		return nil, fmt.Errorf(err_msg)
 	}
-
 }

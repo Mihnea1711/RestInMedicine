@@ -15,7 +15,39 @@ import (
 	"github.com/mihnea1711/POS_Project/services/idm/pkg/utils"
 )
 
-func ValidateUserInfo(next http.Handler) http.Handler {
+func ValidateRegisterUserInfo(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var user models.UserRegistration
+		// Set the hashed password and role back to the user registratio
+
+		// parse user info
+		dec := json.NewDecoder(r.Body)
+		dec.DisallowUnknownFields()
+
+		err := dec.Decode(&user)
+		if checkErrorOnDecode(err, w) {
+			return
+		}
+
+		if err := validateUsername(user.Username, w); err != nil {
+			return
+		}
+
+		if err := validatePassword(user.Password, w); err != nil {
+			return
+		}
+
+		if err := validateRole(user.Role, w); err != nil {
+			return
+		}
+
+		// If all validations pass, proceed to the actual controller
+		ctx := context.WithValue(r.Context(), utils.DECODED_IDM, nil)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+func ValidateLoginUserInfo(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var user models.User
 
@@ -27,24 +59,15 @@ func ValidateUserInfo(next http.Handler) http.Handler {
 			return
 		}
 
-		// Validate the IDUser (assuming it should be greater than 0)
-		if user.IDUser < 0 {
-			log.Println("[IDM] Invalid IDUser")
-			http.Error(w, "Invalid IDUser", http.StatusBadRequest)
+		if err := validateIDUser(user.IDUser, w); err != nil {
 			return
 		}
 
-		// Validate the Username (assuming it should not be empty)
-		if user.Username == "" {
-			log.Println("[IDM] Invalid Username")
-			http.Error(w, "Invalid Username", http.StatusBadRequest)
+		if err := validateUsername(user.Username, w); err != nil {
 			return
 		}
 
-		// Validate the Password (assuming it should not be empty)
-		if user.Password == "" {
-			log.Println("[IDM] Invalid Password")
-			http.Error(w, "Invalid Password", http.StatusBadRequest)
+		if err := validatePassword(user.Password, w); err != nil {
 			return
 		}
 
@@ -52,6 +75,33 @@ func ValidateUserInfo(next http.Handler) http.Handler {
 		ctx := context.WithValue(r.Context(), utils.DECODED_IDM, nil)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+func validateIDUser(idUser int, w http.ResponseWriter) error {
+	if idUser < 0 {
+		log.Println("[IDM] Invalid IDUser")
+		http.Error(w, "Invalid IDUser", http.StatusBadRequest)
+		return errors.New("invalid IDUser")
+	}
+	return nil
+}
+
+func validateUsername(username string, w http.ResponseWriter) error {
+	if username == "" {
+		log.Println("[IDM] Invalid Username")
+		http.Error(w, "Invalid Username", http.StatusBadRequest)
+		return errors.New("invalid Username")
+	}
+	return nil
+}
+
+func validatePassword(password string, w http.ResponseWriter) error {
+	if password == "" {
+		log.Println("[IDM] Invalid Password")
+		http.Error(w, "Invalid Password", http.StatusBadRequest)
+		return errors.New("invalid Password")
+	}
+	return nil
 }
 
 func checkErrorOnDecode(err error, w http.ResponseWriter) bool {
@@ -111,4 +161,18 @@ func checkErrorOnDecode(err error, w http.ResponseWriter) bool {
 	log.Printf("[MIDDLEWARE] %s", errMsg)
 	http.Error(w, errMsg, http.StatusBadRequest)
 	return true
+}
+
+func validateRole(role string, w http.ResponseWriter) error {
+	allowedRoles := []string{"admin", "patient", "doctor"}
+
+	for _, r := range allowedRoles {
+		if r == role {
+			return nil
+		}
+	}
+
+	errorMsg := "Invalid role. Role must be one of: admin, patient, doctor"
+	utils.RespondWithJSON(w, http.StatusBadRequest, map[string]string{"error": errorMsg})
+	return errors.New(errorMsg)
 }

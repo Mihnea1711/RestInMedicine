@@ -18,3 +18,9 @@ type BlacklistToken struct {
 	IDUser   int    `db:"id_user" json:"id_user"`
 	Token    string `db:"token" json:"token"`
 }
+
+type UserRegistration struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Role     string `json:"role"`
+}
