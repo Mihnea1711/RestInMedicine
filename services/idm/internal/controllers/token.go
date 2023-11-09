@@ -10,31 +10,6 @@ import (
 	"github.com/mihnea1711/POS_Project/services/idm/pkg/utils"
 )
 
-// GetUserToken retrieves the token of a user.
-func (c *IDMController) GetUserToken(w http.ResponseWriter, r *http.Request) {
-	// Parse the user ID from the URL parameters
-	userID := mux.Vars(r)["id"]
-
-	// Convert the userID to an integer
-	userIDInt, err := strconv.Atoi(userID)
-	if err != nil {
-		log.Printf("[IDM] Invalid user ID: %v", err)
-		utils.RespondWithJSON(w, http.StatusBadRequest, map[string]string{"error": "Invalid user ID"})
-		return
-	}
-
-	// Call the database method to get the user's token
-	userToken, err := c.DbConn.GetUserTokenByID(userIDInt)
-	if err != nil {
-		log.Printf("[IDM] Error getting user token: %v", err)
-		utils.RespondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": "Internal Server Error"})
-		return
-	}
-
-	// Return the user's token in the response
-	utils.RespondWithJSON(w, http.StatusOK, map[string]string{"token": userToken})
-}
-
 // UpdateUserToken updates a user's authentication token.
 func (c *IDMController) UpdateUserToken(w http.ResponseWriter, r *http.Request) {
 	// Parse the user ID from the URL parameters

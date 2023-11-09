@@ -71,11 +71,6 @@ func loadRoutes(router *mux.Router, idmController *controllers.IDMController) {
 	router.Handle("/idm/user/{id}/role", getUserRoleHandler).Methods("GET")
 	log.Println("[IDM] Route GET /idm/user/{id}/role registered.")
 
-	// Get User Token
-	getUserTokenHandler := http.HandlerFunc(idmController.GetUserToken)
-	router.Handle("/idm/user/{id}/token", getUserTokenHandler).Methods("GET")
-	log.Println("[IDM] Route GET /idm/user/{id}/token registered.")
-
 	// Add User to Blacklist
 	addUserToBlacklistHandler := http.HandlerFunc(idmController.AddUserToBlacklist)
 	router.Handle("/idm/blacklist/add", addUserToBlacklistHandler).Methods("POST")

@@ -3,10 +3,10 @@
 # Extract port from config.yaml
 PORT=$(yq e '.server.port' configs/config.yaml)
 
+# You should provide the necessary data in the request body
 curl \
-    -X POST http://localhost:"$PORT"/idm/login \
+    -X POST http://localhost:"$PORT"/idm/blacklist/remove \
     -H "Content-Type: application/json" \
     -d '{
-        "username": "mihnea",
-        "password": "new_password"
-    }' 
+        "id_user": 1
+    }'
