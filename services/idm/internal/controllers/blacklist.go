@@ -10,7 +10,7 @@ import (
 
 // AddUserToBlacklist adds a user to the blacklist.
 func (c *IDMController) AddUserToBlacklist(w http.ResponseWriter, r *http.Request) {
-	user, ok := r.Context().Value(utils.DECODED_IDM).(models.User)
+	blacklistUserModel, ok := r.Context().Value(utils.DECODED_IDM).(models.BlacklistToken)
 	if !ok {
 		log.Println("[IDM] Error retrieving user info from context")
 		utils.RespondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": "Invalid user information"})
@@ -19,7 +19,7 @@ func (c *IDMController) AddUserToBlacklist(w http.ResponseWriter, r *http.Reques
 
 	// Now you can use the 'user' variable to access user information.
 	// Use the Redis client to add the user to the blacklist.
-	err := c.RedisConn.AddUserToBlacklistInRedis(r.Context(), user, user.Token)
+	err := c.RedisConn.AddUserToBlacklistInRedis(r.Context(), blacklistUserModel)
 	if err != nil {
 		log.Printf("[IDM] Error adding user to blacklist: %v", err)
 		utils.RespondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": "Failed to add user to blacklist"})

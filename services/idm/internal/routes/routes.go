@@ -43,7 +43,7 @@ func loadRoutes(router *mux.Router, idmController *controllers.IDMController) {
 
 	// User Login
 	userLoginHandler := http.HandlerFunc(idmController.LoginUser)
-	router.Handle("/idm/login", userLoginHandler).Methods("POST")
+	router.Handle("/idm/login", middleware.ValidateLoginUserInfo(userLoginHandler)).Methods("POST")
 	log.Println("[IDM] Route POST /idm/login registered.")
 
 	// Get Users

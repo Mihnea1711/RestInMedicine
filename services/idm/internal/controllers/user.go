@@ -71,33 +71,31 @@ func (c *IDMController) UpdateUserByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Parse the updated user data from the request body
-	var updatedUser models.User
+	var userCredentials models.CredentialsRequest
 
 	dec := json.NewDecoder(r.Body)
 	dec.DisallowUnknownFields()
 
-	err = dec.Decode(&updatedUser)
+	err = dec.Decode(&userCredentials)
 	if err != nil {
 		log.Printf("[IDM] Error decoding request body: %v", err)
 		utils.RespondWithJSON(w, http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
 		return
 	}
 
-	updatedUser.IDUser = userIDInt
-
 	// Hash the updated password if it's present
-	if updatedUser.Password != "" {
-		hashedPassword, err := utils.HashPassword(updatedUser.Password)
+	if userCredentials.Password != "" {
+		hashedPassword, err := utils.HashPassword(userCredentials.Password)
 		if err != nil {
 			log.Printf("[IDM] Error hashing password: %v", err)
 			utils.RespondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": "Internal Server Error"})
 			return
 		}
-		updatedUser.Password = hashedPassword
+		userCredentials.Password = hashedPassword
 	}
 
 	// Call the database method to update the user by ID
-	rowsAffected, err := c.DbConn.UpdateUserByID(updatedUser)
+	rowsAffected, err := c.DbConn.UpdateUserByID(userCredentials, userIDInt)
 	if err != nil {
 		log.Printf("[IDM] Error updating user by ID: %v", err)
 		utils.RespondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": "Internal Server Error"})

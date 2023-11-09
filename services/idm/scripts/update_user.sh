@@ -4,9 +4,9 @@
 PORT=$(yq e '.server.port' configs/config.yaml)
 
 curl \
-    -X POST http://localhost:"$PORT"/idm/login \
+    -X PUT http://localhost:"$PORT"/idm/user/1 \
     -H "Content-Type: application/json" \
     -d '{
-        "username": "mihnea",
-        "password": "parola123"
-    }' 
+    "username": "new_username",
+    "password": "new_password"
+}' 

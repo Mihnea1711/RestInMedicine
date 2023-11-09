@@ -2,24 +2,24 @@
 CREATE TABLE IF NOT EXISTS User (
     IDUser INT AUTO_INCREMENT PRIMARY KEY,
     Username VARCHAR(255) NOT NULL UNIQUE, -- Add UNIQUE constraint
-    Password VARCHAR(255) NOT NULL,
-    Token VARCHAR(255) NOT NULL
+    Password VARCHAR(255) NOT NULL
 );
 
--- Create Role Table
+-- Create Role Table with CASCADE DELETE
 CREATE TABLE IF NOT EXISTS Role (
     IDRole INT AUTO_INCREMENT PRIMARY KEY,
     IDUser INT,
     Role VARCHAR(255) NOT NULL,
-    FOREIGN KEY (IDUser) REFERENCES User(IDUser)
+    FOREIGN KEY (IDUser) REFERENCES User(IDUser) ON DELETE CASCADE
 );
 
+
 -- Add Users
-INSERT INTO User (Username, Password, Token)
+INSERT INTO User (Username, Password)
 VALUES
-    ('admin', 'admin_password', 'admin_token'),
-    ('doctor', 'doctor_password', 'doctor_token'),
-    ('patient', 'patient_password', 'patient_token');
+    ('admin', 'admin_password'),
+    ('doctor', 'doctor_password'),
+    ('patient', 'patient_password');
 
 -- Add Roles
 INSERT INTO Role (IDUser, Role)

@@ -42,24 +42,22 @@ func ValidateRegisterUserInfo(next http.Handler) http.Handler {
 		}
 
 		// If all validations pass, proceed to the actual controller
-		ctx := context.WithValue(r.Context(), utils.DECODED_IDM, nil)
+		ctx := context.WithValue(r.Context(), utils.DECODED_IDM, user)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
 func ValidateLoginUserInfo(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var user models.User
+		var user models.CredentialsRequest
 
 		dec := json.NewDecoder(r.Body)
 		dec.DisallowUnknownFields()
 
+		log.Println(r.Body)
+
 		err := dec.Decode(&user)
 		if checkErrorOnDecode(err, w) {
-			return
-		}
-
-		if err := validateIDUser(user.IDUser, w); err != nil {
 			return
 		}
 
@@ -72,18 +70,9 @@ func ValidateLoginUserInfo(next http.Handler) http.Handler {
 		}
 
 		// If all validations pass, proceed to the actual controller
-		ctx := context.WithValue(r.Context(), utils.DECODED_IDM, nil)
+		ctx := context.WithValue(r.Context(), utils.DECODED_IDM, user)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
-}
-
-func validateIDUser(idUser int, w http.ResponseWriter) error {
-	if idUser < 0 {
-		log.Println("[IDM] Invalid IDUser")
-		http.Error(w, "Invalid IDUser", http.StatusBadRequest)
-		return errors.New("invalid IDUser")
-	}
-	return nil
 }
 
 func validateUsername(username string, w http.ResponseWriter) error {
@@ -172,7 +161,7 @@ func validateRole(role string, w http.ResponseWriter) error {
 		}
 	}
 
-	errorMsg := "Invalid role. Role must be one of: admin, patient, doctor"
+	errorMsg := "invalid role. role must be one of: admin, patient, doctor"
 	utils.RespondWithJSON(w, http.StatusBadRequest, map[string]string{"error": errorMsg})
 	return errors.New(errorMsg)
 }

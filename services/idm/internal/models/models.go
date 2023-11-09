@@ -4,7 +4,6 @@ type User struct {
 	IDUser   int    `db:"id_user" json:"id_user"`
 	Username string `db:"username" json:"username"`
 	Password string `db:"password" json:"-"`
-	Token    string `db:"token" json:"token"`
 }
 
 type Role struct {
@@ -23,4 +22,9 @@ type UserRegistration struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 	Role     string `json:"role"`
+}
+
+type CredentialsRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
 }

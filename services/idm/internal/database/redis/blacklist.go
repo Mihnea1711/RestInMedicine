@@ -10,9 +10,9 @@ import (
 )
 
 // AddUserToBlacklistInRedis adds a user to the Redis blacklist.
-func (rc *RedisClient) AddUserToBlacklistInRedis(ctx context.Context, user models.User, jwtToken string) error {
+func (rc *RedisClient) AddUserToBlacklistInRedis(ctx context.Context, blacklistUserModel models.BlacklistToken) error {
 	// Generate a key to uniquely identify the user in the blacklist
-	blacklistKey := fmt.Sprintf("blacklist:%d", user.IDUser)
+	blacklistKey := fmt.Sprintf("blacklist:%d", blacklistUserModel.IDUser)
 
 	// Use a transaction to set the user's JWT token as the value of the key
 	err := rc.client.Watch(ctx, func(tx *redis.Tx) error {
@@ -20,10 +20,10 @@ func (rc *RedisClient) AddUserToBlacklistInRedis(ctx context.Context, user model
 		_, err := tx.Get(ctx, blacklistKey).Result()
 		if err == redis.Nil {
 			// If the user is not in the blacklist, set the key and value
-			if err := tx.Set(ctx, blacklistKey, jwtToken, 0).Err(); err != nil {
+			if err := tx.Set(ctx, blacklistKey, blacklistUserModel.Token, 0).Err(); err != nil {
 				return err
 			}
-			log.Printf("[IDM] Added user (ID %d) to Redis blacklist", user.IDUser)
+			log.Printf("[IDM] Added user (ID %d) to Redis blacklist", blacklistUserModel.IDUser)
 		} else if err != nil {
 			return err
 		}
@@ -32,7 +32,7 @@ func (rc *RedisClient) AddUserToBlacklistInRedis(ctx context.Context, user model
 	})
 
 	if err != nil {
-		log.Printf("[IDM] Error adding user (ID %d) to Redis blacklist: %v", user.IDUser, err)
+		log.Printf("[IDM] Error adding user (ID %d) to Redis blacklist: %v", blacklistUserModel.IDUser, err)
 		return err
 	}
 

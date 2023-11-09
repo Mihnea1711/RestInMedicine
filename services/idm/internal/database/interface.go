@@ -3,13 +3,13 @@ package database
 import "github.com/mihnea1711/POS_Project/services/idm/internal/models"
 
 type Database interface {
-	AddUser(newUser models.UserRegistration, userToken string) (int, error)
+	AddUser(newUser models.UserRegistration) (int, error)
 
 	GetAllUsers() ([]models.User, error)
 	GetUserByID(userID int) (models.User, error)
 	GetUserByUsername(username string) (models.User, error)
 
-	UpdateUserByID(updatedUser models.User) (int, error)
+	UpdateUserByID(userCredentials models.CredentialsRequest, userId int) (int, error)
 
 	DeleteUserByID(userID int) (int, error)
 
