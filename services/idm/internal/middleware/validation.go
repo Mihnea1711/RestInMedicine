@@ -93,6 +93,20 @@ func validatePassword(password string, w http.ResponseWriter) error {
 	return nil
 }
 
+func validateRole(role string, w http.ResponseWriter) error {
+	allowedRoles := []string{"admin", "patient", "doctor"}
+
+	for _, r := range allowedRoles {
+		if r == role {
+			return nil
+		}
+	}
+
+	errorMsg := "invalid role. role must be one of: admin, patient, doctor"
+	utils.RespondWithJSON(w, http.StatusBadRequest, map[string]string{"error": errorMsg})
+	return errors.New(errorMsg)
+}
+
 func checkErrorOnDecode(err error, w http.ResponseWriter) bool {
 	if err == nil {
 		return false
@@ -150,18 +164,4 @@ func checkErrorOnDecode(err error, w http.ResponseWriter) bool {
 	log.Printf("[MIDDLEWARE] %s", errMsg)
 	http.Error(w, errMsg, http.StatusBadRequest)
 	return true
-}
-
-func validateRole(role string, w http.ResponseWriter) error {
-	allowedRoles := []string{"admin", "patient", "doctor"}
-
-	for _, r := range allowedRoles {
-		if r == role {
-			return nil
-		}
-	}
-
-	errorMsg := "invalid role. role must be one of: admin, patient, doctor"
-	utils.RespondWithJSON(w, http.StatusBadRequest, map[string]string{"error": errorMsg})
-	return errors.New(errorMsg)
 }

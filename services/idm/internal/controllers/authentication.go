@@ -19,8 +19,6 @@ func (c *IDMController) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// You may want to validate user registration data here.
-
 	// Hash the user's password before adding to the database
 	hashedPassword, err := utils.HashPassword(user.Password)
 	if err != nil {

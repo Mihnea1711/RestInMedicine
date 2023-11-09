@@ -13,7 +13,7 @@ import (
 func (c *IDMController) AddUserToBlacklist(w http.ResponseWriter, r *http.Request) {
 	var blacklistUserModel models.BlacklistToken
 	dec := json.NewDecoder(r.Body)
-	// dec.DisallowUnknownFields()
+	dec.DisallowUnknownFields()
 
 	err := dec.Decode(&blacklistUserModel)
 	if err != nil {
@@ -47,7 +47,6 @@ func (c *IDMController) RemoveUserFromBlacklist(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	// Now you can use the 'user' variable to access user information.
 	// Use the Redis client to remove the user from the blacklist and get the number of rows affected.
 	rowsAffected, err := c.RedisConn.RemoveUserFromBlacklistInRedis(r.Context(), blacklistUserModel)
 	if err != nil {
@@ -64,6 +63,5 @@ func (c *IDMController) RemoveUserFromBlacklist(w http.ResponseWriter, r *http.R
 	}
 
 	// Handle a successful removal from the blacklist.
-	// You may return a success response or perform any other required actions.
 	utils.RespondWithJSON(w, http.StatusOK, map[string]interface{}{"message": "User removed from the blacklist successfully", "rows_affected": rowsAffected})
 }

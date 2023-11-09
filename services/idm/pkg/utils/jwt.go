@@ -58,23 +58,6 @@ func ParseJWT(tokenString string, jwtConfig config.JWTConfig) (*MyCustomClaims, 
 	})
 
 	if claims, ok := token.Claims.(*MyCustomClaims); ok && token.Valid {
-		/*
-			sub, err := claims.GetSubject()
-			if err != nil {
-				err_msg := fmt.Sprintf("error getting subject: %v", err)
-				log.Printf("[IDM] %s", err_msg)
-			}
-
-			role := claims.Role
-
-			exp, err := claims.GetExpirationTime()
-			if err != nil {
-				err_msg := fmt.Sprintf("error getting expiry date: %v", err)
-				log.Printf("[IDM] %s", err_msg)
-			}
-			date := exp.Format("2006-01-02")
-			log.Printf("[IDM] Subject: %s, Expiry Date: %s, Role: %s", sub, date, role)
-		*/
 		return claims, nil
 	} else if errors.Is(err, jwt.ErrTokenMalformed) {
 		log.Println("[IDM] That's not even a token")
