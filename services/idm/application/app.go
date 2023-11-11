@@ -4,18 +4,19 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net/http"
+	"net"
 	"time"
 
+	"github.com/mihnea1711/POS_Project/services/idm/idm"
 	"github.com/mihnea1711/POS_Project/services/idm/internal/database"
 	"github.com/mihnea1711/POS_Project/services/idm/internal/database/mysql"
 	"github.com/mihnea1711/POS_Project/services/idm/internal/database/redis"
-	"github.com/mihnea1711/POS_Project/services/idm/internal/routes"
+	"github.com/mihnea1711/POS_Project/services/idm/internal/server"
 	"github.com/mihnea1711/POS_Project/services/idm/pkg/config"
+	"google.golang.org/grpc"
 )
 
 type App struct {
-	router   http.Handler
 	database database.Database
 	rdb      *redis.RedisClient
 	config   *config.AppConfig
@@ -41,30 +42,33 @@ func New(config *config.AppConfig, parentCtx context.Context) (*App, error) {
 	}
 	app.rdb = rdb
 
-	// setup router for the app
-	router := routes.SetupRoutes(app.database, rdb)
-	app.router = router
-
 	log.Println("[IDM] Application successfully initialized.")
 	return app, nil
 }
 
 func (a *App) Start(ctx context.Context) error {
-	server := &http.Server{
-		Addr:    fmt.Sprintf(":%d", a.config.Server.Port),
-		Handler: a.router,
+	// Create gRPC listener
+	grpcListener, err := net.Listen("tcp", fmt.Sprintf(":%d", a.config.Server.Port))
+	if err != nil {
+		log.Fatalf("Failed to listen: %v", err)
 	}
+
+	// Create gRPC server
+	grpcServer := grpc.NewServer()
+	grpcService := &server.MyIDMServer{
+		DbConn:    a.database,
+		RedisConn: a.rdb,
+		JwtConfig: a.config.JWT,
+	}
+	idm.RegisterIDMServer(grpcServer, grpcService)
 
 	log.Println("[IDM] Starting server...") // Logging the server start
 
-	// Log the message just before starting the server in the goroutine
-	fmt.Printf("[IDM] Server started and listening on port %d\n", a.config.Server.Port)
-
 	channel := make(chan error, 1)
 	go func() {
-		err := server.ListenAndServe()
-		if err != nil {
-			channel <- fmt.Errorf("failed to start server: %w", err)
+		log.Printf("gRPC server started and listening on port %d\n", a.config.Server.Port)
+		if err := grpcServer.Serve(grpcListener); err != nil {
+			log.Fatalf("Failed to serve gRPC server: %v", err)
 		}
 		close(channel)
 	}()
@@ -90,9 +94,13 @@ func (a *App) Start(ctx context.Context) error {
 			fmt.Println("[IDM] Failed to close redis gracefully...", err)
 		}
 
-		timeout, cancel := context.WithTimeout(context.Background(), time.Second*10)
+		// allow 10 secs to close any resources
+		_, cancel := context.WithTimeout(ctx, time.Second*10)
 		defer cancel()
 
-		return server.Shutdown(timeout)
+		// Gracefully stop gRPC server
+		grpcServer.GracefulStop()
+
+		return err
 	}
 }

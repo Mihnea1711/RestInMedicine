@@ -116,8 +116,8 @@ func (db *MySQLDatabase) GetUserByUsername(username string) (models.User, error)
 
 // UpdateUserInDB updates a user in the MySQL database.
 func (db *MySQLDatabase) UpdateUserByID(userCredentials models.CredentialsRequest, userId int) (int, error) {
-	query := "UPDATE User SET Username = ?, Password = ? WHERE IDUser = ?"
-	result, err := db.DB.Exec(query, userCredentials.Username, userCredentials.Password, userId)
+	query := "UPDATE User SET Username = ? WHERE IDUser = ?"
+	result, err := db.DB.Exec(query, userCredentials.Username, userId)
 	if err != nil {
 		errMsg := fmt.Sprintf("Error updating user in DB: %v", err)
 		log.Printf("[IDM] %s", errMsg)

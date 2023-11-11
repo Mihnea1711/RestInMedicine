@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/mihnea1711/POS_Project/services/consultatii/internal/models"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -45,35 +44,36 @@ func ReplacePlaceholdersInStruct(s interface{}) {
 	}
 }
 
+// RespondWithJSON handles responding to HTTP requests with JSON.
 func RespondWithJSON(w http.ResponseWriter, status int, payload interface{}) {
-	consultatiiList, isConsultatiiList := payload.([]models.Consultatie)
-
-	if isConsultatiiList {
-		if len(consultatiiList) == 0 {
-			notFoundMessage := "No records available"
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusNotFound) // HTTP status 404 (Not Found)
-			response := map[string]string{"message": notFoundMessage}
-			jsonResponse, err := json.Marshal(response)
-			if err != nil {
-				log.Printf("[PROGRAMARE] Internal Server Error: %s", err)
-				w.WriteHeader(http.StatusInternalServerError)
-				w.Write([]byte("Internal Server Error"))
-				return
-			}
-			w.Write(jsonResponse)
-			w.Write([]byte("\n"))
-			return
-		}
+	if payload == nil {
+		respondWithError(w, http.StatusInternalServerError, "Empty response body")
+		return
 	}
 
 	response, err := json.Marshal(payload)
 	if err != nil {
-		log.Printf("[PROGRAMARE] Internal Server Error: %s", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("Internal Server Error"))
+		log.Printf("[CONSULTATII] Error marshaling JSON: %s", err)
+		respondWithError(w, http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
+
+	writeJSONResponse(w, status, response)
+}
+
+func respondWithError(w http.ResponseWriter, status int, message string) {
+	errorResponse := map[string]string{"error": message}
+	response, err := json.Marshal(errorResponse)
+	if err != nil {
+		log.Printf("[CONSULTATII] Error marshaling error response JSON: %s", err)
+		writeJSONResponse(w, http.StatusInternalServerError, []byte(`{"error":"Internal Server Error"}`))
+		return
+	}
+
+	writeJSONResponse(w, status, response)
+}
+
+func writeJSONResponse(w http.ResponseWriter, status int, response []byte) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	w.Write(response)

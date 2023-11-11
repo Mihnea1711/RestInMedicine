@@ -17,13 +17,9 @@ type Database interface {
 
 	GetUserRoleByUserID(userID int) (string, error)
 	GetUserRoleByUsername(username string) (string, error)
-
 	UpdateUserRoleByUserID(userID int, newRole string) (int, error)
-	UpdateUserRoleByUsername(username string, newRole string) (int, error)
 
 	UpdateUserPasswordByUserID(userID int, newPassword string) (int, error)
-	UpdateUserPasswordByUsername(username string, newPassword string) (int, error)
-
 	UpdateUserTokenByID(userID int, newToken string) (int, error)
 
 	Close() error

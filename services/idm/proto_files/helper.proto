@@ -1,0 +1,20 @@
+syntax = "proto3";
+option go_package = "github.com/mihnea1711/POS_Project/services/idm/idm/proto_files";
+
+// Helper messages
+message Info {
+    string Message = 1;
+    int64 Status = 2;
+    string Error = 3;
+}
+
+message EmptyRequest {}
+
+message InfoResponse {
+    Info Info = 1;
+}
+
+message EnhancedInfoResponse {
+    int64 RowsAffected = 1;
+    Info Info = 2;
+}
