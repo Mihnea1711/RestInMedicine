@@ -1,0 +1,27 @@
+syntax = "proto3";
+option go_package = "github.com/mihnea1711/POS_Project/services/gateway/idm";
+
+import "proto_files/helper.proto";
+import "proto_files/auth.proto";
+import "proto_files/user.proto";
+
+// SERVICE METHODS 
+service IDM {
+    rpc Register(RegisterRequest) returns (InfoResponse);
+    rpc Login(LoginRequest) returns (LoginResponse);
+
+    rpc GetUsers(EmptyRequest) returns (UsersResponse);
+    rpc GetUserByID(UserIDRequest) returns (UserResponse);
+    rpc UpdateUserByID(UpdateUserRequest) returns (EnhancedInfoResponse);
+    rpc DeleteUserByID(UserIDRequest) returns (EnhancedInfoResponse);
+    
+    rpc GetUserRole(UserIDRequest) returns (RoleResponse);
+    rpc UpdateUserRole(UpdateRoleRequest) returns (EnhancedInfoResponse);
+
+    rpc GetUserPassword(UsernameRequest) returns (PasswordResponse);
+    rpc UpdateUserPassword(UpdatePasswordRequest) returns (EnhancedInfoResponse);
+
+    rpc AddUserToBlacklist(BlacklistRequest) returns (InfoResponse);
+    rpc CheckUserInBlacklist(UserIDRequest) returns (InfoResponse);
+    rpc RemoveUserFromBlacklist(UserIDRequest) returns (EnhancedInfoResponse);
+}

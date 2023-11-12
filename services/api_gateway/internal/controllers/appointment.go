@@ -20,7 +20,16 @@ func (c *GatewayController) MakeAppointment(w http.ResponseWriter, r *http.Reque
 	}
 
 	// Perform your appointment logic...
+	//
 
-	// Respond with a success message
-	utils.RespondWithJSON(w, http.StatusOK, map[string]interface{}{"message": "Appointment made successfully", "app_data": appointmentRequest})
+	// Redirect the request body to another module
+	response, err := c.redirectRequestBody(utils.CREATE_APPOINTMENT_ENDPOINT, utils.APPOINTMENT_PORT, appointmentRequest)
+	if err != nil {
+		// Handle the error (e.g., return a response with an error message)
+		utils.RespondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": "Failed to redirect request"})
+		return
+	}
+
+	// Respond with the response from the other module
+	utils.RespondWithJSON(w, http.StatusOK, map[string]interface{}{"message": "Appointment made successfully", "app_data": appointmentRequest, "response": response})
 }

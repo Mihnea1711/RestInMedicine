@@ -1,0 +1,69 @@
+syntax = "proto3";
+option go_package = "github.com/mihnea1711/POS_Project/services/gateway/idm/proto_files";
+
+import "proto_files/helper.proto";
+
+message UserID {
+    int64 ID = 1;
+}
+
+message UserData {
+    UserID IDUser = 1;
+    string Username = 2;
+    // Omitting Password field, as I don't want to expose it
+    // other fields if any
+}
+
+message UserCredenetials {
+    string Username = 1;
+    string Password = 2;
+}
+
+message UserIDRequest {
+    UserID UserID = 1;
+}
+
+message UpdateRoleRequest {
+    UserID UserID = 1;
+    string Role = 2;
+}
+
+message UpdateUserRequest {
+    UserData UserData = 1;
+}
+
+message UpdatePasswordRequest {
+    UserID UserID = 1;
+    string Password = 2;
+}
+
+message UsernameRequest {
+    string Username = 1;
+}
+
+message BlacklistRequest {
+    UserID UserID = 1;
+    string Token = 2;
+}
+
+message UsersResponse {
+    repeated UserData Users = 1;
+    Info Info = 2;
+}
+
+message UserResponse {
+    UserData User = 1;
+    Info Info = 2;
+}
+
+message RoleResponse {
+    string Role = 1;
+    Info Info = 2;
+}
+
+message PasswordResponse {
+    string Password = 1;
+    Info info = 2;
+}
+
+

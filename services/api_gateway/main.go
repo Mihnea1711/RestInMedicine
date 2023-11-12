@@ -12,20 +12,6 @@ import (
 )
 
 func main() {
-	/*
-		// // Setup logging
-		// logFile, err := os.OpenFile("app.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-		// if err != nil {
-		// 	log.Fatalf("[GATEWAY] Error opening log file: %v", err)
-		// 	return
-		// }
-		// defer func() {
-		// 	if err := logFile.Close(); err != nil {
-		// 		log.Printf("[GATEWAY] Error closing log file: %v", err)
-		// 	}
-		// }()
-	*/
-
 	// setup logger
 	log.Println("[GATEWAY] Setting log stream to stdout...")
 	log.SetOutput(os.Stdout) // Set log output to the stdout
@@ -39,14 +25,6 @@ func main() {
 	} else {
 		log.Println("[GATEWAY] Successfully loaded the config file.")
 	}
-
-	/*
-		// // load .env vars (ONLY WHEN TESTING LOCALLY)
-		// err = godotenv.Load()
-		// if err != nil {
-		// 	log.Fatal("[GATEWAY] Error loading .env file")
-		// }
-	*/
 
 	// load .env vars into the config
 	config.ReplacePlaceholdersInStruct(conf)

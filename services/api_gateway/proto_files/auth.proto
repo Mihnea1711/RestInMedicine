@@ -1,0 +1,20 @@
+syntax = "proto3";
+option go_package = "github.com/mihnea1711/POS_Project/services/gateway/idm/proto_files";
+
+import "proto_files/helper.proto";
+import "proto_files/user.proto";
+
+message RegisterRequest {
+    UserCredenetials UserCredentials = 1;
+    string Role = 2;
+}
+
+message LoginRequest {
+    UserCredenetials UserCredentials = 1;
+}
+
+message LoginResponse {
+    string Token = 1;
+    Info Info = 2;
+}
+

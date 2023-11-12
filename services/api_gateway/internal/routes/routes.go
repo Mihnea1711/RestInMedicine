@@ -4,16 +4,19 @@ import (
 	"log"
 
 	"github.com/gorilla/mux"
+	"github.com/mihnea1711/POS_Project/services/gateway/idm"
 	"github.com/mihnea1711/POS_Project/services/gateway/internal/controllers"
 	"github.com/mihnea1711/POS_Project/services/gateway/internal/middleware"
 )
 
-func SetupRoutes() *mux.Router {
+func SetupRoutes(idmClient idm.IDMClient) *mux.Router {
 	log.Println("[GATEWAY] Setting up routes...")
 	router := mux.NewRouter()
 	router.Use(middleware.RouteLogger)
 
-	gatewayController := &controllers.GatewayController{}
+	gatewayController := &controllers.GatewayController{
+		IDMClient: idmClient,
+	}
 
 	loadRoutes(router, gatewayController)
 

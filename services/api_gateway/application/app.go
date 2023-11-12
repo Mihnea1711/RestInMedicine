@@ -7,13 +7,17 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/mihnea1711/POS_Project/services/gateway/idm"
 	"github.com/mihnea1711/POS_Project/services/gateway/internal/routes"
 	"github.com/mihnea1711/POS_Project/services/gateway/pkg/config"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type App struct {
-	router http.Handler
-	config *config.AppConfig
+	router    http.Handler
+	config    *config.AppConfig
+	idmClient idm.IDMClient
 }
 
 func New(config *config.AppConfig, parentCtx context.Context) (*App, error) {
@@ -21,8 +25,18 @@ func New(config *config.AppConfig, parentCtx context.Context) (*App, error) {
 		config: config,
 	}
 
+	// Setup gRPC connection
+	creds := insecure.NewCredentials()
+	conn, err := grpc.Dial("localhost:8080", grpc.WithTransportCredentials(creds))
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to IDM gRPC server: %v", err)
+	}
+
+	// Create IDM client
+	app.idmClient = idm.NewIDMClient(conn)
+
 	// setup router for the app
-	router := routes.SetupRoutes()
+	router := routes.SetupRoutes(app.idmClient)
 	app.router = router
 
 	log.Println("[GATEWAY] Application successfully initialized.")

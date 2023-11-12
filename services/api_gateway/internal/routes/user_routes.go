@@ -13,12 +13,11 @@ func loadUserRoutes(router *mux.Router, gatewayController *controllers.GatewayCo
 
 	// RegisterUser handles user registration.
 	registerUserHandler := http.HandlerFunc(gatewayController.RegisterUser)
-	router.Handle("/api/register", registerUserHandler).Methods("POST").Queries("role", "{role}")
-	log.Println("[GATEWAY] Route POST /api/register registered.")
+	router.Handle("/api/users", registerUserHandler).Methods("POST")
+	log.Println("[GATEWAY] Route POST /api/users registered.")
 
 	// LoginUser handles user login.
 	loginUserHandler := http.HandlerFunc(gatewayController.LoginUser)
 	router.Handle("/api/login", loginUserHandler).Methods("POST")
 	log.Println("[GATEWAY] Route POST /api/login registered.")
-
 }
