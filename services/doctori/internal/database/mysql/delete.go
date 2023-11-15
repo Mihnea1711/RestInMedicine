@@ -8,7 +8,7 @@ import (
 	"github.com/mihnea1711/POS_Project/services/doctori/pkg/utils"
 )
 
-func (db *MySQLDatabase) DeleteDoctorByID(ctx context.Context, id int) (int64, error) {
+func (db *MySQLDatabase) DeleteDoctorByID(ctx context.Context, id int) (int, error) {
 	query := fmt.Sprintf(`DELETE FROM %s WHERE id_doctor = ?`, utils.DOCTOR_TABLE)
 
 	log.Printf("[DOCTOR] Executing delete query for doctor with ID %d...", id)
@@ -27,5 +27,5 @@ func (db *MySQLDatabase) DeleteDoctorByID(ctx context.Context, id int) (int64, e
 		return 0, err
 	}
 
-	return rowsAffected, nil
+	return int(rowsAffected), nil
 }

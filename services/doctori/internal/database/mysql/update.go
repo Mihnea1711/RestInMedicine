@@ -9,7 +9,7 @@ import (
 	"github.com/mihnea1711/POS_Project/services/doctori/pkg/utils"
 )
 
-func (db *MySQLDatabase) UpdateDoctorByID(ctx context.Context, doctor *models.Doctor) (int64, error) {
+func (db *MySQLDatabase) UpdateDoctorByID(ctx context.Context, doctor *models.Doctor) (int, error) {
 	// Construct the SQL update query
 	query := fmt.Sprintf(`
 		UPDATE %s 
@@ -38,5 +38,5 @@ func (db *MySQLDatabase) UpdateDoctorByID(ctx context.Context, doctor *models.Do
 		log.Printf("[DOCTOR] Successfully updated doctor with ID %d.", doctor.IDDoctor)
 	}
 
-	return rowsAffected, nil
+	return int(rowsAffected), nil
 }

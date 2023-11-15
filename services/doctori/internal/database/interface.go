@@ -14,8 +14,8 @@ type Database interface {
 	FetchDoctorByEmail(ctx context.Context, email string) (*models.Doctor, error)
 	FetchDoctorByUserID(ctx context.Context, userID int) (*models.Doctor, error)
 
-	UpdateDoctorByID(ctx context.Context, doctor *models.Doctor) (int64, error)
-	DeleteDoctorByID(ctx context.Context, id int) (int64, error)
+	UpdateDoctorByID(ctx context.Context, doctor *models.Doctor) (int, error)
+	DeleteDoctorByID(ctx context.Context, id int) (int, error)
 
 	// ... add more methods
 

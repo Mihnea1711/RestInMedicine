@@ -24,9 +24,11 @@ func (dController *DoctorController) UpdateDoctorByID(w http.ResponseWriter, r *
 	idStr := vars["id"]
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		err_msg := fmt.Sprintf("Invalid doctor ID: %s", idStr)
-		log.Println("[DOCTOR] " + err_msg)
-		http.Error(w, err_msg, http.StatusBadRequest)
+		errMsg := fmt.Sprintf("Invalid doctor ID: %s", idStr)
+		log.Println("[DOCTOR] " + errMsg)
+
+		// Use RespondWithJSON for error response
+		utils.RespondWithJSON(w, http.StatusBadRequest, map[string]string{"error": errMsg})
 		return
 	}
 
@@ -40,20 +42,26 @@ func (dController *DoctorController) UpdateDoctorByID(w http.ResponseWriter, r *
 	// Use dController.DbConn to update the doctor in the database
 	rowsAffected, err := dController.DbConn.UpdateDoctorByID(ctx, doctor)
 	if err != nil {
-		err_msg := fmt.Sprintf("internal server error: %s", err)
-		log.Printf("[DOCTOR] Failed to update doctor in the database: %s\n", err_msg)
-		http.Error(w, err_msg, http.StatusInternalServerError)
+		errMsg := fmt.Sprintf("internal server error: %s", err)
+		log.Printf("[DOCTOR] Failed to update doctor in the database: %s\n", errMsg)
+
+		// Use RespondWithJSON for error response
+		utils.RespondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": errMsg})
 		return
 	}
 
 	// Check if any rows were updated
 	if rowsAffected == 0 {
-		err_msg := fmt.Sprintf("No doctor found with ID: %d", doctor.IDDoctor)
-		log.Println("[DOCTOR] " + err_msg)
-		http.Error(w, err_msg, http.StatusNotFound)
+		errMsg := fmt.Sprintf("No doctor found with ID: %d", doctor.IDDoctor)
+		log.Println("[DOCTOR] " + errMsg)
+
+		// Use RespondWithJSON for error response
+		utils.RespondWithJSON(w, http.StatusNotFound, map[string]string{"error": errMsg})
 		return
 	}
 
 	log.Printf("[DOCTOR] Successfully updated doctor %d", doctor.IDDoctor)
-	w.Write([]byte("Doctor updated\n"))
+
+	// Use RespondWithJSON for success response
+	utils.RespondWithJSON(w, http.StatusOK, map[string]string{"message": "Doctor updated"})
 }

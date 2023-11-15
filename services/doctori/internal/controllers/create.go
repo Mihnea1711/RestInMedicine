@@ -22,12 +22,16 @@ func (dController *DoctorController) CreateDoctor(w http.ResponseWriter, r *http
 	// Use dc.DB to save the doctor to the database
 	err := dController.DbConn.SaveDoctor(ctx, doctor)
 	if err != nil {
-		err_msg := fmt.Sprintf("internal server error: %s", err)
-		log.Printf("[DOCTOR] Failed to save doctor to the database: %s\n", err_msg)
-		http.Error(w, err_msg, http.StatusInternalServerError)
+		errMsg := fmt.Sprintf("internal server error: %s", err)
+		log.Printf("[DOCTOR] Failed to save doctor to the database: %s\n", errMsg)
+
+		// Use RespondWithJSON for error response
+		utils.RespondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": errMsg})
 		return
 	}
 
 	log.Printf("[DOCTOR] Successfully created doctor %d", doctor.IDDoctor)
-	w.Write([]byte("Doctor created\n"))
+
+	// Use RespondWithJSON for success response
+	utils.RespondWithJSON(w, http.StatusOK, map[string]string{"message": "Doctor created"})
 }

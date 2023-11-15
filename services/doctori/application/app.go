@@ -9,18 +9,19 @@ import (
 
 	"github.com/mihnea1711/POS_Project/services/doctori/internal/database"
 	"github.com/mihnea1711/POS_Project/services/doctori/internal/database/mysql"
+	"github.com/mihnea1711/POS_Project/services/doctori/internal/database/redis"
 	"github.com/mihnea1711/POS_Project/services/doctori/internal/routes"
 	"github.com/mihnea1711/POS_Project/services/doctori/pkg/config"
-	"github.com/redis/go-redis/v9"
 )
 
 type App struct {
 	router   http.Handler
 	database database.Database
+	rdb      *redis.RedisClient
 	config   *config.AppConfig
 }
 
-func New(config *config.AppConfig) (*App, error) {
+func New(config *config.AppConfig, parentCtx context.Context) (*App, error) {
 	app := &App{
 		config: config,
 	}
@@ -33,31 +34,15 @@ func New(config *config.AppConfig) (*App, error) {
 	}
 	app.database = mysqlDB
 
-	redis_addr := fmt.Sprintf("%s:%d", config.Redis.Host, config.Redis.Port)
 	// setup redis and init cnnection
-	rdb := redis.NewClient(&redis.Options{
-		Addr:     redis_addr,            // Redis address
-		Password: config.Redis.Password, // Password for db
-		DB:       config.Redis.DB,       // Default DB
-	})
-
-	_, err = rdb.Ping(context.Background()).Result()
+	rdb, err := redis.NewRedisClient(&config.Redis, parentCtx)
 	if err != nil {
-		log.Fatalf("[DOCTOR] Failed to connect to Redis: %s", err)
+		return nil, fmt.Errorf("failed to initialize Redis: %w", err)
 	}
-
-	// defer close redis conn func (nu e necesara pentru ping)
-	/*
-		// nu aici !! (o las pt ca ar putea fi folosita)
-		defer func() {
-			if err := a.rdb.Close(); err != nil {
-				fmt.Println("[DOCTOR] Failed to close redis...", err)
-			}
-		}()
-	*/
+	app.rdb = rdb
 
 	// setup router for the app
-	router := routes.SetupRoutes(app.database, rdb)
+	router := routes.SetupRoutes(app.database, app.rdb)
 	app.router = router
 
 	log.Println("[DOCTOR] Application successfully initialized.")
@@ -99,6 +84,10 @@ func (a *App) Start(ctx context.Context) error {
 		// Close MySQL database connection gracefully
 		if err := a.database.Close(); err != nil {
 			log.Printf("[DOCTOR] Failed to close the MySQL database gracefully: %v", err)
+		}
+
+		if err := a.rdb.Close(); err != nil {
+			fmt.Println("[DOCTOR] Failed to close redis...", err)
 		}
 
 		timeout, cancel := context.WithTimeout(context.Background(), time.Second*10)
