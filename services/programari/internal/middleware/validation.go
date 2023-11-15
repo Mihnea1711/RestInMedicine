@@ -27,41 +27,41 @@ func ValidateProgramareInfo(next http.Handler) http.Handler {
 		}
 		// Validate the IDProgramare (assuming it should be greater than 0)
 		if programare.IDProgramare < 0 {
-			log.Println("[PROGRAMARE] Invalid IDProgramare")
+			log.Println("[APPOINTMENT] Invalid IDProgramare")
 			http.Error(w, "Invalid IDProgramare", http.StatusBadRequest)
 			return
 		}
 
 		// Validate the IDPacient (assuming it should be greater than 0)
 		if programare.IDPacient <= 0 {
-			log.Println("[PROGRAMARE] Invalid IDPacient")
+			log.Println("[APPOINTMENT] Invalid IDPacient")
 			http.Error(w, "Invalid IDPacient", http.StatusBadRequest)
 			return
 		}
 
 		// Validate the IDDoctor (assuming it should be greater than 0)
 		if programare.IDDoctor <= 0 {
-			log.Println("[PROGRAMARE] Invalid IDDoctor")
+			log.Println("[APPOINTMENT] Invalid IDDoctor")
 			http.Error(w, "Invalid IDDoctor", http.StatusBadRequest)
 			return
 		}
 
 		// Validate the Date (assuming it should be a valid date)
 		if programare.Date.IsZero() {
-			log.Println("[PROGRAMARE] Invalid Date")
+			log.Println("[APPOINTMENT] Invalid Date")
 			http.Error(w, "Invalid Date", http.StatusBadRequest)
 			return
 		}
 
 		// Validate the Status (assuming it should not be empty)
 		if programare.Status == "" {
-			log.Println("[PROGRAMARE] Invalid Status")
+			log.Println("[APPOINTMENT] Invalid Status")
 			http.Error(w, "Invalid Status", http.StatusBadRequest)
 			return
 		}
 
 		// If all validations pass, proceed to the actual controller
-		ctx := context.WithValue(r.Context(), utils.DECODED_PROGRAMARE, &programare)
+		ctx := context.WithValue(r.Context(), utils.DECODED_APPOINTMENT, &programare)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

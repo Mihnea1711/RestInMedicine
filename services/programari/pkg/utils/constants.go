@@ -15,10 +15,10 @@ var ValidStatus = [...]models.StatusProgramare{StatusOnorata, StatusNeprezenta, 
 const CONFIG_PATH = "configs/config.yaml"
 
 const (
-	PROGRAMARE_TABLE = "programare"
+	PROGRAMARE_TABLE = "appointment"
 )
 
-const DECODED_PROGRAMARE contextKey = "decodedProgramare"
+const DECODED_APPOINTMENT contextKey = "decodedAppointment"
 
 const (
 	DEFAULT_PAGINATION_LIMIT = 20

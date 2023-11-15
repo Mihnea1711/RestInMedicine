@@ -1,6 +1,6 @@
 USE pos_db
 
-CREATE TABLE IF NOT EXISTS programare (
+CREATE TABLE IF NOT EXISTS appointment (
     id_programare INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
     id_pacient INT NOT NULL,
     id_doctor INT NOT NULL,
@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS programare (
 );
 
 
-INSERT INTO programare (id_pacient, id_doctor, date, status) 
+INSERT INTO appointment (id_pacient, id_doctor, date, status) 
 VALUES 
     (1, 1, '2023-11-10', 'onorata'),
     (2, 2, '2023-11-15', 'anulata');

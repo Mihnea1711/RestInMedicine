@@ -43,22 +43,22 @@ type RedisConfig struct {
 
 // LoadConfig loads the configuration from the given file path
 func LoadConfig(filePath string) (*AppConfig, error) {
-	log.Println("[PROGRAMARE] Loading configuration...")
+	log.Println("[APPOINTMENT] Loading configuration...")
 	var conf AppConfig
 
 	data, err := os.ReadFile(filePath)
 	if err != nil {
-		log.Printf("[PROGRAMARE] Error reading config file %s: %v\n", filePath, err)
+		log.Printf("[APPOINTMENT] Error reading config file %s: %v\n", filePath, err)
 		return nil, fmt.Errorf("error reading config file: %w", err)
 	}
 
 	err = yaml.Unmarshal(data, &conf)
 	if err != nil {
-		log.Printf("[PROGRAMARE] Error unmarshaling config file %s: %v\n", filePath, err)
+		log.Printf("[APPOINTMENT] Error unmarshaling config file %s: %v\n", filePath, err)
 		return nil, fmt.Errorf("error unmarshaling config file: %w", err)
 	}
 
-	log.Printf("[PROGRAMARE] Configuration loaded successfully from %s\n", filePath)
+	log.Printf("[APPOINTMENT] Configuration loaded successfully from %s\n", filePath)
 	return &conf, nil
 }
 

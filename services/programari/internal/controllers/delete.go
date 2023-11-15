@@ -14,7 +14,7 @@ import (
 
 // Delete a programare by ID
 func (pController *ProgramareController) DeleteProgramareByID(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[PROGRAMARE] Attempting to delete a programare by ID.")
+	log.Printf("[APPOINTMENT] Attempting to delete a programare by ID.")
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
@@ -30,7 +30,7 @@ func (pController *ProgramareController) DeleteProgramareByID(w http.ResponseWri
 	rowsAffected, err := pController.DbConn.DeleteProgramareByID(ctx, id)
 	if err != nil {
 		errMsg := fmt.Sprintf("internal server error: %s", err)
-		log.Printf("[PROGRAMARE] Failed to delete programare by ID: %s\n", errMsg)
+		log.Printf("[APPOINTMENT] Failed to delete programare by ID: %s\n", errMsg)
 		http.Error(w, errMsg, http.StatusInternalServerError)
 		return
 	}
@@ -41,6 +41,6 @@ func (pController *ProgramareController) DeleteProgramareByID(w http.ResponseWri
 		return
 	}
 
-	log.Printf("[PROGRAMARE] Successfully deleted programare %d", id)
+	log.Printf("[APPOINTMENT] Successfully deleted programare %d", id)
 	utils.RespondWithJSON(w, http.StatusOK, "Programare deleted")
 }

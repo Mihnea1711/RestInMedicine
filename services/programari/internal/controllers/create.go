@@ -12,22 +12,22 @@ import (
 )
 
 func (pController *ProgramareController) CreateProgramare(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[PROGRAMARE] Attempting to create a new programare.")
-	programare := r.Context().Value(utils.DECODED_PROGRAMARE).(*models.Programare)
+	log.Printf("[APPOINTMENT] Attempting to create a new appointment.")
+	programare := r.Context().Value(utils.DECODED_APPOINTMENT).(*models.Programare)
 
 	// Ensure a database operation doesn't take longer than 5 seconds
 	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 	defer cancel()
 
-	// Use pController.DbConn to save the programare to the database
+	// Use pController.DbConn to save the appointment to the database
 	err := pController.DbConn.SaveProgramare(ctx, programare)
 	if err != nil {
 		errMsg := fmt.Sprintf("internal server error: %s", err)
-		log.Printf("[PROGRAMARE] Failed to save programare to the database: %s\n", errMsg)
+		log.Printf("[APPOINTMENT] Failed to save programare to the database: %s\n", errMsg)
 		http.Error(w, errMsg, http.StatusInternalServerError)
 		return
 	}
 
-	log.Printf("[PROGRAMARE] Successfully created programare %d", programare.IDProgramare)
+	log.Printf("[APPOINTMENT] Successfully created programare %d", programare.IDProgramare)
 	utils.RespondWithJSON(w, http.StatusOK, "Programare created")
 }

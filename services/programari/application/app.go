@@ -9,18 +9,19 @@ import (
 
 	"github.com/mihnea1711/POS_Project/services/programari/internal/database"
 	"github.com/mihnea1711/POS_Project/services/programari/internal/database/mysql"
+	"github.com/mihnea1711/POS_Project/services/programari/internal/database/redis"
 	"github.com/mihnea1711/POS_Project/services/programari/internal/routes"
 	"github.com/mihnea1711/POS_Project/services/programari/pkg/config"
-	"github.com/redis/go-redis/v9"
 )
 
 type App struct {
 	router   http.Handler
 	database database.Database
+	rdb      *redis.RedisClient
 	config   *config.AppConfig
 }
 
-func New(config *config.AppConfig) (*App, error) {
+func New(config *config.AppConfig, parentCtx context.Context) (*App, error) {
 	app := &App{
 		config: config,
 	}
@@ -28,39 +29,23 @@ func New(config *config.AppConfig) (*App, error) {
 	// setup mysql connection for the app
 	mysqlDB, err := mysql.NewMySQL(&config.MySQL)
 	if err != nil {
-		log.Printf("[PROGRAMARE] Error initializing MySQL: %v", err)
+		log.Printf("[APPOINTMENT] Error initializing MySQL: %v", err)
 		return nil, fmt.Errorf("failed to initialize MySQL: %w", err)
 	}
 	app.database = mysqlDB
 
-	redis_addr := fmt.Sprintf("%s:%d", config.Redis.Host, config.Redis.Port)
 	// setup redis and init cnnection
-	rdb := redis.NewClient(&redis.Options{
-		Addr:     redis_addr,            // Redis address
-		Password: config.Redis.Password, // Password for db
-		DB:       config.Redis.DB,       // Default DB
-	})
-
-	_, err = rdb.Ping(context.Background()).Result()
+	rdb, err := redis.NewRedisClient(&config.Redis, parentCtx)
 	if err != nil {
-		log.Fatalf("[PROGRAMARE] Failed to connect to Redis: %s", err)
+		log.Fatalf("[APPOINTMENT] Failed to connect to Redis: %s", err)
 	}
-
-	// defer close redis conn func (nu e necesara pentru ping)
-	/*
-		// nu aici !! (o las pt ca ar putea fi folosita)
-		defer func() {
-			if err := a.rdb.Close(); err != nil {
-				fmt.Println("[PROGRAMARE] Failed to close redis...", err)
-			}
-		}()
-	*/
+	app.rdb = rdb
 
 	// setup router for the app
-	router := routes.SetupRoutes(app.database, rdb)
+	router := routes.SetupRoutes(app.database, app.rdb)
 	app.router = router
 
-	log.Println("[PROGRAMARE] Application successfully initialized.")
+	log.Println("[APPOINTMENT] Application successfully initialized.")
 	return app, nil
 }
 
@@ -70,10 +55,10 @@ func (a *App) Start(ctx context.Context) error {
 		Handler: a.router,
 	}
 
-	log.Println("[PROGRAMARE] Starting server...") // Logging the server start
+	log.Println("[APPOINTMENT] Starting server...") // Logging the server start
 
 	// Log the message just before starting the server in the goroutine
-	fmt.Printf("[PROGRAMARE] Server started and listening on port %d\n", a.config.Server.Port)
+	fmt.Printf("[APPOINTMENT] Server started and listening on port %d\n", a.config.Server.Port)
 
 	channel := make(chan error, 1)
 	go func() {
@@ -89,16 +74,20 @@ func (a *App) Start(ctx context.Context) error {
 		// second value is called open
 		if !open {
 			//channel is closed
-			log.Println("[PROGRAMARE] Context channel error. Channel is closed.")
+			log.Println("[APPOINTMENT] Context channel error. Channel is closed.")
 		}
 		return err
 	case <-ctx.Done():
 		// Log the message indicating the server is in the process of shutting down
-		log.Println("[PROGRAMARE] Server shutting down...")
+		log.Println("[APPOINTMENT] Server shutting down...")
 
 		// Close MySQL database connection gracefully
 		if err := a.database.Close(); err != nil {
-			log.Printf("[PROGRAMARE] Failed to close the MySQL database gracefully: %v", err)
+			log.Printf("[APPOINTMENT] Failed to close the MySQL database gracefully: %v", err)
+		}
+
+		if err := a.rdb.Close(); err != nil {
+			fmt.Println("[APPOINTMENT] Failed to close redis...", err)
 		}
 
 		timeout, cancel := context.WithTimeout(context.Background(), time.Second*10)
