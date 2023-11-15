@@ -8,7 +8,7 @@ message UserID {
 }
 
 message UserData {
-    UserID IDUser = 1;
+    UserID UserID = 1;
     string Username = 2;
     // Omitting Password field, as I don't want to expose it
     // other fields if any
