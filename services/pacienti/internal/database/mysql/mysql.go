@@ -31,8 +31,8 @@ func NewMySQL(config *config.MySQLConfig) (database.Database, error) {
 
 	db, err := sql.Open("mysql", connStr)
 	if err != nil {
-		log.Printf("[PACIENT] Error connecting to MySQL: %v", err)
-		return nil, fmt.Errorf("[PACIENT] Failed to connect to MySQL: %v", err)
+		log.Printf("[PATIENT] Error connecting to MySQL: %v", err)
+		return nil, fmt.Errorf("[PATIENT] Failed to connect to MySQL: %v", err)
 	}
 
 	db.SetMaxOpenConns(config.MaxOpenConns)
@@ -41,8 +41,8 @@ func NewMySQL(config *config.MySQLConfig) (database.Database, error) {
 
 	// Test the connection
 	if err := db.Ping(); err != nil {
-		log.Printf("[PACIENT] Error pinging MySQL: %v", err)
-		return nil, fmt.Errorf("[PACIENT] Failed to ping MySQL: %v", err)
+		log.Printf("[PATIENT] Error pinging MySQL: %v", err)
+		return nil, fmt.Errorf("[PATIENT] Failed to ping MySQL: %v", err)
 	}
 
 	return &MySQLDatabase{DB: db}, nil

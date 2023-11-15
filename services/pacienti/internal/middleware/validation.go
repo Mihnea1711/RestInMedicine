@@ -142,7 +142,7 @@ func checkErrorOnDecode(err error, w http.ResponseWriter) bool {
 // Function to validate the CNP birthdate against DataNasterii
 func validateCNPBirthdate(cnp string, dataNasterii time.Time) bool {
 	if len(cnp) != 13 || cnp == "" {
-		log.Println("[PACIENT] Incorrect CNP format")
+		log.Println("[MIDDLEWARE] Incorrect CNP format")
 		return false
 	}
 
@@ -150,7 +150,7 @@ func validateCNPBirthdate(cnp string, dataNasterii time.Time) bool {
 	cnpBirthdateStr := cnp[1:7] // Extract the 6-digit date of birth from the CNP
 	cnpBirthdate, err := time.Parse("060102", cnpBirthdateStr)
 	if err != nil {
-		log.Println("[PACIENT] CNP not matching birthdate")
+		log.Println("[MIDDLEWARE] CNP not matching birthdate")
 		return false
 	}
 
@@ -163,13 +163,13 @@ func ValidateEmail(next http.Handler) http.Handler {
 		vars := mux.Vars(r)
 		email, ok := vars["email"]
 		if !ok {
-			log.Println("[PACIENT] Email not provided in request:", r.RequestURI)
+			log.Println("[MIDDLEWARE] Email not provided in request:", r.RequestURI)
 			http.Error(w, "Email not provided", http.StatusBadRequest)
 			return
 		}
 
 		if !utils.EmailRegex.MatchString(email) {
-			log.Printf("[PACIENT] Invalid email format for email: %s in request: %s", email, r.RequestURI)
+			log.Printf("[MIDDLEWARE] Invalid email format for email: %s in request: %s", email, r.RequestURI)
 			http.Error(w, "Invalid email format", http.StatusBadRequest)
 			return
 		}

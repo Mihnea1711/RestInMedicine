@@ -1,16 +1,24 @@
 #!/bin/bash
-
-echo "[PACIENT] Stopping existing containers..."
+echo "[PATIENT] Stopping and removing existing containers..."
 docker compose down
 
-echo "[PACIENT] Removing MySQL data volume..."
+echo "[PATIENT] Removing unused volumes..."
+docker volume prune --force
+
+echo "[PATIENT] Removing MySQL data volume..."
 docker volume rm pacienti_mysql_data
 
-echo "[PACIENT] Removing Redis data volume..."
+echo "[PATIENT] Removing Redis data volume..."
 docker volume rm pacienti_redis_data
 
-echo "[PACIENT] Building Docker images..."
+echo "[PATIENT] Removing unused networks..."
+docker network prune --force
+
+echo "[PATIENT] Removing unused images..."
+docker image prune --force
+
+echo "[PATIENT] Building Docker images..."
 docker compose build
 
-echo "[PACIENT] Starting containers..."
+echo "[PATIENT] Starting containers..."
 docker compose up --force-recreate

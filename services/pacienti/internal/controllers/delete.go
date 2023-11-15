@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/mihnea1711/POS_Project/services/pacienti/pkg/utils"
 )
 
 func (dController *PacientController) DeletePacientByID(w http.ResponseWriter, r *http.Request) {
@@ -17,13 +18,15 @@ func (dController *PacientController) DeletePacientByID(w http.ResponseWriter, r
 
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		err_msg := fmt.Sprintf("Invalid pacient ID: %s", idStr)
-		log.Printf("[PACIENT] %s", err_msg)
-		http.Error(w, err_msg, http.StatusBadRequest)
+		errMsg := fmt.Sprintf("Invalid pacient ID: %s", idStr)
+		log.Printf("[PATIENT] %s", errMsg)
+
+		// Use utils.RespondWithJSON for error response
+		utils.RespondWithJSON(w, http.StatusBadRequest, map[string]string{"error": errMsg})
 		return
 	}
 
-	log.Printf("[PACIENT] Attempting to delete pacient with ID: %d...", id)
+	log.Printf("[PATIENT] Attempting to delete pacient with ID: %d...", id)
 
 	// Ensure a database operation doesn't take longer than 5 seconds
 	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
@@ -31,19 +34,23 @@ func (dController *PacientController) DeletePacientByID(w http.ResponseWriter, r
 
 	rowsAffected, err := dController.DbConn.DeletePacientByID(ctx, id)
 	if err != nil {
-		err_msg := fmt.Sprintf("Failed to delete pacient with ID %d: %s", id, err)
-		log.Printf("[PACIENT] %s", err_msg)
-		http.Error(w, err_msg, http.StatusInternalServerError)
+		errMsg := fmt.Sprintf("Failed to delete pacient with ID %d: %s", id, err)
+		log.Printf("[PATIENT] %s", errMsg)
+
+		// Use utils.RespondWithJSON for error response
+		utils.RespondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": errMsg})
 		return
 	}
 
 	if rowsAffected == 0 {
-		err_msg := fmt.Sprintf("No pacient found with ID: %d", id)
-		log.Printf("[PACIENT] %s", err_msg)
-		http.Error(w, err_msg, http.StatusNotFound)
+		errMsg := fmt.Sprintf("No pacient found with ID: %d", id)
+		log.Printf("[PATIENT] %s", errMsg)
+
+		// Use utils.RespondWithJSON for error response
+		utils.RespondWithJSON(w, http.StatusNotFound, map[string]string{"error": errMsg})
 		return
 	}
 
-	log.Printf("[PACIENT] Successfully deleted pacient with ID: %d", id)
-	w.Write([]byte(fmt.Sprintf("Pacient with ID: %d deleted successfully\n", id)))
+	// Use utils.RespondWithJSON for success response
+	utils.RespondWithJSON(w, http.StatusOK, map[string]string{"message": fmt.Sprintf("Pacient with ID: %d deleted successfully", id)})
 }

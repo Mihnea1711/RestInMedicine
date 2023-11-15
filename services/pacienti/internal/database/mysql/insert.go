@@ -14,10 +14,10 @@ func (db *MySQLDatabase) SavePacient(ctx context.Context, pacient *models.Pacien
 	// Execute the SQL statement
 	_, err := db.ExecContext(ctx, query, pacient.IDUser, pacient.Nume, pacient.Prenume, pacient.Email, pacient.Telefon, pacient.CNP, pacient.DataNasterii, pacient.IsActive)
 	if err != nil {
-		log.Printf("[PACIENT] Error executing query to save pacient: %v", err)
+		log.Printf("[PATIENT] Error executing query to save pacient: %v", err)
 		return err
 	}
 
-	log.Println("[PACIENT] Pacient saved successfully.")
+	log.Println("[PATIENT] Pacient saved successfully.")
 	return nil
 }

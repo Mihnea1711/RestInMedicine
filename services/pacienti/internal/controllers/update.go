@@ -14,7 +14,7 @@ import (
 )
 
 func (dController *PacientController) UpdatePacientByID(w http.ResponseWriter, r *http.Request) {
-	log.Println("[PACIENT] Attempting to update a pacient.")
+	log.Println("[PATIENT] Attempting to update a pacient.")
 
 	// Decode the pacient details from the context (assuming you've set it in the middleware)
 	pacient := r.Context().Value(utils.DECODED_PACIENT).(*models.Pacient)
@@ -24,9 +24,11 @@ func (dController *PacientController) UpdatePacientByID(w http.ResponseWriter, r
 	idStr := vars["id"]
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		err_msg := fmt.Sprintf("Invalid pacient ID: %s", idStr)
-		log.Printf("[PACIENT] %s", err_msg)
-		http.Error(w, err_msg, http.StatusBadRequest)
+		errMsg := fmt.Sprintf("Invalid pacient ID: %s", idStr)
+		log.Printf("[PATIENT] %s", errMsg)
+
+		// Use utils.RespondWithJSON for error response
+		utils.RespondWithJSON(w, http.StatusBadRequest, map[string]string{"error": errMsg})
 		return
 	}
 
@@ -40,21 +42,24 @@ func (dController *PacientController) UpdatePacientByID(w http.ResponseWriter, r
 	// Use dController.DbConn to update the pacient in the database
 	rowsAffected, err := dController.DbConn.UpdatePacientByID(ctx, pacient)
 	if err != nil {
-		err_msg := fmt.Sprintf("internal server error: %s", err)
-		log.Printf("[PACIENT] Failed to update pacient in the database: %s\n", err_msg)
-		http.Error(w, err_msg, http.StatusInternalServerError)
+		errMsg := fmt.Sprintf("internal server error: %s", err)
+		log.Printf("[PATIENT] Failed to update pacient in the database: %s\n", errMsg)
+
+		// Use utils.RespondWithJSON for error response
+		utils.RespondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": errMsg})
 		return
 	}
 
 	// Check if any rows were updated
 	if rowsAffected == 0 {
-		err_msg := fmt.Sprintf("No pacient found with ID: %d", pacient.IDPacient)
-		log.Printf("[PACIENT] %s", err_msg)
+		errMsg := fmt.Sprintf("No pacient found with ID: %d", pacient.IDPacient)
+		log.Printf("[PATIENT] %s", errMsg)
 
-		http.Error(w, err_msg, http.StatusNotFound)
+		// Use utils.RespondWithJSON for error response
+		utils.RespondWithJSON(w, http.StatusNotFound, map[string]string{"error": errMsg})
 		return
 	}
 
-	log.Printf("[PACIENT] Successfully updated pacient %d", pacient.IDPacient)
-	w.Write([]byte("Pacient updated\n"))
+	// Use utils.RespondWithJSON for success response
+	utils.RespondWithJSON(w, http.StatusOK, map[string]string{"message": "Pacient updated"})
 }
