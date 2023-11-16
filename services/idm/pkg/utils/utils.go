@@ -6,8 +6,9 @@ import (
 	"net/http"
 	"os"
 	"reflect"
-	"strconv"
 	"strings"
+
+	"github.com/mihnea1711/POS_Project/services/idm/idm/proto_files"
 )
 
 // RespondWithJSON handles responding to HTTP requests with JSON.
@@ -46,32 +47,21 @@ func writeJSONResponse(w http.ResponseWriter, status int, response []byte) {
 	w.Write([]byte("\n"))
 }
 
-// Extract pagination parameters from the request
-func ExtractPaginationParams(r *http.Request) (int, int) {
-	limitStr := r.URL.Query().Get("limit")
-	pageStr := r.URL.Query().Get("page")
+// ExtractPaginationParams extracts pagination parameters from the request
+func ExtractPaginationParams(req *proto_files.EmptyRequest) (int, int) {
+	limit := int(req.Limit)
+	page := int(req.Page)
 
-	var limit, page int
-	var err error
-
-	// If limit parameter is provided, try to parse it
-	if limitStr != "" {
-		limit, err = strconv.Atoi(limitStr)
-		if err != nil || limit < 1 {
-			limit = DEFAULT_PAGINATION_LIMIT // Use a default limit value
-		}
-	} else {
-		limit = MAX_PAGINATION_LIMIT // Set it to a maximum value to indicate no limit
+	// If limit parameter is not provided or invalid, use a default limit value
+	if limit <= 0 {
+		limit = DEFAULT_PAGINATION_LIMIT
+	} else if limit > MAX_PAGINATION_LIMIT {
+		limit = MAX_PAGINATION_LIMIT
 	}
 
-	// If page parameter is provided, try to parse it
-	if pageStr != "" {
-		page, err = strconv.Atoi(pageStr)
-		if err != nil || page < 1 {
-			page = DEFAULT_PAGINATION_PAGE // Use a default page value
-		}
-	} else {
-		page = DEFAULT_PAGINATION_PAGE // Set it to the first page if not provided
+	// If page parameter is not provided or invalid, use a default page value
+	if page <= 0 {
+		page = DEFAULT_PAGINATION_PAGE
 	}
 
 	return limit, page

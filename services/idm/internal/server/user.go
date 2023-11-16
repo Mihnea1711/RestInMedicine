@@ -13,8 +13,7 @@ import (
 
 // GetUsers implements the GetUsers RPC method
 func (s *MyIDMServer) GetUsers(ctx context.Context, req *proto_files.EmptyRequest) (*proto_files.UsersResponse, error) {
-	page := req.Page
-	limit := req.Limit
+	limit, page := utils.ExtractPaginationParams(req)
 
 	// Call the database method to retrieve all users
 	users, err := s.DbConn.GetAllUsers(int(page), int(limit))
