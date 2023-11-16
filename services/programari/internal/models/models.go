@@ -13,3 +13,9 @@ type Programare struct {
 	Date         time.Time        `db:"date" json:"date"`
 	Status       StatusProgramare `db:"status" json:"status"`
 }
+
+type ResponseData struct {
+	Message string      `json:"message"`
+	Error   string      `json:"error"`
+	Payload interface{} `json:"payload"`
+}

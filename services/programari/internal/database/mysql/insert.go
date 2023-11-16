@@ -10,7 +10,14 @@ import (
 )
 
 func (db *MySQLDatabase) SaveProgramare(ctx context.Context, programare *models.Programare) error {
-	query := fmt.Sprintf(`INSERT INTO %s (id_pacient, id_doctor, date, status) VALUES (?, ?, ?, ?)`, utils.PROGRAMARE_TABLE)
+	query := fmt.Sprintf(
+		"INSERT INTO %s (%s, %s, %s, %s) VALUES (?, ?, ?, ?)",
+		utils.AppointmentTableName,
+		utils.ColumnIDPacient,
+		utils.ColumnIDDoctor,
+		utils.ColumnDate,
+		utils.ColumnStatus,
+	)
 
 	_, err := db.ExecContext(ctx, query, programare.IDPacient, programare.IDDoctor, programare.Date, programare.Status)
 	if err != nil {

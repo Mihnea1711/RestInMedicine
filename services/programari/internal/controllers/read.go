@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/mihnea1711/POS_Project/services/programari/internal/models"
 	"github.com/mihnea1711/POS_Project/services/programari/pkg/utils"
 )
 
@@ -28,13 +29,22 @@ func (pController *ProgramareController) GetProgramari(w http.ResponseWriter, r 
 	if err != nil {
 		errMsg := fmt.Sprintf("internal server error: %s", err)
 		log.Printf("[APPOINTMENT] Failed to fetch programari: %s\n", errMsg)
-		http.Error(w, errMsg, http.StatusInternalServerError)
+
+		// Respond with an error using the ResponseData struct
+		response := models.ResponseData{
+			Error: errMsg,
+		}
+		utils.RespondWithJSON(w, http.StatusInternalServerError, response)
 		return
 	}
 
 	log.Printf("[APPOINTMENT] Successfully fetched all programari")
-	// Serialize the programari to JSON and send the response
-	utils.RespondWithJSON(w, http.StatusOK, programari)
+
+	// Respond with success using the ResponseData struct
+	response := models.ResponseData{
+		Payload: programari,
+	}
+	utils.RespondWithJSON(w, http.StatusOK, response)
 }
 
 // Retrieve a programare by ID
@@ -44,7 +54,14 @@ func (pController *ProgramareController) GetProgramareByID(w http.ResponseWriter
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		http.Error(w, "Invalid programare ID", http.StatusBadRequest)
+		errMsg := "Invalid programare ID"
+		log.Printf("[APPOINTMENT] %s: %s\n", errMsg, err)
+
+		// Respond with an error using the ResponseData struct
+		response := models.ResponseData{
+			Error: errMsg,
+		}
+		utils.RespondWithJSON(w, http.StatusBadRequest, response)
 		return
 	}
 
@@ -57,19 +74,36 @@ func (pController *ProgramareController) GetProgramareByID(w http.ResponseWriter
 	if err != nil {
 		errMsg := fmt.Sprintf("internal server error: %s", err)
 		log.Printf("[APPOINTMENT] Failed to fetch programare by ID: %s\n", errMsg)
-		http.Error(w, errMsg, http.StatusInternalServerError)
+
+		// Respond with an error using the ResponseData struct
+		response := models.ResponseData{
+			Error: errMsg,
+		}
+		utils.RespondWithJSON(w, http.StatusInternalServerError, response)
 		return
 	}
 
 	// Check if the programare exists
 	if programare == nil {
-		http.Error(w, "Programare not found", http.StatusNotFound)
+		errMsg := "Programare not found"
+		log.Printf("[APPOINTMENT] %s\n", errMsg)
+
+		// Respond with an error using the ResponseData struct
+		response := models.ResponseData{
+			Error: errMsg,
+		}
+		utils.RespondWithJSON(w, http.StatusNotFound, response)
 		return
 	}
 
 	log.Printf("[APPOINTMENT] Successfully fetched programare %d", programare.IDProgramare)
-	// Serialize the programare to JSON and send the response
-	utils.RespondWithJSON(w, http.StatusOK, programare)
+
+	// Respond with success using the ResponseData struct
+	response := models.ResponseData{
+		Message: "Successfully fetched programare",
+		Payload: programare,
+	}
+	utils.RespondWithJSON(w, http.StatusOK, response)
 }
 
 // Retrieve programari by doctor ID
@@ -78,7 +112,15 @@ func (pController *ProgramareController) GetProgramariByDoctorID(w http.Response
 	vars := mux.Vars(r)
 	doctorID, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		http.Error(w, "Invalid Doctor ID", http.StatusBadRequest)
+		errMsg := "Invalid Doctor ID"
+		log.Printf("[APPOINTMENT] %s: %s\n", errMsg, err)
+
+		// Respond with an error using the ResponseData struct
+		response := models.ResponseData{
+
+			Error: errMsg,
+		}
+		utils.RespondWithJSON(w, http.StatusBadRequest, response)
 		return
 	}
 
@@ -94,13 +136,24 @@ func (pController *ProgramareController) GetProgramariByDoctorID(w http.Response
 	if err != nil {
 		errMsg := fmt.Sprintf("internal server error: %s", err)
 		log.Printf("[APPOINTMENT] Failed to fetch programari by Doctor ID: %s\n", errMsg)
-		http.Error(w, errMsg, http.StatusInternalServerError)
+
+		// Respond with an error using the ResponseData struct
+		response := models.ResponseData{
+			Error: errMsg,
+		}
+		utils.RespondWithJSON(w, http.StatusInternalServerError, response)
 		return
 	}
 
 	log.Printf("[APPOINTMENT] Successfully fetched programari of doctor %d", doctorID)
-	// Serialize the programari to JSON and send the response
-	utils.RespondWithJSON(w, http.StatusOK, programari)
+
+	// Respond with success using the ResponseData struct
+	response := models.ResponseData{
+		Message: "Successfully fetched programari",
+		Error:   "",
+		Payload: programari,
+	}
+	utils.RespondWithJSON(w, http.StatusOK, response)
 }
 
 // Retrieve programari by pacient ID
@@ -109,7 +162,14 @@ func (pController *ProgramareController) GetProgramariByPacientID(w http.Respons
 	vars := mux.Vars(r)
 	pacientID, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		http.Error(w, "Invalid Pacient ID", http.StatusBadRequest)
+		errMsg := "Invalid Pacient ID"
+		log.Printf("[APPOINTMENT] %s: %s\n", errMsg, err)
+
+		// Respond with an error using the ResponseData struct
+		response := models.ResponseData{
+			Error: errMsg,
+		}
+		utils.RespondWithJSON(w, http.StatusBadRequest, response)
 		return
 	}
 
@@ -125,13 +185,25 @@ func (pController *ProgramareController) GetProgramariByPacientID(w http.Respons
 	if err != nil {
 		errMsg := fmt.Sprintf("internal server error: %s", err)
 		log.Printf("[APPOINTMENT] Failed to fetch programari by Pacient ID: %s\n", errMsg)
-		http.Error(w, errMsg, http.StatusInternalServerError)
+
+		// Respond with an error using the ResponseData struct
+		response := models.ResponseData{
+			Error: errMsg,
+		}
+		utils.RespondWithJSON(w, http.StatusInternalServerError, response)
 		return
 	}
 
 	log.Printf("[APPOINTMENT] Successfully fetched programari of pacient %d", pacientID)
+
+	// Respond with success using the ResponseData struct
+	response := models.ResponseData{
+		Message: "Successfully fetched programari",
+		Payload: programari,
+	}
+
 	// Serialize the programari to JSON and send the response
-	utils.RespondWithJSON(w, http.StatusOK, programari)
+	utils.RespondWithJSON(w, http.StatusOK, response)
 }
 
 // Retrieve programari by date
@@ -145,8 +217,14 @@ func (pController *ProgramareController) GetProgramariByDate(w http.ResponseWrit
 	// Parse the date string into a time.Time object
 	date, err := time.Parse("2006-01-02", dateStr)
 	if err != nil {
-		log.Printf("[APPOINTMENT] Failed to convert date string: %s\n", err)
-		http.Error(w, "Invalid date format", http.StatusBadRequest)
+		errMsg := "Invalid date format"
+		log.Printf("[APPOINTMENT] %s: %s\n", errMsg, err)
+
+		// Respond with an error using the ResponseData struct
+		response := models.ResponseData{
+			Error: errMsg,
+		}
+		utils.RespondWithJSON(w, http.StatusBadRequest, response)
 		return
 	}
 
@@ -162,13 +240,25 @@ func (pController *ProgramareController) GetProgramariByDate(w http.ResponseWrit
 	if err != nil {
 		errMsg := fmt.Sprintf("internal server error: %s", err)
 		log.Printf("[APPOINTMENT] Failed to fetch programari by date: %s\n", errMsg)
-		http.Error(w, errMsg, http.StatusInternalServerError)
+
+		// Respond with an error using the ResponseData struct
+		response := models.ResponseData{
+			Error: errMsg,
+		}
+		utils.RespondWithJSON(w, http.StatusInternalServerError, response)
 		return
 	}
 
 	log.Printf("[APPOINTMENT] Successfully fetched programari from %s", date)
+
+	// Respond with success using the ResponseData struct
+	response := models.ResponseData{
+		Message: "Successfully fetched programari",
+		Payload: programari,
+	}
+
 	// Serialize the programari to JSON and send the response
-	utils.RespondWithJSON(w, http.StatusOK, programari)
+	utils.RespondWithJSON(w, http.StatusOK, response)
 }
 
 // Retrieve programari by status
@@ -191,11 +281,23 @@ func (pController *ProgramareController) GetProgramariByStatus(w http.ResponseWr
 	if err != nil {
 		errMsg := fmt.Sprintf("internal server error: %s", err)
 		log.Printf("[APPOINTMENT] Failed to fetch programari by status: %s\n", errMsg)
-		http.Error(w, errMsg, http.StatusInternalServerError)
+
+		// Respond with an error using the ResponseData struct
+		response := models.ResponseData{
+			Error: errMsg,
+		}
+		utils.RespondWithJSON(w, http.StatusInternalServerError, response)
 		return
 	}
 
 	log.Printf("[APPOINTMENT] Successfully fetched programari with status of %s", status)
+
+	// Respond with success using the ResponseData struct
+	response := models.ResponseData{
+		Message: "Successfully fetched programari",
+		Payload: programari,
+	}
+
 	// Serialize the programari to JSON and send the response
-	utils.RespondWithJSON(w, http.StatusOK, programari)
+	utils.RespondWithJSON(w, http.StatusOK, response)
 }

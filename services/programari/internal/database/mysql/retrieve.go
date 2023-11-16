@@ -15,7 +15,7 @@ import (
 func (db *MySQLDatabase) FetchProgramari(ctx context.Context, page, limit int) ([]models.Programare, error) {
 	offset := (page - 1) * limit
 
-	query := fmt.Sprintf("SELECT * FROM %s LIMIT ? OFFSET ?", utils.PROGRAMARE_TABLE)
+	query := fmt.Sprintf("SELECT * FROM %s LIMIT ? OFFSET ?", utils.AppointmentTableName)
 
 	rows, err := db.QueryContext(ctx, query, limit, offset)
 	if err != nil {
@@ -49,10 +49,10 @@ func (db *MySQLDatabase) FetchProgramari(ctx context.Context, page, limit int) (
 }
 
 // FetchProgramareByID retrieves a programare by its ID.
-func (db *MySQLDatabase) FetchProgramareByID(ctx context.Context, id int) (*models.Programare, error) {
-	query := fmt.Sprintf("SELECT * FROM %s WHERE id_programare = ?", utils.PROGRAMARE_TABLE)
+func (db *MySQLDatabase) FetchProgramareByID(ctx context.Context, appointmentId int) (*models.Programare, error) {
+	query := fmt.Sprintf("SELECT * FROM %s WHERE id_programare = ?", utils.AppointmentTableName)
 
-	row := db.QueryRowContext(ctx, query, id)
+	row := db.QueryRowContext(ctx, query, appointmentId)
 
 	programare := models.Programare{}
 	if err := row.Scan(
@@ -73,12 +73,12 @@ func (db *MySQLDatabase) FetchProgramareByID(ctx context.Context, id int) (*mode
 }
 
 // FetchProgramariByPacientID lists programari for a specific pacient with pagination.
-func (db *MySQLDatabase) FetchProgramariByPacientID(ctx context.Context, id, page, limit int) ([]models.Programare, error) {
+func (db *MySQLDatabase) FetchProgramariByPacientID(ctx context.Context, patientId, page, limit int) ([]models.Programare, error) {
 	offset := (page - 1) * limit
 
-	query := fmt.Sprintf("SELECT * FROM %s WHERE id_pacient = ? LIMIT ? OFFSET ?", utils.PROGRAMARE_TABLE)
+	query := fmt.Sprintf("SELECT * FROM %s WHERE %s = ?", utils.AppointmentTableName, utils.ColumnIDProgramare)
 
-	rows, err := db.QueryContext(ctx, query, id, limit, offset)
+	rows, err := db.QueryContext(ctx, query, patientId, limit, offset)
 	if err != nil {
 		log.Printf("[APPOINTMENT] Error executing query to fetch programari by pacient ID: %v", err)
 		return nil, err
@@ -110,12 +110,12 @@ func (db *MySQLDatabase) FetchProgramariByPacientID(ctx context.Context, id, pag
 }
 
 // FetchProgramariByDoctorID lists programari for a specific doctor with pagination.
-func (db *MySQLDatabase) FetchProgramariByDoctorID(ctx context.Context, id, page, limit int) ([]models.Programare, error) {
+func (db *MySQLDatabase) FetchProgramariByDoctorID(ctx context.Context, doctorId, page, limit int) ([]models.Programare, error) {
 	offset := (page - 1) * limit
 
-	query := fmt.Sprintf("SELECT * FROM %s WHERE id_doctor = ? LIMIT ? OFFSET ?", utils.PROGRAMARE_TABLE)
+	query := fmt.Sprintf("SELECT * FROM %s WHERE %s = ? LIMIT ? OFFSET ?", utils.AppointmentTableName, utils.ColumnIDDoctor)
 
-	rows, err := db.QueryContext(ctx, query, id, limit, offset)
+	rows, err := db.QueryContext(ctx, query, doctorId, limit, offset)
 	if err != nil {
 		log.Printf("[APPOINTMENT] Error executing query to fetch programari by doctor ID: %v", err)
 		return nil, err
@@ -150,7 +150,7 @@ func (db *MySQLDatabase) FetchProgramariByDoctorID(ctx context.Context, id, page
 func (db *MySQLDatabase) FetchProgramariByDate(ctx context.Context, date time.Time, page, limit int) ([]models.Programare, error) {
 	offset := (page - 1) * limit
 
-	query := fmt.Sprintf("SELECT * FROM %s WHERE date = ? LIMIT ? OFFSET ?", utils.PROGRAMARE_TABLE)
+	query := fmt.Sprintf("SELECT * FROM %s WHERE %s = ? LIMIT ? OFFSET ?", utils.AppointmentTableName, utils.ColumnDate)
 	log.Printf("%s / %s / %d / %d", query, date, page, limit)
 
 	rows, err := db.QueryContext(ctx, query, date, limit, offset)
@@ -188,7 +188,7 @@ func (db *MySQLDatabase) FetchProgramariByDate(ctx context.Context, date time.Ti
 func (db *MySQLDatabase) FetchProgramariByStatus(ctx context.Context, state string, page, limit int) ([]models.Programare, error) {
 	offset := (page - 1) * limit
 
-	query := fmt.Sprintf("SELECT * FROM %s WHERE status = ? LIMIT ? OFFSET ?", utils.PROGRAMARE_TABLE)
+	query := fmt.Sprintf("SELECT * FROM %s WHERE %s = ? LIMIT ? OFFSET ?", utils.AppointmentTableName, utils.ColumnStatus)
 
 	rows, err := db.QueryContext(ctx, query, state, limit, offset)
 	if err != nil {

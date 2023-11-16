@@ -17,8 +17,8 @@ type Database interface {
 	FetchProgramariByDate(ctx context.Context, date time.Time, page, limit int) ([]models.Programare, error)
 	FetchProgramariByStatus(ctx context.Context, state string, page, limit int) ([]models.Programare, error)
 
-	UpdateProgramareByID(ctx context.Context, programare *models.Programare) (int64, error)
-	DeleteProgramareByID(ctx context.Context, id int) (int64, error)
+	UpdateProgramareByID(ctx context.Context, programare *models.Programare) (int, error)
+	DeleteProgramareByID(ctx context.Context, id int) (int, error)
 
 	// add more
 

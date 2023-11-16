@@ -1,4 +1,4 @@
-USE pos_db
+USE pdp_db;
 
 CREATE TABLE IF NOT EXISTS appointment (
     id_programare INT AUTO_INCREMENT PRIMARY KEY NOT NULL,

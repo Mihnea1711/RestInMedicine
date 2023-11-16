@@ -9,8 +9,16 @@ import (
 	"github.com/mihnea1711/POS_Project/services/programari/pkg/utils"
 )
 
-func (db *MySQLDatabase) UpdateProgramareByID(ctx context.Context, programare *models.Programare) (int64, error) {
-	query := fmt.Sprintf(`UPDATE %s SET id_pacient = ?, id_doctor = ?, date = ?, status = ? WHERE id_programare = ?`, utils.PROGRAMARE_TABLE)
+func (db *MySQLDatabase) UpdateProgramareByID(ctx context.Context, programare *models.Programare) (int, error) {
+	query := fmt.Sprintf(
+		"UPDATE %s SET %s = ?, %s = ?, %s = ?, %s = ? WHERE %s = ?",
+		utils.AppointmentTableName,
+		utils.ColumnIDPacient,
+		utils.ColumnIDDoctor,
+		utils.ColumnDate,
+		utils.ColumnStatus,
+		utils.ColumnIDProgramare,
+	)
 
 	res, err := db.ExecContext(ctx, query, programare.IDPacient, programare.IDDoctor, programare.Date, programare.Status, programare.IDProgramare)
 	if err != nil {
@@ -25,5 +33,5 @@ func (db *MySQLDatabase) UpdateProgramareByID(ctx context.Context, programare *m
 	}
 
 	log.Printf("[APPOINTMENT] %d programare updated successfully.", rowsAffected)
-	return rowsAffected, nil
+	return int(rowsAffected), nil
 }

@@ -8,9 +8,8 @@ import (
 	"github.com/mihnea1711/POS_Project/services/programari/pkg/utils"
 )
 
-func (db *MySQLDatabase) DeleteProgramareByID(ctx context.Context, id int) (int64, error) {
-	query := fmt.Sprintf(`DELETE FROM %s WHERE id_programare = ?`, utils.PROGRAMARE_TABLE)
-
+func (db *MySQLDatabase) DeleteProgramareByID(ctx context.Context, id int) (int, error) {
+	query := fmt.Sprintf("DELETE FROM %s WHERE %s = ?", utils.AppointmentTableName, utils.ColumnIDProgramare)
 	res, err := db.ExecContext(ctx, query, id)
 	if err != nil {
 		log.Printf("[APPOINTMENT] Error executing query to delete programare: %v", err)
@@ -24,5 +23,5 @@ func (db *MySQLDatabase) DeleteProgramareByID(ctx context.Context, id int) (int6
 	}
 
 	log.Printf("[APPOINTMENT] %d programare deleted successfully.", rowsAffected)
-	return rowsAffected, nil
+	return int(rowsAffected), nil
 }

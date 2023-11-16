@@ -26,7 +26,7 @@ func ValidateProgramareInfo(next http.Handler) http.Handler {
 			return
 		}
 		// Validate the IDProgramare (assuming it should be greater than 0)
-		if programare.IDProgramare < 0 {
+		if programare.IDProgramare <= 0 {
 			log.Println("[APPOINTMENT] Invalid IDProgramare")
 			http.Error(w, "Invalid IDProgramare", http.StatusBadRequest)
 			return

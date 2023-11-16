@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/mihnea1711/POS_Project/services/programari/internal/models"
 	"github.com/mihnea1711/POS_Project/services/programari/pkg/utils"
 )
 
@@ -18,7 +19,8 @@ func (pController *ProgramareController) DeleteProgramareByID(w http.ResponseWri
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		http.Error(w, "Invalid programare ID", http.StatusBadRequest)
+		response := models.ResponseData{Error: "Invalid programare ID"}
+		utils.RespondWithJSON(w, http.StatusBadRequest, response)
 		return
 	}
 
@@ -31,16 +33,19 @@ func (pController *ProgramareController) DeleteProgramareByID(w http.ResponseWri
 	if err != nil {
 		errMsg := fmt.Sprintf("internal server error: %s", err)
 		log.Printf("[APPOINTMENT] Failed to delete programare by ID: %s\n", errMsg)
-		http.Error(w, errMsg, http.StatusInternalServerError)
+		response := models.ResponseData{Error: errMsg}
+		utils.RespondWithJSON(w, http.StatusInternalServerError, response)
 		return
 	}
 
 	// Check if the programare exists and was deleted
 	if rowsAffected == 0 {
-		http.Error(w, "Programare not found", http.StatusNotFound)
+		response := models.ResponseData{Error: "Programare not found"}
+		utils.RespondWithJSON(w, http.StatusNotFound, response)
 		return
 	}
 
 	log.Printf("[APPOINTMENT] Successfully deleted programare %d", id)
-	utils.RespondWithJSON(w, http.StatusOK, "Programare deleted")
+	response := models.ResponseData{Message: "Programare deleted"}
+	utils.RespondWithJSON(w, http.StatusOK, response)
 }

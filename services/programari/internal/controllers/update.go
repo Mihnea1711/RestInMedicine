@@ -13,12 +13,14 @@ import (
 	"github.com/mihnea1711/POS_Project/services/programari/pkg/utils"
 )
 
+// Update a programare by ID
 func (pController *ProgramareController) UpdateProgramareByID(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[APPOINTMENT] Attempting to update a appointment by ID.")
+	log.Printf("[APPOINTMENT] Attempting to update an appointment by ID.")
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		http.Error(w, "Invalid appointment ID", http.StatusBadRequest)
+		response := models.ResponseData{Error: "Invalid appointment ID"}
+		utils.RespondWithJSON(w, http.StatusBadRequest, response)
 		return
 	}
 
@@ -34,16 +36,19 @@ func (pController *ProgramareController) UpdateProgramareByID(w http.ResponseWri
 	if err != nil {
 		errMsg := fmt.Sprintf("internal server error: %s", err)
 		log.Printf("[APPOINTMENT] Failed to update appointment by ID: %s\n", errMsg)
-		http.Error(w, errMsg, http.StatusInternalServerError)
+		response := models.ResponseData{Error: errMsg}
+		utils.RespondWithJSON(w, http.StatusInternalServerError, response)
 		return
 	}
 
 	// Check if the appointment exists and was updated
 	if rowsAffected == 0 {
-		http.Error(w, "Programare not found", http.StatusNotFound)
+		response := models.ResponseData{Error: "Programare not found"}
+		utils.RespondWithJSON(w, http.StatusNotFound, response)
 		return
 	}
 
 	log.Printf("[APPOINTMENT] Successfully updated appointment %d", programare.IDProgramare)
-	utils.RespondWithJSON(w, http.StatusOK, "Appointment updated")
+	response := models.ResponseData{Message: "Appointment updated"}
+	utils.RespondWithJSON(w, http.StatusOK, response)
 }
