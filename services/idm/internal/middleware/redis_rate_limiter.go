@@ -13,13 +13,15 @@ import (
 
 type RedisRateLimiter struct {
 	rdb            *redis.RedisClient
+	context        context.Context
 	rate           int
 	windowDuration time.Duration
 }
 
-func NewRedisRateLimiter(rdb *redis.RedisClient, rate int, windowDuration time.Duration) *RedisRateLimiter {
+func NewRedisRateLimiter(ctx context.Context, rdb *redis.RedisClient, rate int, windowDuration time.Duration) *RedisRateLimiter {
 	return &RedisRateLimiter{
 		rdb:            rdb,
+		context:        ctx,
 		rate:           rate,
 		windowDuration: windowDuration,
 	}
@@ -31,8 +33,6 @@ func (r *RedisRateLimiter) getKey(ip string) string {
 
 func (r *RedisRateLimiter) Limit(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		ctx := context.Background()
-
 		ip, _, err := net.SplitHostPort(req.RemoteAddr)
 		if err != nil {
 			log.Printf("[IDM] Error splitting remote addr %s", err) // Logging the error
@@ -41,7 +41,7 @@ func (r *RedisRateLimiter) Limit(next http.Handler) http.Handler {
 		}
 		key := r.getKey(ip)
 
-		val, err := r.rdb.GetClient().Incr(ctx, key).Result()
+		val, err := r.rdb.GetClient().Incr(r.context, key).Result()
 		if err != nil {
 			log.Printf("[IDM] Error incrementing rate limit key %s: %v", key, err) // Logging the error
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -49,7 +49,7 @@ func (r *RedisRateLimiter) Limit(next http.Handler) http.Handler {
 		}
 		if val == 1 {
 			// The key is new, set its TTL
-			expireCmd := r.rdb.GetClient().Expire(ctx, key, r.windowDuration)
+			expireCmd := r.rdb.GetClient().Expire(r.context, key, r.windowDuration)
 			if expireCmd.Err() != nil {
 				log.Printf("[IDM] Error setting TTL for rate limit key %s: %v", key, expireCmd.Err())
 			} else if !expireCmd.Val() {

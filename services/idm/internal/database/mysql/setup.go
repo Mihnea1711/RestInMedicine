@@ -16,7 +16,7 @@ type MySQLDatabase struct {
 	*sql.DB
 }
 
-func NewMySQL(config *config.MySQLConfig, ctx context.Context) (database.Database, error) {
+func NewMySQL(ctx context.Context, config *config.MySQLConfig) (database.Database, error) {
 	connStr := fmt.Sprintf(
 		"%s:%s@tcp(%s:%d)/%s?charset=%s&parseTime=%v",
 		config.User,

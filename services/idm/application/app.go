@@ -13,6 +13,7 @@ import (
 	"github.com/mihnea1711/POS_Project/services/idm/internal/database/redis"
 	"github.com/mihnea1711/POS_Project/services/idm/internal/server"
 	"github.com/mihnea1711/POS_Project/services/idm/pkg/config"
+	"github.com/mihnea1711/POS_Project/services/idm/pkg/utils"
 	"google.golang.org/grpc"
 )
 
@@ -28,7 +29,7 @@ func New(config *config.AppConfig, parentCtx context.Context) (*App, error) {
 	}
 
 	// setup mysql connection for the app
-	mysqlDB, err := mysql.NewMySQL(&config.MySQL, parentCtx)
+	mysqlDB, err := mysql.NewMySQL(parentCtx, &config.MySQL)
 	if err != nil {
 		log.Printf("[IDM] Error initializing MySQL: %v", err)
 		return nil, fmt.Errorf("failed to initialize MySQL: %w", err)
@@ -36,7 +37,7 @@ func New(config *config.AppConfig, parentCtx context.Context) (*App, error) {
 	app.database = mysqlDB
 
 	// setup redis connection
-	rdb, err := redis.NewRedisClient(&config.Redis, parentCtx)
+	rdb, err := redis.NewRedisClient(parentCtx, &config.Redis)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +76,6 @@ func (a *App) Start(ctx context.Context) error {
 
 	select {
 	case err, open := <-channel:
-		// second value is called open
 		if !open {
 			//channel is closed
 			log.Println("[IDM] Context channel error. Channel is closed.")
@@ -95,7 +95,7 @@ func (a *App) Start(ctx context.Context) error {
 		}
 
 		// allow 10 secs to close any resources
-		_, cancel := context.WithTimeout(ctx, time.Second*10)
+		_, cancel := context.WithTimeout(ctx, time.Second*utils.CLEAR_DB_RESOURCES_TIMEOUT)
 		defer cancel()
 
 		// Gracefully stop gRPC server

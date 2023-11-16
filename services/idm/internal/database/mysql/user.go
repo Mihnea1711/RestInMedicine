@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/mihnea1711/POS_Project/services/idm/internal/models"
+	"github.com/mihnea1711/POS_Project/services/idm/pkg/utils"
 )
 
 // AddUserToDB adds a user to the MySQL database and returns the new user's ID.
@@ -19,7 +20,11 @@ func (db *MySQLDatabase) AddUser(newUser models.UserRegistration) (int, error) {
 	}
 
 	// Insert the user into the User table
-	userQuery := "INSERT INTO User (Username, Password) VALUES (?, ?)"
+	userQuery := fmt.Sprintf("INSERT INTO %s (%s, %s) VALUES (?, ?)",
+		utils.UserTable,
+		utils.ColumnUserName,
+		utils.ColumnUserPassword,
+	)
 	result, err := tx.Exec(userQuery, newUser.Username, newUser.Password)
 	if err != nil {
 		tx.Rollback()
@@ -32,7 +37,11 @@ func (db *MySQLDatabase) AddUser(newUser models.UserRegistration) (int, error) {
 	userID, _ := result.LastInsertId()
 
 	// Insert the user's role into the Role table
-	roleQuery := "INSERT INTO Role (IDUser, Role) VALUES (?, ?)"
+	roleQuery := fmt.Sprintf("INSERT INTO %s (%s, %s) VALUES (?, ?)",
+		utils.RoleTable,
+		utils.ColumnRoleIDUser,
+		utils.ColumnRole,
+	)
 	_, err = tx.Exec(roleQuery, userID, newUser.Role)
 	if err != nil {
 		tx.Rollback()
@@ -53,9 +62,12 @@ func (db *MySQLDatabase) AddUser(newUser models.UserRegistration) (int, error) {
 }
 
 // GetAllUsersFromDB retrieves all users from the MySQL database.
-func (db *MySQLDatabase) GetAllUsers() ([]models.User, error) {
-	query := "SELECT * FROM User"
-	rows, err := db.DB.Query(query)
+func (db *MySQLDatabase) GetAllUsers(page, limit int) ([]models.User, error) {
+	offset := (page - 1) * limit
+	query := fmt.Sprintf("SELECT * FROM %s LIMIT ? OFFSET ?",
+		utils.UserTable,
+	)
+	rows, err := db.DB.Query(query, limit, offset)
 	if err != nil {
 		errMsg := fmt.Sprintf("Error retrieving all users from DB: %v", err)
 		log.Printf("[IDM] %s", errMsg)
@@ -80,7 +92,10 @@ func (db *MySQLDatabase) GetAllUsers() ([]models.User, error) {
 
 // GetUserFromDBByID retrieves a user from the MySQL database by user ID.
 func (db *MySQLDatabase) GetUserByID(userID int) (models.User, error) {
-	query := "SELECT * FROM User WHERE IDUser = ?"
+	query := fmt.Sprintf("SELECT * FROM %s WHERE %s = ?",
+		utils.UserTable,
+		utils.ColumnIDUser,
+	)
 	var user models.User
 	err := db.DB.QueryRow(query, userID).Scan(&user.IDUser, &user.Username, &user.Password)
 	if err != nil {
@@ -98,7 +113,10 @@ func (db *MySQLDatabase) GetUserByID(userID int) (models.User, error) {
 
 // GetUserFromDBByUsername retrieves a user from the MySQL database by username.
 func (db *MySQLDatabase) GetUserByUsername(username string) (models.User, error) {
-	query := "SELECT * FROM User WHERE Username = ?"
+	query := fmt.Sprintf("SELECT * FROM %s WHERE %s = ?",
+		utils.UserTable,
+		utils.ColumnUserName,
+	)
 	var user models.User
 	err := db.DB.QueryRow(query, username).Scan(&user.IDUser, &user.Username, &user.Password)
 	if err != nil {
@@ -116,7 +134,11 @@ func (db *MySQLDatabase) GetUserByUsername(username string) (models.User, error)
 
 // UpdateUserInDB updates a user in the MySQL database.
 func (db *MySQLDatabase) UpdateUserByID(userCredentials models.CredentialsRequest, userId int) (int, error) {
-	query := "UPDATE User SET Username = ? WHERE IDUser = ?"
+	query := fmt.Sprintf("UPDATE %s SET %s = ? WHERE %s = ?",
+		utils.UserTable,
+		utils.ColumnUserName,
+		utils.ColumnIDUser,
+	)
 	result, err := db.DB.Exec(query, userCredentials.Username, userId)
 	if err != nil {
 		errMsg := fmt.Sprintf("Error updating user in DB: %v", err)
@@ -130,7 +152,10 @@ func (db *MySQLDatabase) UpdateUserByID(userCredentials models.CredentialsReques
 
 // DeleteUserFromDBByID deletes a user from the MySQL database by user ID.
 func (db *MySQLDatabase) DeleteUserByID(userID int) (int, error) {
-	query := "DELETE FROM User WHERE IDUser = ?"
+	query := fmt.Sprintf("DELETE FROM %s WHERE %s = ?",
+		utils.UserTable,
+		utils.ColumnIDUser,
+	)
 	result, err := db.DB.Exec(query, userID)
 	if err != nil {
 		errMsg := fmt.Sprintf("Error deleting user from DB: %v", err)

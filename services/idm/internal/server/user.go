@@ -13,8 +13,11 @@ import (
 
 // GetUsers implements the GetUsers RPC method
 func (s *MyIDMServer) GetUsers(ctx context.Context, req *proto_files.EmptyRequest) (*proto_files.UsersResponse, error) {
+	page := req.Page
+	limit := req.Limit
+
 	// Call the database method to retrieve all users
-	users, err := s.DbConn.GetAllUsers()
+	users, err := s.DbConn.GetAllUsers(int(page), int(limit))
 	if err != nil {
 		log.Printf("[IDM] Error getting all users: %v", err)
 		return &proto_files.UsersResponse{

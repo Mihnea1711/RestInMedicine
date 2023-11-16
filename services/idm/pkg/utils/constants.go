@@ -18,7 +18,32 @@ const (
 )
 
 const (
+	DB_REQ_TIMEOUT_SEC_MULTIPLIER = 5
+	CLEAR_DB_RESOURCES_TIMEOUT    = 10
+)
+
+const (
 	RoleAdministrator UserRole = "administrator"
 	RoleDoctor        UserRole = "doctor"
 	RolePatient       UserRole = "pacient"
+)
+
+// UserTable and RoleTable are constants for table names
+const (
+	UserTable = "User"
+	RoleTable = "Role"
+
+	AliasRole = "r"
+	AliasUser = "u"
+)
+
+// UserTableColumns and RoleTableColumns are constants for column names in their respective tables
+const (
+	ColumnIDUser       = "IDUser"
+	ColumnUserName     = "Username"
+	ColumnUserPassword = "Password"
+
+	ColumnIDRole     = "IDRole"
+	ColumnRoleIDUser = "IDUser"
+	ColumnRole       = "Role"
 )
