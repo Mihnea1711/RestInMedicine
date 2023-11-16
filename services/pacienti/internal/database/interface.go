@@ -9,9 +9,9 @@ import (
 type Database interface {
 	SavePacient(ctx context.Context, doctor *models.Pacient) error
 
-	FetchPacienti(ctx context.Context) ([]models.Pacient, error)
+	FetchPacienti(ctx context.Context, page, limit int) ([]models.Pacient, error)
 	FetchPacientByID(ctx context.Context, id int) (*models.Pacient, error)
-	FetchPacientByEmail(ctx context.Context, email string) (*models.Pacient, error)
+	FetchPacientByEmail(ctx context.Context, email string, page, limit int) (*models.Pacient, error)
 	FetchPacientByUserID(ctx context.Context, userID int) (*models.Pacient, error)
 
 	UpdatePacientByID(ctx context.Context, doctor *models.Pacient) (int, error)

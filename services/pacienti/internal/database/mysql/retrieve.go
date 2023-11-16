@@ -10,8 +10,10 @@ import (
 	"github.com/mihnea1711/POS_Project/services/pacienti/pkg/utils"
 )
 
-func (db *MySQLDatabase) FetchPacienti(ctx context.Context) ([]models.Pacient, error) {
-	query := fmt.Sprintf("SELECT %s, %s, %s, %s, %s, %s, %s, %s, %s FROM %s",
+func (db *MySQLDatabase) FetchPacienti(ctx context.Context, page, limit int) ([]models.Pacient, error) {
+	offset := (page - 1) * limit
+
+	query := fmt.Sprintf("SELECT %s, %s, %s, %s, %s, %s, %s, %s, %s FROM %s LIMIT ? OFFSET ?",
 		utils.ColumnIDPacient,
 		utils.ColumnIDUser,
 		utils.ColumnNume,
@@ -24,7 +26,7 @@ func (db *MySQLDatabase) FetchPacienti(ctx context.Context) ([]models.Pacient, e
 		utils.TableName,
 	)
 
-	rows, err := db.QueryContext(ctx, query)
+	rows, err := db.QueryContext(ctx, query, limit, offset)
 	if err != nil {
 		log.Printf("[PATIENT] Error executing query to fetch pacienti: %v", err)
 		return nil, err
@@ -84,8 +86,10 @@ func (db *MySQLDatabase) FetchPacientByID(ctx context.Context, id int) (*models.
 	return &pacient, nil
 }
 
-func (db *MySQLDatabase) FetchPacientByEmail(ctx context.Context, email string) (*models.Pacient, error) {
-	query := fmt.Sprintf("SELECT %s, %s, %s, %s, %s, %s, %s, %s, %s FROM %s WHERE %s = ?",
+func (db *MySQLDatabase) FetchPacientByEmail(ctx context.Context, email string, page, limit int) (*models.Pacient, error) {
+	offset := (page - 1) * limit
+
+	query := fmt.Sprintf("SELECT %s, %s, %s, %s, %s, %s, %s, %s, %s FROM %s WHERE %s = ? LIMIT ? OFFSET ?",
 		utils.ColumnIDPacient,
 		utils.ColumnIDUser,
 		utils.ColumnNume,
@@ -98,7 +102,7 @@ func (db *MySQLDatabase) FetchPacientByEmail(ctx context.Context, email string) 
 		utils.TableName,
 		utils.ColumnEmail,
 	)
-	row := db.QueryRowContext(ctx, query, email)
+	row := db.QueryRowContext(ctx, query, email, limit, offset)
 
 	var pacient models.Pacient
 	err := row.Scan(&pacient.IDPacient, &pacient.IDUser, &pacient.Nume, &pacient.Prenume, &pacient.Email, &pacient.Telefon, &pacient.CNP, &pacient.DataNasterii, &pacient.IsActive)

@@ -16,11 +16,14 @@ import (
 func (dController *PacientController) GetPacienti(w http.ResponseWriter, r *http.Request) {
 	log.Println("[PATIENT] Fetching all pacienti...")
 
+	// Extract the limit and page query parameters from the request
+	limit, page := utils.ExtractPaginationParams(r)
+
 	// Ensure a database operation doesn't take longer than 5 seconds
-	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
-	pacients, err := dController.DbConn.FetchPacienti(ctx)
+	pacients, err := dController.DbConn.FetchPacienti(ctx, page, limit)
 	if err != nil {
 		errMsg := fmt.Sprintf("internal server error: %s", err)
 		log.Printf("[PATIENT] %s", errMsg)
@@ -51,7 +54,7 @@ func (dController *PacientController) GetPacientByID(w http.ResponseWriter, r *h
 	log.Printf("Fetching pacient with ID: %d...", id)
 
 	// Ensure a database operation doesn't take longer than 5 seconds
-	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
 	pacient, err := dController.DbConn.FetchPacientByID(ctx, id)
@@ -83,11 +86,14 @@ func (dController *PacientController) GetPacientByEmail(w http.ResponseWriter, r
 
 	log.Printf("[PATIENT] Fetching pacient with email: %s...", email)
 
+	// Extract the limit and page query parameters from the request
+	limit, page := utils.ExtractPaginationParams(r)
+
 	// Ensure a database operation doesn't take longer than 5 seconds
-	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
-	pacient, err := dController.DbConn.FetchPacientByEmail(ctx, email)
+	pacient, err := dController.DbConn.FetchPacientByEmail(ctx, email, page, limit)
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to fetch pacient with email %s: %s", email, err)
 		log.Printf("[PATIENT] %s", errMsg)
@@ -127,7 +133,7 @@ func (dController *PacientController) GetPacientByUserID(w http.ResponseWriter, 
 	log.Printf("[PATIENT] Fetching pacient with user ID: %d...", userID)
 
 	// Ensure a database operation doesn't take longer than 5 seconds
-	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
 	pacient, err := dController.DbConn.FetchPacientByUserID(ctx, userID)
