@@ -13,16 +13,16 @@ func (db *MySQLDatabase) DeleteProgramareByID(ctx context.Context, id int) (int6
 
 	res, err := db.ExecContext(ctx, query, id)
 	if err != nil {
-		log.Printf("[PROGRAMARE] Error executing query to delete programare: %v", err)
+		log.Printf("[APPOINTMENT] Error executing query to delete programare: %v", err)
 		return 0, err
 	}
 
 	rowsAffected, err := res.RowsAffected()
 	if err != nil {
-		log.Printf("[PROGRAMARE] Error getting rows affected: %v", err)
+		log.Printf("[APPOINTMENT] Error getting rows affected: %v", err)
 		return 0, err
 	}
 
-	log.Printf("[PROGRAMARE] %d programare deleted successfully.", rowsAffected)
+	log.Printf("[APPOINTMENT] %d programare deleted successfully.", rowsAffected)
 	return rowsAffected, nil
 }

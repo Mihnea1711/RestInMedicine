@@ -19,7 +19,7 @@ func (db *MySQLDatabase) FetchProgramari(ctx context.Context, page, limit int) (
 
 	rows, err := db.QueryContext(ctx, query, limit, offset)
 	if err != nil {
-		log.Printf("[PROGRAMARE] Error executing query to fetch programari: %v", err)
+		log.Printf("[APPOINTMENT] Error executing query to fetch programari: %v", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -34,14 +34,14 @@ func (db *MySQLDatabase) FetchProgramari(ctx context.Context, page, limit int) (
 			&programare.Date,
 			&programare.Status,
 		); err != nil {
-			log.Printf("[PROGRAMARE] Error scanning programare: %v", err)
+			log.Printf("[APPOINTMENT] Error scanning programare: %v", err)
 			return nil, err
 		}
 		programari = append(programari, programare)
 	}
 
 	if err := rows.Err(); err != nil {
-		log.Printf("[PROGRAMARE] Error scanning programari: %v", err)
+		log.Printf("[APPOINTMENT] Error scanning programari: %v", err)
 		return nil, err
 	}
 
@@ -65,7 +65,7 @@ func (db *MySQLDatabase) FetchProgramareByID(ctx context.Context, id int) (*mode
 		if err == sql.ErrNoRows {
 			return nil, nil
 		}
-		log.Printf("[PROGRAMARE] Error retrieving programare by ID: %v", err)
+		log.Printf("[APPOINTMENT] Error retrieving programare by ID: %v", err)
 		return nil, err
 	}
 
@@ -80,7 +80,7 @@ func (db *MySQLDatabase) FetchProgramariByPacientID(ctx context.Context, id, pag
 
 	rows, err := db.QueryContext(ctx, query, id, limit, offset)
 	if err != nil {
-		log.Printf("[PROGRAMARE] Error executing query to fetch programari by pacient ID: %v", err)
+		log.Printf("[APPOINTMENT] Error executing query to fetch programari by pacient ID: %v", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -95,14 +95,14 @@ func (db *MySQLDatabase) FetchProgramariByPacientID(ctx context.Context, id, pag
 			&programare.Date,
 			&programare.Status,
 		); err != nil {
-			log.Printf("[PROGRAMARE] Error scanning programare by pacient ID: %v", err)
+			log.Printf("[APPOINTMENT] Error scanning programare by pacient ID: %v", err)
 			return nil, err
 		}
 		programari = append(programari, programare)
 	}
 
 	if err := rows.Err(); err != nil {
-		log.Printf("[PROGRAMARE] Error scanning programari by pacient ID: %v", err)
+		log.Printf("[APPOINTMENT] Error scanning programari by pacient ID: %v", err)
 		return nil, err
 	}
 
@@ -117,7 +117,7 @@ func (db *MySQLDatabase) FetchProgramariByDoctorID(ctx context.Context, id, page
 
 	rows, err := db.QueryContext(ctx, query, id, limit, offset)
 	if err != nil {
-		log.Printf("[PROGRAMARE] Error executing query to fetch programari by doctor ID: %v", err)
+		log.Printf("[APPOINTMENT] Error executing query to fetch programari by doctor ID: %v", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -132,14 +132,14 @@ func (db *MySQLDatabase) FetchProgramariByDoctorID(ctx context.Context, id, page
 			&programare.Date,
 			&programare.Status,
 		); err != nil {
-			log.Printf("[PROGRAMARE] Error scanning programari by doctor ID: %v", err)
+			log.Printf("[APPOINTMENT] Error scanning programari by doctor ID: %v", err)
 			return nil, err
 		}
 		programari = append(programari, programare)
 	}
 
 	if err := rows.Err(); err != nil {
-		log.Printf("[PROGRAMARE] Error scanning programari by doctor ID: %v", err)
+		log.Printf("[APPOINTMENT] Error scanning programari by doctor ID: %v", err)
 		return nil, err
 	}
 
@@ -155,7 +155,7 @@ func (db *MySQLDatabase) FetchProgramariByDate(ctx context.Context, date time.Ti
 
 	rows, err := db.QueryContext(ctx, query, date, limit, offset)
 	if err != nil {
-		log.Printf("[PROGRAMARE] Error executing query to fetch programari by date: %v", err)
+		log.Printf("[APPOINTMENT] Error executing query to fetch programari by date: %v", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -170,14 +170,14 @@ func (db *MySQLDatabase) FetchProgramariByDate(ctx context.Context, date time.Ti
 			&programare.Date,
 			&programare.Status,
 		); err != nil {
-			log.Printf("[PROGRAMARE] Error scanning programari by date: %v", err)
+			log.Printf("[APPOINTMENT] Error scanning programari by date: %v", err)
 			return nil, err
 		}
 		programari = append(programari, programare)
 	}
 
 	if err := rows.Err(); err != nil {
-		log.Printf("[PROGRAMARE] Error scanning programari by date: %v", err)
+		log.Printf("[APPOINTMENT] Error scanning programari by date: %v", err)
 		return nil, err
 	}
 
@@ -192,7 +192,7 @@ func (db *MySQLDatabase) FetchProgramariByStatus(ctx context.Context, state stri
 
 	rows, err := db.QueryContext(ctx, query, state, limit, offset)
 	if err != nil {
-		log.Printf("[PROGRAMARE] Error executing query to fetch programari by state: %v", err)
+		log.Printf("[APPOINTMENT] Error executing query to fetch programari by state: %v", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -207,14 +207,14 @@ func (db *MySQLDatabase) FetchProgramariByStatus(ctx context.Context, state stri
 			&programare.Date,
 			&programare.Status,
 		); err != nil {
-			log.Printf("[PROGRAMARE] Error scanning programari by state: %v", err)
+			log.Printf("[APPOINTMENT] Error scanning programari by state: %v", err)
 			return nil, err
 		}
 		programari = append(programari, programare)
 	}
 
 	if err := rows.Err(); err != nil {
-		log.Printf("[PROGRAMARE] Error scanning programari by state: %v", err)
+		log.Printf("[APPOINTMENT] Error scanning programari by state: %v", err)
 		return nil, err
 	}
 

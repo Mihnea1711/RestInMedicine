@@ -1,13 +1,22 @@
 #!/bin/bash
 
-echo "[PROGRAMARE] Stopping existing containers..."
+echo "[APPOINTMENT] Stopping existing containers..."
 docker compose down
 
-echo "[PROGRAMARE] Removing MySQL data volume..."
+echo "[APPOINTMENT] Removing unused volumes..."
+docker volume prune --force
+
+echo "[APPOINTMENT] Removing MySQL data volume..."
 docker volume rm programari_mysql_data
 
-echo "[PROGRAMARE] Removing Redis data volume..."
+echo "[APPOINTMENT] Removing Redis data volume..."
 docker volume rm programari_redis_data
+
+echo "[APPOINTMENT] Removing unused networks..."
+docker network prune --force
+
+echo "[APPOINTMENT] Removing unused images..."
+docker image prune --force
 
 echo "[PROGRAMARE] Building Docker images..."
 docker compose build

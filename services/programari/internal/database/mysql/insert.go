@@ -14,10 +14,10 @@ func (db *MySQLDatabase) SaveProgramare(ctx context.Context, programare *models.
 
 	_, err := db.ExecContext(ctx, query, programare.IDPacient, programare.IDDoctor, programare.Date, programare.Status)
 	if err != nil {
-		log.Printf("[PROGRAMARE] Error executing query to save programare: %v", err)
+		log.Printf("[APPOINTMENT] Error executing query to save programare: %v", err)
 		return err
 	}
 
-	log.Println("[PROGRAMARE] Programare saved successfully.")
+	log.Println("[APPOINTMENT] Programare saved successfully.")
 	return nil
 }
