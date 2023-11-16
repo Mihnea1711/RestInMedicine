@@ -5,8 +5,8 @@ import (
 )
 
 type Pacient struct {
-	IDPacient    int       `db:"id_pacient" json:"idPacient" sql:"type:int primary key"`
-	IDUser       int       `db:"id_user" json:"id_user" sql:"type:int references Utilizatori"`
+	IDPacient    int       `db:"id_patient" json:"idPacient" sql:"type:int primary key"`
+	IDUser       int       `db:"id_user" json:"id_user" sql:"type:int"`
 	Nume         string    `db:"nume" json:"nume" sql:"type:varchar(50)"`
 	Prenume      string    `db:"prenume" json:"prenume" sql:"type:varchar(50)"`
 	Email        string    `db:"email" json:"email" sql:"type:varchar(70) unique"`
@@ -14,4 +14,10 @@ type Pacient struct {
 	CNP          string    `db:"cnp" json:"cnp" sql:"type:char(13) unique"`
 	DataNasterii time.Time `db:"data_nasterii" json:"data_nasterii" sql:"type:date"`
 	IsActive     bool      `db:"is_active" json:"is_active"`
+}
+
+type ResponseData struct {
+	Message string      `json:"message"`
+	Error   string      `json:"error"`
+	Payload interface{} `json:"payload"`
 }

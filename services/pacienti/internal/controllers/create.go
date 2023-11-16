@@ -13,7 +13,7 @@ import (
 
 func (dController *PacientController) CreatePacient(w http.ResponseWriter, r *http.Request) {
 	log.Printf("[PATIENT] Attempting to create a new PATIENT.")
-	doctor := r.Context().Value(utils.DECODED_PACIENT).(*models.Pacient)
+	doctor := r.Context().Value(utils.DECODED_PATIENT).(*models.Pacient)
 
 	// Ensure a database operation doesn't take longer than 5 seconds
 	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
@@ -26,10 +26,14 @@ func (dController *PacientController) CreatePacient(w http.ResponseWriter, r *ht
 		log.Printf("[PATIENT] Failed to save doctor to the database: %s\n", errMsg)
 
 		// Use RespondWithJSON for error response
-		utils.RespondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": errMsg})
+		utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{
+			Error: errMsg,
+		})
 		return
 	}
 
 	// Use RespondWithJSON for success response
-	utils.RespondWithJSON(w, http.StatusOK, map[string]string{"message": "Doctor created"})
+	utils.RespondWithJSON(w, http.StatusOK, models.ResponseData{
+		Message: "Patient created",
+	})
 }

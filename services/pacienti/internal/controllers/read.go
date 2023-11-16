@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/mihnea1711/POS_Project/services/pacienti/internal/models"
 	"github.com/mihnea1711/POS_Project/services/pacienti/pkg/utils"
 )
 
@@ -25,17 +26,17 @@ func (dController *PacientController) GetPacienti(w http.ResponseWriter, r *http
 		log.Printf("[PATIENT] %s", errMsg)
 
 		// Use utils.RespondWithJSON for error response
-		utils.RespondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": errMsg})
+		utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{Error: errMsg})
 		return
 	}
 
 	// Use utils.RespondWithJSON for success response
-	utils.RespondWithJSON(w, http.StatusOK, pacients)
+	utils.RespondWithJSON(w, http.StatusOK, models.ResponseData{Payload: pacients})
 }
 
 func (dController *PacientController) GetPacientByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	idStr := vars["id"]
+	idStr := vars[utils.FETCH_PATIENT_BY_ID_PARAMETER]
 
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -43,7 +44,7 @@ func (dController *PacientController) GetPacientByID(w http.ResponseWriter, r *h
 		log.Printf("[PATIENT] %s", errMsg)
 
 		// Use utils.RespondWithJSON for error response
-		utils.RespondWithJSON(w, http.StatusBadRequest, map[string]string{"error": errMsg})
+		utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg})
 		return
 	}
 
@@ -59,7 +60,7 @@ func (dController *PacientController) GetPacientByID(w http.ResponseWriter, r *h
 		log.Printf("[PATIENT] %s", errMsg)
 
 		// Use utils.RespondWithJSON for error response
-		utils.RespondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": errMsg})
+		utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{Error: errMsg})
 		return
 	}
 
@@ -68,17 +69,17 @@ func (dController *PacientController) GetPacientByID(w http.ResponseWriter, r *h
 		log.Printf("[PATIENT] %s", errMsg)
 
 		// Use utils.RespondWithJSON for error response
-		utils.RespondWithJSON(w, http.StatusNotFound, map[string]string{"error": errMsg})
+		utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Error: errMsg})
 		return
 	}
 
 	// Use utils.RespondWithJSON for success response
-	utils.RespondWithJSON(w, http.StatusOK, pacient)
+	utils.RespondWithJSON(w, http.StatusOK, models.ResponseData{Payload: pacient})
 }
 
 func (dController *PacientController) GetPacientByEmail(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	email := vars["email"]
+	email := vars[utils.FETCH_PATIENT_BY_EMAIL_PARAMETER]
 
 	log.Printf("[PATIENT] Fetching pacient with email: %s...", email)
 
@@ -92,7 +93,7 @@ func (dController *PacientController) GetPacientByEmail(w http.ResponseWriter, r
 		log.Printf("[PATIENT] %s", errMsg)
 
 		// Use utils.RespondWithJSON for error response
-		utils.RespondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": errMsg})
+		utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{Error: errMsg})
 		return
 	}
 
@@ -101,17 +102,17 @@ func (dController *PacientController) GetPacientByEmail(w http.ResponseWriter, r
 		log.Printf("[PATIENT] %s", errMsg)
 
 		// Use utils.RespondWithJSON for error response
-		utils.RespondWithJSON(w, http.StatusNotFound, map[string]string{"error": errMsg})
+		utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Error: errMsg})
 		return
 	}
 
 	// Use utils.RespondWithJSON for success response
-	utils.RespondWithJSON(w, http.StatusOK, pacient)
+	utils.RespondWithJSON(w, http.StatusOK, models.ResponseData{Payload: pacient})
 }
 
 func (dController *PacientController) GetPacientByUserID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	userIDString := vars["id"]
+	userIDString := vars[utils.FETCH_PATIENT_BY_USER_ID_PARAMETER]
 
 	userID, err := strconv.Atoi(userIDString)
 	if err != nil {
@@ -119,7 +120,7 @@ func (dController *PacientController) GetPacientByUserID(w http.ResponseWriter, 
 		log.Printf("[PATIENT] %s", errMsg)
 
 		// Use utils.RespondWithJSON for error response
-		utils.RespondWithJSON(w, http.StatusBadRequest, map[string]string{"error": errMsg})
+		utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg})
 		return
 	}
 
@@ -135,7 +136,7 @@ func (dController *PacientController) GetPacientByUserID(w http.ResponseWriter, 
 		log.Printf("[PATIENT] %s", errMsg)
 
 		// Use utils.RespondWithJSON for error response
-		utils.RespondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": errMsg})
+		utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{Error: errMsg})
 		return
 	}
 
@@ -144,10 +145,10 @@ func (dController *PacientController) GetPacientByUserID(w http.ResponseWriter, 
 		log.Printf("[PATIENT] %s", errMsg)
 
 		// Use utils.RespondWithJSON for error response
-		utils.RespondWithJSON(w, http.StatusNotFound, map[string]string{"error": errMsg})
+		utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Error: errMsg})
 		return
 	}
 
 	// Use utils.RespondWithJSON for success response
-	utils.RespondWithJSON(w, http.StatusOK, pacient)
+	utils.RespondWithJSON(w, http.StatusOK, models.ResponseData{Payload: pacient})
 }

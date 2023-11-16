@@ -3,13 +3,26 @@ package mysql
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log"
 
 	"github.com/mihnea1711/POS_Project/services/pacienti/internal/models"
+	"github.com/mihnea1711/POS_Project/services/pacienti/pkg/utils"
 )
 
 func (db *MySQLDatabase) FetchPacienti(ctx context.Context) ([]models.Pacient, error) {
-	query := `SELECT id_pacient, id_user, nume, prenume, email, telefon, cnp, data_nasterii, is_active FROM pacient`
+	query := fmt.Sprintf("SELECT %s, %s, %s, %s, %s, %s, %s, %s, %s FROM %s",
+		utils.ColumnIDPacient,
+		utils.ColumnIDUser,
+		utils.ColumnNume,
+		utils.ColumnPrenume,
+		utils.ColumnEmail,
+		utils.ColumnTelefon,
+		utils.ColumnCNP,
+		utils.ColumnDataNasterii,
+		utils.ColumnIsActive,
+		utils.TableName,
+	)
 
 	rows, err := db.QueryContext(ctx, query)
 	if err != nil {
@@ -41,7 +54,19 @@ func (db *MySQLDatabase) FetchPacienti(ctx context.Context) ([]models.Pacient, e
 }
 
 func (db *MySQLDatabase) FetchPacientByID(ctx context.Context, id int) (*models.Pacient, error) {
-	query := `SELECT id_pacient, id_user, nume, prenume, email, telefon, cnp, data_nasterii, is_active FROM pacient WHERE id_pacient = ?`
+	query := fmt.Sprintf("SELECT %s, %s, %s, %s, %s, %s, %s, %s, %s FROM %s WHERE %s = ?",
+		utils.ColumnIDPacient,
+		utils.ColumnIDUser,
+		utils.ColumnNume,
+		utils.ColumnPrenume,
+		utils.ColumnEmail,
+		utils.ColumnTelefon,
+		utils.ColumnCNP,
+		utils.ColumnDataNasterii,
+		utils.ColumnIsActive,
+		utils.TableName,
+		utils.ColumnIDPacient,
+	)
 	row := db.QueryRowContext(ctx, query, id)
 
 	var pacient models.Pacient
@@ -60,7 +85,19 @@ func (db *MySQLDatabase) FetchPacientByID(ctx context.Context, id int) (*models.
 }
 
 func (db *MySQLDatabase) FetchPacientByEmail(ctx context.Context, email string) (*models.Pacient, error) {
-	query := `SELECT id_pacient, id_user, nume, prenume, email, telefon, cnp, data_nasterii, is_active FROM pacient WHERE email = ?`
+	query := fmt.Sprintf("SELECT %s, %s, %s, %s, %s, %s, %s, %s, %s FROM %s WHERE %s = ?",
+		utils.ColumnIDPacient,
+		utils.ColumnIDUser,
+		utils.ColumnNume,
+		utils.ColumnPrenume,
+		utils.ColumnEmail,
+		utils.ColumnTelefon,
+		utils.ColumnCNP,
+		utils.ColumnDataNasterii,
+		utils.ColumnIsActive,
+		utils.TableName,
+		utils.ColumnEmail,
+	)
 	row := db.QueryRowContext(ctx, query, email)
 
 	var pacient models.Pacient
@@ -79,7 +116,19 @@ func (db *MySQLDatabase) FetchPacientByEmail(ctx context.Context, email string) 
 }
 
 func (db *MySQLDatabase) FetchPacientByUserID(ctx context.Context, userID int) (*models.Pacient, error) {
-	query := `SELECT id_pacient, id_user, nume, prenume, email, telefon, cnp, data_nasterii, is_active FROM pacient WHERE id_user = ?`
+	query := fmt.Sprintf("SELECT %s, %s, %s, %s, %s, %s, %s, %s, %s FROM %s WHERE %s = ?",
+		utils.ColumnIDPacient,
+		utils.ColumnIDUser,
+		utils.ColumnNume,
+		utils.ColumnPrenume,
+		utils.ColumnEmail,
+		utils.ColumnTelefon,
+		utils.ColumnCNP,
+		utils.ColumnDataNasterii,
+		utils.ColumnIsActive,
+		utils.TableName,
+		utils.ColumnIDUser,
+	)
 	row := db.QueryRowContext(ctx, query, userID)
 
 	var pacient models.Pacient

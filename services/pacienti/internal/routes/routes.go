@@ -11,11 +11,12 @@ import (
 	"github.com/mihnea1711/POS_Project/services/pacienti/internal/database"
 	"github.com/mihnea1711/POS_Project/services/pacienti/internal/database/redis"
 	"github.com/mihnea1711/POS_Project/services/pacienti/internal/middleware"
+	"github.com/mihnea1711/POS_Project/services/pacienti/pkg/utils"
 )
 
-func SetupRoutes(dbConn database.Database, rdb *redis.RedisClient, parentCtx context.Context) *mux.Router {
+func SetupRoutes(parentCtx context.Context, dbConn database.Database, rdb *redis.RedisClient) *mux.Router {
 	log.Println("[PATIENT] Setting up rate limiter...")
-	rateLimiter := middleware.NewRedisRateLimiter(rdb.GetClient(), parentCtx, 10, time.Minute) // allowing 10 requests per minute.
+	rateLimiter := middleware.NewRedisRateLimiter(rdb.GetClient(), parentCtx, utils.LIMITER_REQUESTS_ALLOWED, utils.LIMITER_MINUTE_MULTIPLIER*time.Minute)
 
 	log.Println("[PATIENT] Setting up routes...")
 	router := mux.NewRouter()
@@ -36,37 +37,33 @@ func SetupRoutes(dbConn database.Database, rdb *redis.RedisClient, parentCtx con
 func loadCrudRoutes(router *mux.Router, pacientController *controllers.PacientController) {
 	log.Println("[PATIENT] Loading CRUD routes for Pacient entity...")
 
-	// ---------------------------------------------------------- Create --------------------------------------------------------------
 	pacientCreationHandler := http.HandlerFunc(pacientController.CreatePacient)
-	router.Handle("/patients", middleware.ValidatePacientInfo(pacientCreationHandler)).Methods("POST") // Creates a new pacient
-	log.Println("[PATIENT] Route POST /patients registered.")
+	router.Handle(utils.CREATE_PATIENT_ENDPOINT, middleware.ValidatePacientInfo(pacientCreationHandler)).Methods("POST")
+	log.Println("[PATIENT] Route POST", utils.CREATE_PATIENT_ENDPOINT, "registered.")
 
-	// ---------------------------------------------------------- Retrieve --------------------------------------------------------------
 	pacientFetchAllHandler := http.HandlerFunc(pacientController.GetPacienti)
-	router.HandleFunc("/patients", pacientFetchAllHandler).Methods("GET") // Lists all patients
-	log.Println("[PATIENT] Route GET /patients registered.")
-
-	pacientFetchByIDHandler := http.HandlerFunc(pacientController.GetPacientByID)
-	router.HandleFunc("/patients/{id}", pacientFetchByIDHandler).Methods("GET") // Lists all patients
-	log.Println("[PATIENT] Route GET /patients/{id} registered.")
+	router.HandleFunc(utils.FETCH_ALL_PATIENTS_ENDPOINT, pacientFetchAllHandler).Methods("GET")
+	log.Println("[PATIENT] Route GET", utils.FETCH_ALL_PATIENTS_ENDPOINT, "registered.")
 
 	pacientFetchByEmailHandler := http.HandlerFunc(pacientController.GetPacientByEmail)
-	router.Handle("/patients/email/{email}", middleware.ValidateEmail(pacientFetchByEmailHandler)).Methods("GET")
-	log.Println("[PATIENT] Route GET /patients/email/{email} registered.")
+	router.Handle(utils.FETCH_PATIENT_BY_EMAIL_ENDPOINT, middleware.ValidateEmail(pacientFetchByEmailHandler)).Methods("GET")
+	log.Println("[PATIENT] Route GET", utils.FETCH_PATIENT_BY_EMAIL_ENDPOINT, "registered.")
 
 	pacientFetchByUserIDHandler := http.HandlerFunc(pacientController.GetPacientByUserID)
-	router.HandleFunc("/patients/users/{id}", pacientFetchByUserIDHandler).Methods("GET")
-	log.Println("[PATIENT] Route GET /patients/users/{id} registered.")
+	router.HandleFunc(utils.FETCH_PATIENT_BY_USER_ID_ENDPOINT, pacientFetchByUserIDHandler).Methods("GET")
+	log.Println("[PATIENT] Route GET", utils.FETCH_PATIENT_BY_USER_ID_ENDPOINT, "registered.")
 
-	// ---------------------------------------------------------- Update --------------------------------------------------------------
+	pacientFetchByIDHandler := http.HandlerFunc(pacientController.GetPacientByID)
+	router.HandleFunc(utils.FETCH_PATIENT_BY_ID_ENDPOINT, pacientFetchByIDHandler).Methods("GET")
+	log.Println("[PATIENT] Route GET", utils.FETCH_PATIENT_BY_ID_ENDPOINT, "registered.")
+
 	pacientUpdateByIDHandler := http.HandlerFunc(pacientController.UpdatePacientByID)
-	router.Handle("/patients/{id}", middleware.ValidatePacientInfo(pacientUpdateByIDHandler)).Methods("PUT") // Updates a specific pacient
-	log.Println("[PATIENT] Route PUT /patients/{id} registered.")
+	router.Handle(utils.UPDATE_PATIENT_BY_ID_ENDPOINT, middleware.ValidatePacientInfo(pacientUpdateByIDHandler)).Methods("PUT")
+	log.Println("[PATIENT] Route PUT", utils.UPDATE_PATIENT_BY_ID_ENDPOINT, "registered.")
 
-	// ---------------------------------------------------------- Delete --------------------------------------------------------------
 	pacientDeleteByIDHandler := http.HandlerFunc(pacientController.DeletePacientByID)
-	router.Handle("/patients/{id}", pacientDeleteByIDHandler).Methods("DELETE") // Deletes a pacient
-	log.Println("[PATIENT] Route DELETE /patients/{id} registered.")
+	router.Handle(utils.DELETE_PATIENT_BY_ID_ENDPOINT, pacientDeleteByIDHandler).Methods("DELETE")
+	log.Println("[PATIENT] Route DELETE", utils.DELETE_PATIENT_BY_ID_ENDPOINT, "registered.")
 
 	log.Println("[PATIENT] All CRUD routes for Patient entity loaded successfully.")
 }

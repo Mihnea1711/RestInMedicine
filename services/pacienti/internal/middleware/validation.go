@@ -75,7 +75,7 @@ func ValidatePacientInfo(next http.Handler) http.Handler {
 		log.Printf("[MIDDLEWARE] Pacient info validated successfully in request: %s", r.RequestURI)
 
 		// If all validations pass, proceed to the actual controller
-		ctx := context.WithValue(r.Context(), utils.DECODED_PACIENT, &pacient)
+		ctx := context.WithValue(r.Context(), utils.DECODED_PATIENT, &pacient)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
@@ -148,7 +148,7 @@ func validateCNPBirthdate(cnp string, dataNasterii time.Time) bool {
 
 	// Extract birthdate from CNP
 	cnpBirthdateStr := cnp[1:7] // Extract the 6-digit date of birth from the CNP
-	cnpBirthdate, err := time.Parse("060102", cnpBirthdateStr)
+	cnpBirthdate, err := time.Parse(utils.CNP_DATE_FORMAT, cnpBirthdateStr)
 	if err != nil {
 		log.Println("[MIDDLEWARE] CNP not matching birthdate")
 		return false
@@ -161,7 +161,7 @@ func validateCNPBirthdate(cnp string, dataNasterii time.Time) bool {
 func ValidateEmail(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
-		email, ok := vars["email"]
+		email, ok := vars[utils.FETCH_PATIENT_BY_EMAIL_PARAMETER]
 		if !ok {
 			log.Println("[MIDDLEWARE] Email not provided in request:", r.RequestURI)
 			http.Error(w, "Email not provided", http.StatusBadRequest)
@@ -177,5 +177,3 @@ func ValidateEmail(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
-
-// add similar validation middlewares for Update, Delete, etc.

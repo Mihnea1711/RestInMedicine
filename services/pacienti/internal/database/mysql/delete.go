@@ -2,12 +2,15 @@ package mysql
 
 import (
 	"context"
+	"fmt"
 	"log"
+
+	"github.com/mihnea1711/POS_Project/services/pacienti/pkg/utils"
 )
 
 func (db *MySQLDatabase) DeletePacientByID(ctx context.Context, id int) (int, error) {
 	// Construct the SQL delete query
-	query := `DELETE FROM pacient WHERE id_pacient = ?`
+	query := fmt.Sprintf("DELETE FROM %s WHERE %s = ?", utils.TableName, utils.ColumnIDPacient)
 
 	// Execute the SQL statement
 	result, err := db.ExecContext(ctx, query, id)

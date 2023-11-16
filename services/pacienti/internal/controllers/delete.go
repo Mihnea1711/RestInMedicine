@@ -9,12 +9,13 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/mihnea1711/POS_Project/services/pacienti/internal/models"
 	"github.com/mihnea1711/POS_Project/services/pacienti/pkg/utils"
 )
 
 func (dController *PacientController) DeletePacientByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	idStr := vars["id"]
+	idStr := vars[utils.DELETE_PATIENT_BY_ID_PARAMETER]
 
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -22,7 +23,7 @@ func (dController *PacientController) DeletePacientByID(w http.ResponseWriter, r
 		log.Printf("[PATIENT] %s", errMsg)
 
 		// Use utils.RespondWithJSON for error response
-		utils.RespondWithJSON(w, http.StatusBadRequest, map[string]string{"error": errMsg})
+		utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg})
 		return
 	}
 
@@ -38,7 +39,7 @@ func (dController *PacientController) DeletePacientByID(w http.ResponseWriter, r
 		log.Printf("[PATIENT] %s", errMsg)
 
 		// Use utils.RespondWithJSON for error response
-		utils.RespondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": errMsg})
+		utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{Error: errMsg})
 		return
 	}
 
@@ -47,10 +48,10 @@ func (dController *PacientController) DeletePacientByID(w http.ResponseWriter, r
 		log.Printf("[PATIENT] %s", errMsg)
 
 		// Use utils.RespondWithJSON for error response
-		utils.RespondWithJSON(w, http.StatusNotFound, map[string]string{"error": errMsg})
+		utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Error: errMsg})
 		return
 	}
 
 	// Use utils.RespondWithJSON for success response
-	utils.RespondWithJSON(w, http.StatusOK, map[string]string{"message": fmt.Sprintf("Pacient with ID: %d deleted successfully", id)})
+	utils.RespondWithJSON(w, http.StatusOK, models.ResponseData{Message: fmt.Sprintf("Pacient with ID: %d deleted successfully", id)})
 }

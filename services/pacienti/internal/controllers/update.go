@@ -17,7 +17,7 @@ func (dController *PacientController) UpdatePacientByID(w http.ResponseWriter, r
 	log.Println("[PATIENT] Attempting to update a pacient.")
 
 	// Decode the pacient details from the context (assuming you've set it in the middleware)
-	pacient := r.Context().Value(utils.DECODED_PACIENT).(*models.Pacient)
+	pacient := r.Context().Value(utils.DECODED_PATIENT).(*models.Pacient)
 
 	// Get the pacient ID from the request path
 	vars := mux.Vars(r)
@@ -27,8 +27,8 @@ func (dController *PacientController) UpdatePacientByID(w http.ResponseWriter, r
 		errMsg := fmt.Sprintf("Invalid pacient ID: %s", idStr)
 		log.Printf("[PATIENT] %s", errMsg)
 
-		// Use utils.RespondWithJSON for error response
-		utils.RespondWithJSON(w, http.StatusBadRequest, map[string]string{"error": errMsg})
+		// Create an error response using ResponseData
+		utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg})
 		return
 	}
 
@@ -45,8 +45,8 @@ func (dController *PacientController) UpdatePacientByID(w http.ResponseWriter, r
 		errMsg := fmt.Sprintf("internal server error: %s", err)
 		log.Printf("[PATIENT] Failed to update pacient in the database: %s\n", errMsg)
 
-		// Use utils.RespondWithJSON for error response
-		utils.RespondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": errMsg})
+		// Create an error response using ResponseData
+		utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{Error: errMsg})
 		return
 	}
 
@@ -55,11 +55,11 @@ func (dController *PacientController) UpdatePacientByID(w http.ResponseWriter, r
 		errMsg := fmt.Sprintf("No pacient found with ID: %d", pacient.IDPacient)
 		log.Printf("[PATIENT] %s", errMsg)
 
-		// Use utils.RespondWithJSON for error response
-		utils.RespondWithJSON(w, http.StatusNotFound, map[string]string{"error": errMsg})
+		// Create an error response using ResponseData
+		utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Error: errMsg})
 		return
 	}
 
-	// Use utils.RespondWithJSON for success response
-	utils.RespondWithJSON(w, http.StatusOK, map[string]string{"message": "Pacient updated"})
+	// Create a success response using ResponseData
+	utils.RespondWithJSON(w, http.StatusOK, models.ResponseData{Message: "Pacient updated"})
 }
