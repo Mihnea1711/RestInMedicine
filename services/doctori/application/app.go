@@ -27,7 +27,7 @@ func New(config *config.AppConfig, parentCtx context.Context) (*App, error) {
 	}
 
 	// setup mysql connection for the app
-	mysqlDB, err := mysql.NewMySQL(&config.MySQL)
+	mysqlDB, err := mysql.NewMySQL(parentCtx, &config.MySQL)
 	if err != nil {
 		log.Printf("[DOCTOR] Error initializing MySQL: %v", err)
 		return nil, fmt.Errorf("failed to initialize MySQL: %w", err)
@@ -35,14 +35,14 @@ func New(config *config.AppConfig, parentCtx context.Context) (*App, error) {
 	app.database = mysqlDB
 
 	// setup redis and init cnnection
-	rdb, err := redis.NewRedisClient(&config.Redis, parentCtx)
+	rdb, err := redis.NewRedisClient(parentCtx, &config.Redis)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize Redis: %w", err)
 	}
 	app.rdb = rdb
 
 	// setup router for the app
-	router := routes.SetupRoutes(app.database, app.rdb)
+	router := routes.SetupRoutes(parentCtx, app.database, app.rdb)
 	app.router = router
 
 	log.Println("[DOCTOR] Application successfully initialized.")

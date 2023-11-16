@@ -9,12 +9,13 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/mihnea1711/POS_Project/services/doctori/internal/models"
 	"github.com/mihnea1711/POS_Project/services/doctori/pkg/utils"
 )
 
 func (dController *DoctorController) DeleteDoctorByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	idStr := vars["id"]
+	idStr := vars[utils.DELETE_DOCTOR_BY_ID_PARAMETER]
 
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -22,14 +23,14 @@ func (dController *DoctorController) DeleteDoctorByID(w http.ResponseWriter, r *
 		log.Println("[DOCTOR] " + errMsg)
 
 		// Use RespondWithJSON for error response
-		utils.RespondWithJSON(w, http.StatusBadRequest, map[string]string{"error": errMsg})
+		utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg})
 		return
 	}
 
 	log.Printf("[DOCTOR] Attempting to delete doctor with ID: %d...", id)
 
 	// Ensure a database operation doesn't take longer than 5 seconds
-	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
 	rowsAffected, err := dController.DbConn.DeleteDoctorByID(ctx, id)
@@ -38,7 +39,7 @@ func (dController *DoctorController) DeleteDoctorByID(w http.ResponseWriter, r *
 		log.Println("[DOCTOR] " + errMsg)
 
 		// Use RespondWithJSON for error response
-		utils.RespondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": errMsg})
+		utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{Error: errMsg})
 		return
 	}
 
@@ -47,12 +48,12 @@ func (dController *DoctorController) DeleteDoctorByID(w http.ResponseWriter, r *
 		log.Println("[DOCTOR] " + errMsg)
 
 		// Use RespondWithJSON for error response
-		utils.RespondWithJSON(w, http.StatusNotFound, map[string]string{"error": errMsg})
+		utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Error: errMsg})
 		return
 	}
 
 	log.Printf("[DOCTOR] Successfully deleted doctor with ID: %d", id)
 
 	// Use RespondWithJSON for success response
-	utils.RespondWithJSON(w, http.StatusOK, map[string]string{"message": fmt.Sprintf("Doctor with ID: %d deleted successfully", id)})
+	utils.RespondWithJSON(w, http.StatusOK, models.ResponseData{Message: fmt.Sprintf("Doctor with ID: %d deleted successfully", id)})
 }

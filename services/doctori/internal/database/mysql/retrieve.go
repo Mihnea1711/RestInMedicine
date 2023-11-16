@@ -11,7 +11,16 @@ import (
 )
 
 func (db *MySQLDatabase) FetchDoctors(ctx context.Context) ([]models.Doctor, error) {
-	query := fmt.Sprintf(`SELECT id_doctor, id_user, nume, prenume, email, telefon, specializare FROM %s`, utils.DOCTOR_TABLE)
+	query := fmt.Sprintf("SELECT %s, %s, %s, %s, %s, %s, %s FROM %s",
+		utils.ColumnIDDoctor,
+		utils.ColumnIDUser,
+		utils.ColumnNume,
+		utils.ColumnPrenume,
+		utils.ColumnEmail,
+		utils.ColumnTelefon,
+		utils.ColumnSpecializare,
+		utils.DoctorTableName,
+	)
 
 	// Execute the SQL query with context
 	rows, err := db.QueryContext(ctx, query)
@@ -45,7 +54,17 @@ func (db *MySQLDatabase) FetchDoctors(ctx context.Context) ([]models.Doctor, err
 }
 
 func (db *MySQLDatabase) FetchDoctorByID(ctx context.Context, id int) (*models.Doctor, error) {
-	query := fmt.Sprintf(`SELECT id_doctor, id_user, nume, prenume, email, telefon, specializare FROM %s WHERE id_doctor = ?`, utils.DOCTOR_TABLE)
+	query := fmt.Sprintf("SELECT %s, %s, %s, %s, %s, %s, %s FROM %s WHERE %s = ?",
+		utils.ColumnIDDoctor,
+		utils.ColumnIDUser,
+		utils.ColumnNume,
+		utils.ColumnPrenume,
+		utils.ColumnEmail,
+		utils.ColumnTelefon,
+		utils.ColumnSpecializare,
+		utils.DoctorTableName,
+		utils.ColumnIDDoctor,
+	)
 	row := db.QueryRowContext(ctx, query, id)
 
 	var doctor models.Doctor
@@ -65,7 +84,17 @@ func (db *MySQLDatabase) FetchDoctorByID(ctx context.Context, id int) (*models.D
 }
 
 func (db *MySQLDatabase) FetchDoctorByEmail(ctx context.Context, email string) (*models.Doctor, error) {
-	query := fmt.Sprintf(`SELECT id_doctor, id_user, nume, prenume, email, telefon, specializare FROM %s WHERE email = ?`, utils.DOCTOR_TABLE)
+	query := fmt.Sprintf("SELECT %s, %s, %s, %s, %s, %s, %s FROM %s WHERE %s = ?",
+		utils.ColumnIDDoctor,
+		utils.ColumnIDUser,
+		utils.ColumnNume,
+		utils.ColumnPrenume,
+		utils.ColumnEmail,
+		utils.ColumnTelefon,
+		utils.ColumnSpecializare,
+		utils.DoctorTableName,
+		utils.ColumnEmail,
+	)
 	row := db.QueryRowContext(ctx, query, email)
 
 	var doctor models.Doctor
@@ -85,7 +114,17 @@ func (db *MySQLDatabase) FetchDoctorByEmail(ctx context.Context, email string) (
 }
 
 func (db *MySQLDatabase) FetchDoctorByUserID(ctx context.Context, userID int) (*models.Doctor, error) {
-	query := fmt.Sprintf(`SELECT id_doctor, id_user, nume, prenume, email, telefon, specializare FROM %s WHERE id_user = ?`, utils.DOCTOR_TABLE)
+	query := fmt.Sprintf("SELECT %s, %s, %s, %s, %s, %s, %s FROM %s WHERE %s = ?",
+		utils.ColumnIDDoctor,
+		utils.ColumnIDUser,
+		utils.ColumnNume,
+		utils.ColumnPrenume,
+		utils.ColumnEmail,
+		utils.ColumnTelefon,
+		utils.ColumnSpecializare,
+		utils.DoctorTableName,
+		utils.ColumnIDUser,
+	)
 	row := db.QueryRowContext(ctx, query, userID)
 
 	var doctor models.Doctor

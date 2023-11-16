@@ -16,7 +16,7 @@ func (dController *DoctorController) CreateDoctor(w http.ResponseWriter, r *http
 	doctor := r.Context().Value(utils.DECODED_DOCTOR).(*models.Doctor)
 
 	// Ensure a database operation doesn't take longer than 5 seconds
-	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
 	// Use dc.DB to save the doctor to the database
@@ -26,12 +26,16 @@ func (dController *DoctorController) CreateDoctor(w http.ResponseWriter, r *http
 		log.Printf("[DOCTOR] Failed to save doctor to the database: %s\n", errMsg)
 
 		// Use RespondWithJSON for error response
-		utils.RespondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": errMsg})
+		utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{
+			Error: errMsg,
+		})
 		return
 	}
 
 	log.Printf("[DOCTOR] Successfully created doctor %d", doctor.IDDoctor)
 
 	// Use RespondWithJSON for success response
-	utils.RespondWithJSON(w, http.StatusOK, map[string]string{"message": "Doctor created"})
+	utils.RespondWithJSON(w, http.StatusOK, models.ResponseData{
+		Message: "Doctor created",
+	})
 }

@@ -9,7 +9,7 @@ import (
 )
 
 func (db *MySQLDatabase) DeleteDoctorByID(ctx context.Context, id int) (int, error) {
-	query := fmt.Sprintf(`DELETE FROM %s WHERE id_doctor = ?`, utils.DOCTOR_TABLE)
+	query := fmt.Sprintf("DELETE FROM %s WHERE %s = ?", utils.DoctorTableName, utils.ColumnIDDoctor)
 
 	log.Printf("[DOCTOR] Executing delete query for doctor with ID %d...", id)
 

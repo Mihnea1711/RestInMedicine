@@ -11,7 +11,15 @@ import (
 
 func (db *MySQLDatabase) SaveDoctor(ctx context.Context, doctor *models.Doctor) error {
 	// Construct the SQL insert query
-	query := fmt.Sprintf(`INSERT INTO %s (id_user, nume, prenume, email, telefon, specializare) VALUES (?, ?, ?, ?, ?, ?)`, utils.DOCTOR_TABLE)
+	query := fmt.Sprintf("INSERT INTO %s (%s, %s, %s, %s, %s, %s) VALUES (?, ?, ?, ?, ?, ?)",
+		utils.DoctorTableName,
+		utils.ColumnIDUser,
+		utils.ColumnNume,
+		utils.ColumnPrenume,
+		utils.ColumnEmail,
+		utils.ColumnTelefon,
+		utils.ColumnSpecializare,
+	)
 
 	// Execute the SQL statement
 	_, err := db.ExecContext(ctx, query, doctor.IDUser, doctor.Nume, doctor.Prenume, doctor.Email, doctor.Telefon, doctor.Specializare)

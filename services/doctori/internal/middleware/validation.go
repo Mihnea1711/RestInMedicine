@@ -139,7 +139,7 @@ func checkErrorOnDecode(err error, w http.ResponseWriter) bool {
 func ValidateEmail(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
-		email, ok := vars["email"]
+		email, ok := vars[utils.FETCH_DOCTOR_BY_EMAIL_PARAMETER]
 		if !ok {
 			log.Printf("[MIDDLEWARE] Email not provided in request: %s", r.RequestURI)
 			http.Error(w, "Email not provided", http.StatusBadRequest)
@@ -156,5 +156,3 @@ func ValidateEmail(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
-
-// add similar validation middlewares for Update, Delete, etc.

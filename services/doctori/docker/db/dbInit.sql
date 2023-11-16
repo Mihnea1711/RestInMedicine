@@ -1,3 +1,5 @@
+USE pdp_db;
+
 CREATE TABLE IF NOT EXISTS doctor (
     id_doctor INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
     id_user INT NOT NULL,

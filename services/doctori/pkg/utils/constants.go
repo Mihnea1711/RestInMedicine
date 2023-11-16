@@ -20,8 +20,43 @@ var ValidSpecializari = [...]models.Specializare{Cardiologie, Neurologie, Ortope
 
 const CONFIG_PATH = "configs/config.yaml"
 
+const DECODED_DOCTOR contextKey = "decodedDoctor"
+
 const (
-	DOCTOR_TABLE = "doctor"
+	LIMITER_REQUESTS_ALLOWED  = 10
+	LIMITER_MINUTE_MULTIPLIER = 1
 )
 
-const DECODED_DOCTOR contextKey = "decodedDoctor"
+const DB_REQ_TIMEOUT_SEC_MULTIPLIER = 5
+
+// Doctor module endpoints with parameters
+const (
+	CREATE_DOCTOR_ENDPOINT           = "/doctors"                                                   // POST
+	FETCH_ALL_DOCTORS_ENDPOINT       = "/doctors"                                                   // GET
+	FETCH_DOCTOR_BY_ID_ENDPOINT      = "/doctors/{" + FETCH_DOCTOR_BY_ID_PARAMETER + "}"            // GET
+	FETCH_DOCTOR_BY_EMAIL_ENDPOINT   = "/doctors/email/{" + FETCH_DOCTOR_BY_EMAIL_PARAMETER + "}"   // GET
+	FETCH_DOCTOR_BY_USER_ID_ENDPOINT = "/doctors/users/{" + FETCH_DOCTOR_BY_USER_ID_PARAMETER + "}" // GET
+	UPDATE_DOCTOR_BY_ID_ENDPOINT     = "/doctors/{" + UPDATE_DOCTOR_BY_ID_PARAMETER + "}"           // PUT
+	DELETE_DOCTOR_BY_ID_ENDPOINT     = "/doctors/{" + DELETE_DOCTOR_BY_ID_PARAMETER + "}"           // DELETE
+)
+
+// Doctor module parameters
+const (
+	FETCH_DOCTOR_BY_ID_PARAMETER      = "doctor_id"
+	FETCH_DOCTOR_BY_EMAIL_PARAMETER   = "doctor_email"
+	FETCH_DOCTOR_BY_USER_ID_PARAMETER = "doctor_id"
+	UPDATE_DOCTOR_BY_ID_PARAMETER     = "doctor_id"
+	DELETE_DOCTOR_BY_ID_PARAMETER     = "doctor_id"
+)
+
+const (
+	DatabaseName       = "pdp_db"
+	DoctorTableName    = "doctor"
+	ColumnIDDoctor     = "id_doctor"
+	ColumnIDUser       = "id_user"
+	ColumnNume         = "nume"
+	ColumnPrenume      = "prenume"
+	ColumnEmail        = "email"
+	ColumnTelefon      = "telefon"
+	ColumnSpecializare = "specializare"
+)

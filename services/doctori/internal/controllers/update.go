@@ -21,14 +21,14 @@ func (dController *DoctorController) UpdateDoctorByID(w http.ResponseWriter, r *
 
 	// Get the doctor ID from the request path
 	vars := mux.Vars(r)
-	idStr := vars["id"]
+	idStr := vars[utils.UPDATE_DOCTOR_BY_ID_PARAMETER]
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		errMsg := fmt.Sprintf("Invalid doctor ID: %s", idStr)
 		log.Println("[DOCTOR] " + errMsg)
 
 		// Use RespondWithJSON for error response
-		utils.RespondWithJSON(w, http.StatusBadRequest, map[string]string{"error": errMsg})
+		utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg})
 		return
 	}
 
@@ -36,7 +36,7 @@ func (dController *DoctorController) UpdateDoctorByID(w http.ResponseWriter, r *
 	doctor.IDDoctor = id
 
 	// Ensure a database operation doesn't take longer than 5 seconds
-	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
 	// Use dController.DbConn to update the doctor in the database
@@ -46,7 +46,7 @@ func (dController *DoctorController) UpdateDoctorByID(w http.ResponseWriter, r *
 		log.Printf("[DOCTOR] Failed to update doctor in the database: %s\n", errMsg)
 
 		// Use RespondWithJSON for error response
-		utils.RespondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": errMsg})
+		utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{Error: errMsg})
 		return
 	}
 
@@ -56,12 +56,12 @@ func (dController *DoctorController) UpdateDoctorByID(w http.ResponseWriter, r *
 		log.Println("[DOCTOR] " + errMsg)
 
 		// Use RespondWithJSON for error response
-		utils.RespondWithJSON(w, http.StatusNotFound, map[string]string{"error": errMsg})
+		utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Error: errMsg})
 		return
 	}
 
 	log.Printf("[DOCTOR] Successfully updated doctor %d", doctor.IDDoctor)
 
 	// Use RespondWithJSON for success response
-	utils.RespondWithJSON(w, http.StatusOK, map[string]string{"message": "Doctor updated"})
+	utils.RespondWithJSON(w, http.StatusOK, models.ResponseData{Message: "Doctor updated"})
 }

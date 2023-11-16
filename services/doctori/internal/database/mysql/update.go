@@ -12,9 +12,17 @@ import (
 func (db *MySQLDatabase) UpdateDoctorByID(ctx context.Context, doctor *models.Doctor) (int, error) {
 	// Construct the SQL update query
 	query := fmt.Sprintf(`
-		UPDATE %s 
-		SET nume = ?, prenume = ?, email = ?, telefon = ?, specializare = ? 
-		WHERE id_doctor = ?`, utils.DOCTOR_TABLE)
+	UPDATE %s 
+	SET %s = ?, %s = ?, %s = ?, %s = ?, %s = ? 
+	WHERE %s = ?`,
+		utils.DoctorTableName,
+		utils.ColumnNume,
+		utils.ColumnPrenume,
+		utils.ColumnEmail,
+		utils.ColumnTelefon,
+		utils.ColumnSpecializare,
+		utils.ColumnIDDoctor,
+	)
 
 	log.Printf("[DOCTOR] Executing update query for doctor with ID %d...", doctor.IDDoctor)
 
