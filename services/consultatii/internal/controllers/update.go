@@ -13,6 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+// Update a consultatie by ID
 func (cController *ConsultatieController) UpdateConsultatieByID(w http.ResponseWriter, r *http.Request) {
 	log.Printf("[CONSULTATION] Attempting to update a consultatie by ID.")
 	vars := mux.Vars(r)
@@ -21,8 +22,10 @@ func (cController *ConsultatieController) UpdateConsultatieByID(w http.ResponseW
 
 	id, err := primitive.ObjectIDFromHex(vars[utils.UPDATE_CONSULTATIE_BY_ID_PARAMETER])
 	if err != nil {
-		log.Printf("Invalid consultatie ID: %s", id)
-		utils.RespondWithJSON(w, http.StatusBadRequest, "Invalid consultatie ID")
+		response := models.ResponseData{
+			Error: "Invalid consultatie ID",
+		}
+		utils.RespondWithJSON(w, http.StatusBadRequest, response)
 		return
 	}
 
@@ -38,16 +41,25 @@ func (cController *ConsultatieController) UpdateConsultatieByID(w http.ResponseW
 	if err != nil {
 		errMsg := fmt.Sprintf("internal server error: %s", err)
 		log.Printf("[CONSULTATION] Failed to update consultatie by ID: %s\n", errMsg)
-		utils.RespondWithJSON(w, http.StatusInternalServerError, errMsg)
+		response := models.ResponseData{
+			Error: errMsg,
+		}
+		utils.RespondWithJSON(w, http.StatusInternalServerError, response)
 		return
 	}
 
 	// Check if the consultatie exists and was updated
 	if rowsAffected == 0 {
-		utils.RespondWithJSON(w, http.StatusNotFound, "Consultatie not found")
+		response := models.ResponseData{
+			Error: "Consultatie not found",
+		}
+		utils.RespondWithJSON(w, http.StatusNotFound, response)
 		return
 	}
 
 	log.Printf("[CONSULTATION] Successfully updated consultatie %d", consultatie.IDConsultatie)
-	utils.RespondWithJSON(w, http.StatusOK, "Consultatie updated")
+	response := models.ResponseData{
+		Message: "Consultatie updated",
+	}
+	utils.RespondWithJSON(w, http.StatusOK, response)
 }

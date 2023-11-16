@@ -9,6 +9,7 @@ import (
 
 	"github.com/mihnea1711/POS_Project/services/consultatii/internal/models"
 	"github.com/mihnea1711/POS_Project/services/consultatii/pkg/utils"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func (cController *ConsultatieController) CreateConsultatie(w http.ResponseWriter, r *http.Request) {
@@ -19,21 +20,24 @@ func (cController *ConsultatieController) CreateConsultatie(w http.ResponseWrite
 	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_TIMEOUT_DURATION*time.Second)
 	defer cancel()
 
-	existingConsultatie, err := cController.DbConn.FetchConsultatieByID(ctx, consultatie.IDConsultatie)
-	if err == nil && existingConsultatie != nil {
-		utils.RespondWithJSON(w, http.StatusConflict, "Consultatie with the same ID already exists")
-		return
-	}
+	// assign an id to the doc
+	consultatie.IDConsultatie = primitive.NewObjectID()
 
 	// Use cController.DbConn to save the programare to the database
-	err = cController.DbConn.SaveConsultatie(ctx, consultatie)
+	err := cController.DbConn.SaveConsultatie(ctx, consultatie)
 	if err != nil {
 		errMsg := fmt.Sprintf("internal server error: %s", err)
 		log.Printf("[CONSULTATION] Failed to save consultatie to the database: %s\n", errMsg)
-		utils.RespondWithJSON(w, http.StatusInternalServerError, errMsg)
+		response := models.ResponseData{
+			Error: errMsg,
+		}
+		utils.RespondWithJSON(w, http.StatusInternalServerError, response)
 		return
 	}
 
 	log.Printf("[CONSULTATION] Successfully created consultatie %d", consultatie.IDConsultatie)
-	utils.RespondWithJSON(w, http.StatusOK, "Consultatie created")
+	response := models.ResponseData{
+		Message: "Consultatie created",
+	}
+	utils.RespondWithJSON(w, http.StatusOK, response)
 }

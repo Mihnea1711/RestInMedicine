@@ -18,7 +18,7 @@ type MongoDB struct {
 	db     *mongo.Database
 }
 
-func NewMongoDB(cfg *config.MongoDBConfig, ctx context.Context) (database.Database, error) {
+func NewMongoDB(ctx context.Context, cfg *config.MongoDBConfig) (database.Database, error) {
 	// log.Printf("[MONGO] MongoDB Configuration: %+v", cfg)
 
 	clientOptions := options.Client().

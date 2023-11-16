@@ -8,17 +8,21 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/mihnea1711/POS_Project/services/consultatii/internal/models"
 	"github.com/mihnea1711/POS_Project/services/consultatii/pkg/utils"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// Delete a programare by ID
+// Delete a consultatie by ID
 func (cController *ConsultatieController) DeleteConsultatieByID(w http.ResponseWriter, r *http.Request) {
 	log.Printf("[CONSULTATION] Attempting to delete a consultatie by ID.")
 	vars := mux.Vars(r)
 	id, err := primitive.ObjectIDFromHex(vars[utils.DELETE_CONSULTATIE_BY_ID_PARAMETER])
 	if err != nil {
-		utils.RespondWithJSON(w, http.StatusBadRequest, "[CONSULTATION] Invalid consultatie ID")
+		response := models.ResponseData{
+			Error: "Invalid consultatie ID",
+		}
+		utils.RespondWithJSON(w, http.StatusBadRequest, response)
 		return
 	}
 
@@ -31,16 +35,25 @@ func (cController *ConsultatieController) DeleteConsultatieByID(w http.ResponseW
 	if err != nil {
 		errMsg := fmt.Sprintf("internal server error: %s", err)
 		log.Printf("[CONSULTATION] Failed to delete consultatie by ID: %s\n", errMsg)
-		utils.RespondWithJSON(w, http.StatusInternalServerError, errMsg)
+		response := models.ResponseData{
+			Error: errMsg,
+		}
+		utils.RespondWithJSON(w, http.StatusInternalServerError, response)
 		return
 	}
 
 	// Check if the consultatie exists and was deleted
 	if rowsAffected == 0 {
-		utils.RespondWithJSON(w, http.StatusNotFound, "Programare not found")
+		response := models.ResponseData{
+			Error: "Consultatie not found",
+		}
+		utils.RespondWithJSON(w, http.StatusNotFound, response)
 		return
 	}
 
 	log.Printf("[CONSULTATION] Successfully deleted consultatie %d", id)
-	utils.RespondWithJSON(w, http.StatusOK, "Consultatie deleted")
+	response := models.ResponseData{
+		Message: "Consultatie deleted",
+	}
+	utils.RespondWithJSON(w, http.StatusOK, response)
 }

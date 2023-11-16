@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"time"
@@ -13,9 +14,9 @@ import (
 	"github.com/mihnea1711/POS_Project/services/consultatii/pkg/utils"
 )
 
-func SetupRoutes(dbConn database.Database, rdb *redis.RedisClient) *mux.Router {
+func SetupRoutes(ctx context.Context, dbConn database.Database, rdb *redis.RedisClient) *mux.Router {
 	log.Println("[CONSULTATION] Setting up rate limiter...")
-	rateLimiter := middleware.NewRedisRateLimiter(rdb, utils.REQUEST_RATE, utils.REQUEST_WINDOW_DURATION_MULTIPLIER*time.Minute) // Here, I'm allowing 10 requests per minute * MULTIPLIER.
+	rateLimiter := middleware.NewRedisRateLimiter(ctx, rdb, utils.REQUEST_RATE, utils.REQUEST_WINDOW_DURATION_MULTIPLIER*time.Minute)
 
 	log.Println("[CONSULTATION] Setting up routes...")
 	router := mux.NewRouter()

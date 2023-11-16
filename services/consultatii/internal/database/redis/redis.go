@@ -12,7 +12,7 @@ type RedisClient struct {
 	client *redis.Client
 }
 
-func NewRedisClient(config *config.RedisConfig, ctx context.Context) (*RedisClient, error) {
+func NewRedisClient(ctx context.Context, config *config.RedisConfig) (*RedisClient, error) {
 	redisClient := redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%s:%d", config.Host, config.Port),
 		Password: config.Password,

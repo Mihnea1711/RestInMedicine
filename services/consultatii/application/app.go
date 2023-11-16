@@ -12,6 +12,7 @@ import (
 	"github.com/mihnea1711/POS_Project/services/consultatii/internal/database/redis"
 	"github.com/mihnea1711/POS_Project/services/consultatii/internal/routes"
 	"github.com/mihnea1711/POS_Project/services/consultatii/pkg/config"
+	"github.com/mihnea1711/POS_Project/services/consultatii/pkg/utils"
 )
 
 type App struct {
@@ -26,30 +27,23 @@ func New(config *config.AppConfig, parentCtx context.Context) (*App, error) {
 		config: config,
 	}
 
-	// Create a child context for MongoDB connection
-	ctx, cancel := context.WithTimeout(parentCtx, 10*time.Second)
-	defer cancel()
-
 	// Create a MongoDB connection
-	mongoDB, err := mongo.NewMongoDB(&config.Mongo, ctx)
+	mongoDB, err := mongo.NewMongoDB(parentCtx, &config.Mongo)
 	if err != nil {
 		log.Printf("[CONSULTATION] Error initializing MongoDB: %v", err)
 		return nil, fmt.Errorf("failed to initialize MongoDB: %w", err)
 	}
 	app.database = mongoDB
 
-	// Create a child context for Redis connection
-	ctx, cancel = context.WithTimeout(parentCtx, 10*time.Second)
-	defer cancel()
 	// Create a Redis connection
-	rdb, err := redis.NewRedisClient(&config.Redis, ctx)
+	rdb, err := redis.NewRedisClient(parentCtx, &config.Redis)
 	if err != nil {
 		return nil, err
 	}
 	app.rdb = rdb
 
 	// setup router for the app
-	router := routes.SetupRoutes(app.database, app.rdb)
+	router := routes.SetupRoutes(parentCtx, app.database, app.rdb)
 	app.router = router
 
 	log.Println("[CONSULTATION] Application successfully initialized.")
@@ -97,7 +91,7 @@ func (a *App) Start(ctx context.Context) error {
 			fmt.Println("[CONSULTATION] Failed to close redis gracefully...", err)
 		}
 
-		timeout, cancel := context.WithTimeout(context.Background(), time.Second*10)
+		timeout, cancel := context.WithTimeout(context.Background(), time.Second*utils.RESOURCES_CLOSE_TIMEOUT)
 		defer cancel()
 
 		return server.Shutdown(timeout)

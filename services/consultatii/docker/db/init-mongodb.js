@@ -9,7 +9,8 @@ var collectionName = "consultation";
 
 // Define two Consultatie objects
 var consultatie1 = {
-    id_pacient: 1,
+    id_consultation: "000000000000000000000000",
+    id_patient: 1,
     id_doctor: 1,
     date: new ISODate("2023-11-10"),
     diagnostic: "Diagnostic for Consultatie 1",
@@ -23,7 +24,8 @@ var consultatie1 = {
 };
 
 var consultatie2 = {
-    id_pacient: 2,
+    id_consultation: "000000000000000000000001",
+    id_patient: 2,
     id_doctor: 2,
     date: new ISODate("2023-11-15"),
     diagnostic: "Diagnostic for Consultatie 2",
