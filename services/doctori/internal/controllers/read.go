@@ -16,11 +16,14 @@ import (
 func (dController *DoctorController) GetDoctors(w http.ResponseWriter, r *http.Request) {
 	log.Println("[DOCTOR] Fetching all doctors...")
 
+	// Extract the limit and page query parameters from the request
+	limit, page := utils.ExtractPaginationParams(r)
+
 	// Ensure a database operation doesn't take longer than 5 seconds
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
-	doctors, err := dController.DbConn.FetchDoctors(ctx)
+	doctors, err := dController.DbConn.FetchDoctors(ctx, page, limit)
 	if err != nil {
 		errMsg := fmt.Sprintf("internal server error: %s", err)
 		log.Println("[DOCTOR] " + errMsg)

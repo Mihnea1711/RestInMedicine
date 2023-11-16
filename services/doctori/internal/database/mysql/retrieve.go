@@ -10,8 +10,10 @@ import (
 	"github.com/mihnea1711/POS_Project/services/doctori/pkg/utils"
 )
 
-func (db *MySQLDatabase) FetchDoctors(ctx context.Context) ([]models.Doctor, error) {
-	query := fmt.Sprintf("SELECT %s, %s, %s, %s, %s, %s, %s FROM %s",
+func (db *MySQLDatabase) FetchDoctors(ctx context.Context, page, limit int) ([]models.Doctor, error) {
+	offset := (page - 1) * limit
+
+	query := fmt.Sprintf("SELECT %s, %s, %s, %s, %s, %s, %s FROM %s LIMIT ? OFFSET ?",
 		utils.ColumnIDDoctor,
 		utils.ColumnIDUser,
 		utils.ColumnNume,
@@ -23,7 +25,7 @@ func (db *MySQLDatabase) FetchDoctors(ctx context.Context) ([]models.Doctor, err
 	)
 
 	// Execute the SQL query with context
-	rows, err := db.QueryContext(ctx, query)
+	rows, err := db.QueryContext(ctx, query, limit, offset)
 	if err != nil {
 		log.Printf("[DOCTOR] Error executing query to fetch doctors: %v", err)
 		return nil, err

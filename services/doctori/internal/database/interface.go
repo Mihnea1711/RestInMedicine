@@ -9,7 +9,7 @@ import (
 type Database interface {
 	SaveDoctor(ctx context.Context, doctor *models.Doctor) error
 
-	FetchDoctors(ctx context.Context) ([]models.Doctor, error)
+	FetchDoctors(ctx context.Context, page, limit int) ([]models.Doctor, error)
 	FetchDoctorByID(ctx context.Context, id int) (*models.Doctor, error)
 	FetchDoctorByEmail(ctx context.Context, email string) (*models.Doctor, error)
 	FetchDoctorByUserID(ctx context.Context, userID int) (*models.Doctor, error)
