@@ -15,10 +15,10 @@ func (db *MongoDB) DeleteConsultatieByID(ctx context.Context, id primitive.Objec
 
 	result, err := collection.DeleteOne(ctx, bson.M{utils.ID_CONSULTATIE: id})
 	if err != nil {
-		log.Printf("[CONSULTATIE] Error deleting consultatie by ID: %v", err)
+		log.Printf("[CONSULTATION] Error deleting consultatie by ID: %v", err)
 		return 0, err
 	}
 
-	log.Printf("[CONSULTATIE] Consultatie deleted successfully.")
+	log.Printf("[CONSULTATION] Consultatie deleted successfully.")
 	return result.DeletedCount, nil
 }

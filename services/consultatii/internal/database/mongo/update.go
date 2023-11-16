@@ -15,14 +15,14 @@ func (db *MongoDB) UpdateConsultatieByID(ctx context.Context, consultatie *model
 
 	result, err := collection.ReplaceOne(ctx, bson.M{utils.ID_CONSULTATIE: consultatie.IDConsultatie}, consultatie)
 	if err != nil {
-		log.Printf("[CONSULTATIE] Error updating consultatie by ID: %v", err)
+		log.Printf("[CONSULTATION] Error updating consultatie by ID: %v", err)
 		return 0, err
 	}
 
 	if result.ModifiedCount != 0 {
-		log.Printf("[CONSULTATIE] Consultatie updated successfully.")
+		log.Printf("[CONSULTATION] Consultatie updated successfully.")
 	} else {
-		log.Printf("[CONSULTATIE] No consultatie has been updated.")
+		log.Printf("[CONSULTATION] No consultatie has been updated.")
 	}
 	return result.ModifiedCount, nil
 }

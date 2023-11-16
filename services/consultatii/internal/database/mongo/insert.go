@@ -14,10 +14,10 @@ func (db *MongoDB) SaveConsultatie(ctx context.Context, consultatie *models.Cons
 
 	_, err := collection.InsertOne(ctx, consultatie)
 	if err != nil {
-		log.Printf("[CONSULTATIE] Error saving consultatie: %v", err)
+		log.Printf("[CONSULTATION] Error saving consultatie: %v", err)
 		return err
 	}
 
-	log.Printf("[CONSULTATIE] Consultatie saved successfully.")
+	log.Printf("[CONSULTATION] Consultatie saved successfully.")
 	return nil
 }

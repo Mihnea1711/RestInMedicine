@@ -15,7 +15,7 @@ import (
 
 // Retrieve all consultatii
 func (cController *ConsultatieController) GetConsultatii(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[CONSULTATIE] Attempting to retrieve consultatii.")
+	log.Printf("[CONSULTATION] Attempting to retrieve consultatii.")
 
 	// Extract the limit and page query parameters from the request
 	limit, page := utils.ExtractPaginationParams(r)
@@ -28,19 +28,19 @@ func (cController *ConsultatieController) GetConsultatii(w http.ResponseWriter, 
 	consultatii, err := cController.DbConn.FetchAllConsultatii(ctx, page, limit)
 	if err != nil {
 		errMsg := fmt.Sprintf("internal server error: %s", err)
-		log.Printf("[CONSULTATIE] Failed to fetch consultatii: %s\n", errMsg)
+		log.Printf("[CONSULTATION] Failed to fetch consultatii: %s\n", errMsg)
 		utils.RespondWithJSON(w, http.StatusInternalServerError, errMsg)
 		return
 	}
 
-	log.Printf("[CONSULTATIE] Successfully fetched all consultatii")
+	log.Printf("[CONSULTATION] Successfully fetched all consultatii")
 	// Serialize the consultatii to JSON and send the response
 	utils.RespondWithJSON(w, http.StatusOK, consultatii)
 }
 
 // Retrieve a consultatie by ID
 func (cController *ConsultatieController) GetConsultatieByID(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[CONSULTATIE] Attempting to retrieve a consultatie by ID.")
+	log.Printf("[CONSULTATION] Attempting to retrieve a consultatie by ID.")
 
 	vars := mux.Vars(r)
 	id := vars[utils.FETCH_CONSULTATIE_BY_ID_PARAMETER]
@@ -60,7 +60,7 @@ func (cController *ConsultatieController) GetConsultatieByID(w http.ResponseWrit
 	consultatie, err := cController.DbConn.FetchConsultatieByID(ctx, objectID)
 	if err != nil {
 		errMsg := fmt.Sprintf("internal server error: %s", err)
-		log.Printf("[CONSULTATIE] Failed to fetch consultatie by ID: %s\n", errMsg)
+		log.Printf("[CONSULTATION] Failed to fetch consultatie by ID: %s\n", errMsg)
 		utils.RespondWithJSON(w, http.StatusInternalServerError, errMsg)
 		return
 	}
@@ -71,14 +71,14 @@ func (cController *ConsultatieController) GetConsultatieByID(w http.ResponseWrit
 		return
 	}
 
-	log.Printf("[CONSULTATIE] Successfully fetched consultatie %s", consultatie.IDConsultatie)
+	log.Printf("[CONSULTATION] Successfully fetched consultatie %s", consultatie.IDConsultatie)
 	// Serialize the consultatie to JSON and send the response
 	utils.RespondWithJSON(w, http.StatusOK, consultatie)
 }
 
 // Retrieve consultatii by doctor ID
 func (cController *ConsultatieController) GetConsultatiiByDoctorID(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[CONSULTATIE] Attempting to retrieve consultatii by Doctor ID.")
+	log.Printf("[CONSULTATION] Attempting to retrieve consultatii by Doctor ID.")
 	vars := mux.Vars(r)
 	doctorID, err := strconv.Atoi(vars[utils.FETCH_CONSULTATIE_BY_DOCTOR_ID_PARAMETER])
 	if err != nil {
@@ -99,19 +99,19 @@ func (cController *ConsultatieController) GetConsultatiiByDoctorID(w http.Respon
 	consultatii, err := cController.DbConn.FetchConsultatiiByDoctorID(ctx, doctorID, page, limit)
 	if err != nil {
 		errMsg := fmt.Sprintf("internal server error: %s", err)
-		log.Printf("[CONSULTATIE] Failed to fetch consultatii by Doctor ID: %s\n", errMsg)
+		log.Printf("[CONSULTATION] Failed to fetch consultatii by Doctor ID: %s\n", errMsg)
 		utils.RespondWithJSON(w, http.StatusInternalServerError, errMsg)
 		return
 	}
 
-	log.Printf("[CONSULTATIE] Successfully fetched consultatii of doctor %d", doctorID)
+	log.Printf("[CONSULTATION] Successfully fetched consultatii of doctor %d", doctorID)
 	// Serialize the consultatii to JSON and send the response
 	utils.RespondWithJSON(w, http.StatusOK, consultatii)
 }
 
 // Retrieve consultatii by pacient ID
 func (cController *ConsultatieController) GetConsultatiiByPacientID(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[CONSULTATIE] Attempting to retrieve consultatii by Pacient ID.")
+	log.Printf("[CONSULTATION] Attempting to retrieve consultatii by Pacient ID.")
 	vars := mux.Vars(r)
 	pacientID, err := strconv.Atoi(vars[utils.FETCH_CONSULTATIE_BY_PACIENT_ID_PARAMETER])
 	if err != nil {
@@ -130,19 +130,19 @@ func (cController *ConsultatieController) GetConsultatiiByPacientID(w http.Respo
 	consultatii, err := cController.DbConn.FetchConsultatiiByPacientID(ctx, pacientID, page, limit)
 	if err != nil {
 		errMsg := fmt.Sprintf("internal server error: %s", err)
-		log.Printf("[CONSULTATIE] Failed to fetch consultatii by Pacient ID: %s\n", errMsg)
+		log.Printf("[CONSULTATION] Failed to fetch consultatii by Pacient ID: %s\n", errMsg)
 		utils.RespondWithJSON(w, http.StatusInternalServerError, errMsg)
 		return
 	}
 
-	log.Printf("[CONSULTATIE] Successfully fetched consultatii of pacient %d", pacientID)
+	log.Printf("[CONSULTATION] Successfully fetched consultatii of pacient %d", pacientID)
 	// Serialize the consultatii to JSON and send the response
 	utils.RespondWithJSON(w, http.StatusOK, consultatii)
 }
 
 // Retrieve consultatii by date
 func (cController *ConsultatieController) GetConsultatiiByDate(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[CONSULTATIE] Attempting to retrieve consultatii by date.")
+	log.Printf("[CONSULTATION] Attempting to retrieve consultatii by date.")
 
 	// Use mux.Vars to get the date parameter from the route
 	vars := mux.Vars(r)
@@ -151,7 +151,7 @@ func (cController *ConsultatieController) GetConsultatiiByDate(w http.ResponseWr
 	// Parse the date string into a time.Time object
 	date, err := time.Parse(utils.TIME_FORMAT, dateStr)
 	if err != nil {
-		log.Printf("[CONSULTATIE] Failed to convert date string: %s\n", err)
+		log.Printf("[CONSULTATION] Failed to convert date string: %s\n", err)
 		utils.RespondWithJSON(w, http.StatusBadRequest, "Invalid date format")
 		return
 	}
@@ -167,18 +167,18 @@ func (cController *ConsultatieController) GetConsultatiiByDate(w http.ResponseWr
 	consultatii, err := cController.DbConn.FetchConsultatiiByDate(ctx, date, page, limit)
 	if err != nil {
 		errMsg := fmt.Sprintf("internal server error: %s", err)
-		log.Printf("[CONSULTATIE] Failed to fetch consultatii by date: %s\n", errMsg)
+		log.Printf("[CONSULTATION] Failed to fetch consultatii by date: %s\n", errMsg)
 		utils.RespondWithJSON(w, http.StatusInternalServerError, errMsg)
 		return
 	}
 
-	log.Printf("[CONSULTATIE] Successfully fetched consultatii from %s", date)
+	log.Printf("[CONSULTATION] Successfully fetched consultatii from %s", date)
 	// Serialize the consultatii to JSON and send the response
 	utils.RespondWithJSON(w, http.StatusOK, consultatii)
 }
 
 func (cController *ConsultatieController) GetFilteredConsultatii(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[CONSULTATIE] Attempting to retrieve filtered consultatii.")
+	log.Printf("[CONSULTATION] Attempting to retrieve filtered consultatii.")
 
 	// Extract query filter params
 	filter := utils.ExtractQueryParams(r)
@@ -194,15 +194,15 @@ func (cController *ConsultatieController) GetFilteredConsultatii(w http.Response
 	consultatii, err := cController.DbConn.FetchConsultatiiByFilter(ctx, filter, page, limit)
 	if err != nil {
 		errMsg := fmt.Sprintf("internal server error: %s", err)
-		log.Printf("[CONSULTATIE] Failed to fetch filtered consultatii: %s\n", errMsg)
+		log.Printf("[CONSULTATION] Failed to fetch filtered consultatii: %s\n", errMsg)
 		utils.RespondWithJSON(w, http.StatusInternalServerError, errMsg)
 		return
 	}
 
 	if len(consultatii) != 0 {
-		log.Printf("[CONSULTATIE] Successfully fetched filtered consultatii")
+		log.Printf("[CONSULTATION] Successfully fetched filtered consultatii")
 	} else {
-		log.Printf("[CONSULTATIE] No consultatii found with the filter: %v", filter)
+		log.Printf("[CONSULTATION] No consultatii found with the filter: %v", filter)
 	}
 	// Serialize the filtered consultatii to JSON and send the response
 	utils.RespondWithJSON(w, http.StatusOK, consultatii)

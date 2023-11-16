@@ -33,7 +33,7 @@ func New(config *config.AppConfig, parentCtx context.Context) (*App, error) {
 	// Create a MongoDB connection
 	mongoDB, err := mongo.NewMongoDB(&config.Mongo, ctx)
 	if err != nil {
-		log.Printf("[CONSULTATIE] Error initializing MongoDB: %v", err)
+		log.Printf("[CONSULTATION] Error initializing MongoDB: %v", err)
 		return nil, fmt.Errorf("failed to initialize MongoDB: %w", err)
 	}
 	app.database = mongoDB
@@ -52,7 +52,7 @@ func New(config *config.AppConfig, parentCtx context.Context) (*App, error) {
 	router := routes.SetupRoutes(app.database, app.rdb)
 	app.router = router
 
-	log.Println("[CONSULTATIE] Application successfully initialized.")
+	log.Println("[CONSULTATION] Application successfully initialized.")
 	return app, nil
 }
 
@@ -62,10 +62,10 @@ func (a *App) Start(ctx context.Context) error {
 		Handler: a.router,
 	}
 
-	log.Println("[CONSULTATIE] Starting server...") // Logging the server start
+	log.Println("[CONSULTATION] Starting server...") // Logging the server start
 
 	// Log the message just before starting the server in the goroutine
-	fmt.Printf("[CONSULTATIE] Server started and listening on port %d\n", a.config.Server.Port)
+	fmt.Printf("[CONSULTATION] Server started and listening on port %d\n", a.config.Server.Port)
 
 	channel := make(chan error, 1)
 	go func() {
@@ -81,20 +81,20 @@ func (a *App) Start(ctx context.Context) error {
 		// second value is called open
 		if !open {
 			//channel is closed
-			log.Println("[CONSULTATIE] Context channel error. Channel is closed.")
+			log.Println("[CONSULTATION] Context channel error. Channel is closed.")
 		}
 		return err
 	case <-ctx.Done():
 		// Log the message indicating the server is in the process of shutting down
-		log.Println("[CONSULTATIE] Server shutting down...")
+		log.Println("[CONSULTATION] Server shutting down...")
 
 		// Close database connection gracefully
 		if err := a.database.Close(ctx); err != nil {
-			log.Printf("[CONSULTATIE] Failed to close the database gracefully: %v", err)
+			log.Printf("[CONSULTATION] Failed to close the database gracefully: %v", err)
 		}
 
 		if err := a.rdb.Close(); err != nil {
-			fmt.Println("[CONSULTATIE] Failed to close redis gracefully...", err)
+			fmt.Println("[CONSULTATION] Failed to close redis gracefully...", err)
 		}
 
 		timeout, cancel := context.WithTimeout(context.Background(), time.Second*10)

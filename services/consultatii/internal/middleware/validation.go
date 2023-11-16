@@ -36,7 +36,7 @@ func ValidateConsultatieInfo(next http.Handler) http.Handler {
 		}
 
 		// If all validations pass, proceed to the actual controller
-		ctx := context.WithValue(r.Context(), utils.DECODED_CONSULTATIE, &consultatie)
+		ctx := context.WithValue(r.Context(), utils.DECODED_CONSULTATION, &consultatie)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

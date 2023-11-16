@@ -53,7 +53,7 @@ func RespondWithJSON(w http.ResponseWriter, status int, payload interface{}) {
 
 	response, err := json.Marshal(payload)
 	if err != nil {
-		log.Printf("[CONSULTATII] Error marshaling JSON: %s", err)
+		log.Printf("[CONSULTATION] Error marshaling JSON: %s", err)
 		respondWithError(w, http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
@@ -65,7 +65,7 @@ func respondWithError(w http.ResponseWriter, status int, message string) {
 	errorResponse := map[string]string{"error": message}
 	response, err := json.Marshal(errorResponse)
 	if err != nil {
-		log.Printf("[CONSULTATII] Error marshaling error response JSON: %s", err)
+		log.Printf("[CONSULTATION] Error marshaling error response JSON: %s", err)
 		writeJSONResponse(w, http.StatusInternalServerError, []byte(`{"error":"Internal Server Error"}`))
 		return
 	}

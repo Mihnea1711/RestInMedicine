@@ -1,11 +1,11 @@
 // Define your database name
-var dbName = "consultatii_db";
+var dbName = "consultations_db";
 
 // Connect to the database
 var db = db.getSiblingDB(dbName);
 
 // Define the collection name SAME AS THE CONTSTANTS
-var collectionName = "consultatie";
+var collectionName = "consultation";
 
 // Define two Consultatie objects
 var consultatie1 = {

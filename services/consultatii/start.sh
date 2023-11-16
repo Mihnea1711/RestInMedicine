@@ -1,16 +1,25 @@
 #!/bin/bash
 
-echo "[CONSULTATIE] Stopping existing containers..."
+echo "[CONSULTATION] Stopping existing containers..."
 docker compose down
 
-echo "[CONSULTATIE] Removing MySQL data volume..."
+echo "[CONSULTATION] Removing unused volumes..."
+docker volume prune --force
+
+echo "[CONSULTATION] Removing MySQL data volume..."
 docker volume rm consultatii_mysql_data
 
-echo "[CONSULTATIE] Removing Redis data volume..."
+echo "[CONSULTATION] Removing Redis data volume..."
 docker volume rm consultatii_redis_data
 
-echo "[CONSULTATIE] Building Docker images..."
+echo "[CONSULTATION] Removing unused networks..."
+docker network prune --force
+
+echo "[CONSULTATION] Removing unused images..."
+docker image prune --force
+
+echo "[CONSULTATION] Building Docker images..."
 docker compose build
 
-echo "[CONSULTATIE] Starting containers..."
+echo "[CONSULTATION] Starting containers..."
 docker compose up --force-recreate

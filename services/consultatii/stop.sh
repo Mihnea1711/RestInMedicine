@@ -1,10 +1,19 @@
 #!/bin/bash
 
-echo "[DOCTOR] Stopping existing containers..."
+echo "[CONSULTATION] Stopping existing containers..."
 docker compose down
 
-echo "[DOCTOR] Removing MySQL data volume..."
-docker volume rm doctori_mysql_data
+echo "[CONSULTATION] Removing unused volumes..."
+docker volume prune --force
 
-echo "[DOCTOR] Removing Redis data volume..."
-docker volume rm doctori_redis_data
+echo "[CONSULTATION] Removing MySQL data volume..."
+docker volume rm consultatii_mysql_data
+
+echo "[CONSULTATION] Removing Redis data volume..."
+docker volume rm consultatii_redis_data
+
+echo "[CONSULTATION] Removing unused networks..."
+docker network prune --force
+
+echo "[CONSULTATION] Removing unused images..."
+docker image prune --force

@@ -23,7 +23,7 @@ func (db *MongoDB) FetchAllConsultatii(ctx context.Context, page, limit int) ([]
 
 	cur, err := collection.Find(ctx, bson.M{}, findOptions)
 	if err != nil {
-		log.Printf("[CONSULTATIE] Error fetching all consultatii: %v", err)
+		log.Printf("[CONSULTATION] Error fetching all consultatii: %v", err)
 		return nil, err
 	}
 	defer cur.Close(ctx)
@@ -32,18 +32,18 @@ func (db *MongoDB) FetchAllConsultatii(ctx context.Context, page, limit int) ([]
 	for cur.Next(ctx) {
 		var consultatie models.Consultatie
 		if err := cur.Decode(&consultatie); err != nil {
-			log.Printf("[CONSULTATIE] Error decoding consultatie: %v", err)
+			log.Printf("[CONSULTATION] Error decoding consultatie: %v", err)
 			return nil, err
 		}
 		consultatii = append(consultatii, consultatie)
 	}
 
 	if err := cur.Err(); err != nil {
-		log.Printf("[CONSULTATIE] Error iterating over results: %v", err)
+		log.Printf("[CONSULTATION] Error iterating over results: %v", err)
 		return nil, err
 	}
 
-	log.Printf("[CONSULTATIE] All consultatii retrieved successfully.")
+	log.Printf("[CONSULTATION] All consultatii retrieved successfully.")
 	return consultatii, nil
 }
 
@@ -56,16 +56,16 @@ func (db *MongoDB) FetchConsultatieByID(ctx context.Context, id primitive.Object
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			// Handle the case where no document is found with the given ID
-			log.Printf("[CONSULTATIE] Consultatie not found: %v", id)
+			log.Printf("[CONSULTATION] Consultatie not found: %v", id)
 			return nil, nil
 		}
 
 		// Handle other errors
-		log.Printf("[CONSULTATIE] Error fetching consultatie: %v", err)
+		log.Printf("[CONSULTATION] Error fetching consultatie: %v", err)
 		return nil, err
 	}
 
-	log.Printf("[CONSULTATIE] Consultatie retrieved successfully: %v", id)
+	log.Printf("[CONSULTATION] Consultatie retrieved successfully: %v", id)
 	return &consultatie, nil
 }
 
@@ -80,7 +80,7 @@ func (db *MongoDB) FetchConsultatiiByPacientID(ctx context.Context, pacientID in
 
 	cur, err := collection.Find(ctx, filter, findOptions)
 	if err != nil {
-		log.Printf("[CONSULTATIE] Error fetching consultatii by PacientID: %v", err)
+		log.Printf("[CONSULTATION] Error fetching consultatii by PacientID: %v", err)
 		return nil, err
 	}
 	defer cur.Close(ctx)
@@ -89,18 +89,18 @@ func (db *MongoDB) FetchConsultatiiByPacientID(ctx context.Context, pacientID in
 	for cur.Next(ctx) {
 		var consultatie models.Consultatie
 		if err := cur.Decode(&consultatie); err != nil {
-			log.Printf("[CONSULTATIE] Error decoding consultatie: %v", err)
+			log.Printf("[CONSULTATION] Error decoding consultatie: %v", err)
 			return nil, err
 		}
 		consultatii = append(consultatii, consultatie)
 	}
 
 	if err := cur.Err(); err != nil {
-		log.Printf("[CONSULTATIE] Error iterating over results: %v", err)
+		log.Printf("[CONSULTATION] Error iterating over results: %v", err)
 		return nil, err
 	}
 
-	log.Printf("[CONSULTATIE] Consultatii by PacientID retrieved successfully: %v", pacientID)
+	log.Printf("[CONSULTATION] Consultatii by PacientID retrieved successfully: %v", pacientID)
 	return consultatii, nil
 }
 
@@ -118,7 +118,7 @@ func (db *MongoDB) FetchConsultatiiByDoctorID(ctx context.Context, doctorID int,
 
 	cur, err := collection.Find(ctx, filter, findOptions)
 	if err != nil {
-		log.Printf("[CONSULTATIE] Error fetching consultatii by DoctorID: %v", err)
+		log.Printf("[CONSULTATION] Error fetching consultatii by DoctorID: %v", err)
 		return nil, err
 	}
 	defer cur.Close(ctx)
@@ -127,20 +127,20 @@ func (db *MongoDB) FetchConsultatiiByDoctorID(ctx context.Context, doctorID int,
 	for cur.Next(ctx) {
 		var consultatie models.Consultatie
 		if err := cur.Decode(&consultatie); err != nil {
-			log.Printf("[CONSULTATIE] Error decoding consultatie: %v", err)
+			log.Printf("[CONSULTATION] Error decoding consultatie: %v", err)
 			return nil, err
 		}
 		consultatii = append(consultatii, consultatie)
 	}
 
 	if err := cur.Err(); err != nil {
-		log.Printf("[CONSULTATIE] Error iterating over results: %v", err)
+		log.Printf("[CONSULTATION] Error iterating over results: %v", err)
 		return nil, err
 	}
 
 	log.Printf("consultatii: %v", consultatii)
 
-	log.Printf("[CONSULTATIE] Consultatii by DoctorID retrieved successfully: %v", doctorID)
+	log.Printf("[CONSULTATION] Consultatii by DoctorID retrieved successfully: %v", doctorID)
 	return consultatii, nil
 }
 
@@ -155,7 +155,7 @@ func (db *MongoDB) FetchConsultatiiByDate(ctx context.Context, date time.Time, p
 
 	cur, err := collection.Find(ctx, filter, findOptions)
 	if err != nil {
-		log.Printf("[CONSULTATIE] Error fetching consultatii by Date: %v", err)
+		log.Printf("[CONSULTATION] Error fetching consultatii by Date: %v", err)
 		return nil, err
 	}
 	defer cur.Close(ctx)
@@ -164,18 +164,18 @@ func (db *MongoDB) FetchConsultatiiByDate(ctx context.Context, date time.Time, p
 	for cur.Next(ctx) {
 		var consultatie models.Consultatie
 		if err := cur.Decode(&consultatie); err != nil {
-			log.Printf("[CONSULTATIE] Error decoding consultatie: %v", err)
+			log.Printf("[CONSULTATION] Error decoding consultatie: %v", err)
 			return nil, err
 		}
 		consultatii = append(consultatii, consultatie)
 	}
 
 	if err := cur.Err(); err != nil {
-		log.Printf("[CONSULTATIE] Error iterating over results: %v", err)
+		log.Printf("[CONSULTATION] Error iterating over results: %v", err)
 		return nil, err
 	}
 
-	log.Printf("[CONSULTATIE] Consultatii by Date retrieved successfully: %v", date)
+	log.Printf("[CONSULTATION] Consultatii by Date retrieved successfully: %v", date)
 	return consultatii, nil
 }
 
@@ -216,11 +216,11 @@ func (db *MongoDB) FetchConsultatiiByFilter(ctx context.Context, filter bson.D, 
 	// -----------------------------------
 
 	// Log the filter parameters for debugging
-	log.Printf("[CONSULTATIE] Fetching consultatii with filter: %v, Limit of %d, on Page %d", filter, limit, page)
+	log.Printf("[CONSULTATION] Fetching consultatii with filter: %v, Limit of %d, on Page %d", filter, limit, page)
 
 	cursor, err := collection.Find(ctx, filter)
 	if err != nil {
-		log.Printf("[CONSULTATIE] Failed to find consultatii with filter: %v", filter)
+		log.Printf("[CONSULTATION] Failed to find consultatii with filter: %v", filter)
 		return nil, err
 	}
 	defer cursor.Close(ctx)
@@ -228,22 +228,22 @@ func (db *MongoDB) FetchConsultatiiByFilter(ctx context.Context, filter bson.D, 
 	// Fetch consultatii based on the filter and pagination options
 	var consultatii []models.Consultatie
 	if err := cursor.All(ctx, &consultatii); err != nil {
-		log.Printf("[CONSULTATIE] Failed to decode consultatii: %v", err)
+		log.Printf("[CONSULTATION] Failed to decode consultatii: %v", err)
 		return nil, err
 	}
 
-	log.Printf("[CONSULTATIE] Fetched %d consultatii with filter: %v", len(consultatii), filter)
+	log.Printf("[CONSULTATION] Fetched %d consultatii with filter: %v", len(consultatii), filter)
 
 	log.Println("-----------------------------")
 
 	// -----------------------------------
 
 	// Log the filter parameters for debugging
-	log.Printf("[CONSULTATIE] Fetching consultatii with filter: %v, Limit of %d, on Page %d", custom_f, limit, page)
+	log.Printf("[CONSULTATION] Fetching consultatii with filter: %v, Limit of %d, on Page %d", custom_f, limit, page)
 
 	cursor, err = collection.Find(ctx, custom_f)
 	if err != nil {
-		log.Printf("[CONSULTATIE] Failed to find consultatii with filter: %v", custom_f)
+		log.Printf("[CONSULTATION] Failed to find consultatii with filter: %v", custom_f)
 		return nil, err
 	}
 	defer cursor.Close(ctx)
@@ -251,22 +251,22 @@ func (db *MongoDB) FetchConsultatiiByFilter(ctx context.Context, filter bson.D, 
 	// Fetch consultatii based on the filter and pagination options
 	var consultatii2 []models.Consultatie
 	if err := cursor.All(ctx, &consultatii2); err != nil {
-		log.Printf("[CONSULTATIE] Failed to decode consultatii: %v", err)
+		log.Printf("[CONSULTATION] Failed to decode consultatii: %v", err)
 		return nil, err
 	}
 
-	log.Printf("[CONSULTATIE] Fetched %d consultatii with filter: %v", len(consultatii), custom_f)
+	log.Printf("[CONSULTATION] Fetched %d consultatii with filter: %v", len(consultatii), custom_f)
 
 	log.Println("-----------------------------")
 
 	// -----------------------------------
 
 	// Log the filter parameters for debugging
-	log.Printf("[CONSULTATIE] Fetching consultatii with filter: %v, Limit of %d, on Page %d", cfilter, limit, page)
+	log.Printf("[CONSULTATION] Fetching consultatii with filter: %v, Limit of %d, on Page %d", cfilter, limit, page)
 
 	cursor, err = collection.Find(ctx, cfilter)
 	if err != nil {
-		log.Printf("[CONSULTATIE] Failed to find consultatii with filter: %v", cfilter)
+		log.Printf("[CONSULTATION] Failed to find consultatii with filter: %v", cfilter)
 		return nil, err
 	}
 	defer cursor.Close(ctx)
@@ -274,11 +274,11 @@ func (db *MongoDB) FetchConsultatiiByFilter(ctx context.Context, filter bson.D, 
 	// Fetch consultatii based on the filter and pagination options
 	var consultatii3 []models.Consultatie
 	if err := cursor.All(ctx, &consultatii3); err != nil {
-		log.Printf("[CONSULTATIE] Failed to decode consultatii: %v", err)
+		log.Printf("[CONSULTATION] Failed to decode consultatii: %v", err)
 		return nil, err
 	}
 
-	log.Printf("[CONSULTATIE] Fetched %d consultatii with filter: %v", len(consultatii), cfilter)
+	log.Printf("[CONSULTATION] Fetched %d consultatii with filter: %v", len(consultatii), cfilter)
 
 	log.Println("-----------------------------")
 

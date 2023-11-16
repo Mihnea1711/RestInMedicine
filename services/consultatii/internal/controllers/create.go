@@ -12,8 +12,8 @@ import (
 )
 
 func (cController *ConsultatieController) CreateConsultatie(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[CONSULTATIE] Attempting to create a new consultatie.")
-	consultatie := r.Context().Value(utils.DECODED_CONSULTATIE).(*models.Consultatie)
+	log.Printf("[CONSULTATION] Attempting to create a new consultatie.")
+	consultatie := r.Context().Value(utils.DECODED_CONSULTATION).(*models.Consultatie)
 
 	// Ensure a database operation doesn't take longer than 5 seconds
 	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_TIMEOUT_DURATION*time.Second)
@@ -29,11 +29,11 @@ func (cController *ConsultatieController) CreateConsultatie(w http.ResponseWrite
 	err = cController.DbConn.SaveConsultatie(ctx, consultatie)
 	if err != nil {
 		errMsg := fmt.Sprintf("internal server error: %s", err)
-		log.Printf("[CONSULTATIE] Failed to save consultatie to the database: %s\n", errMsg)
+		log.Printf("[CONSULTATION] Failed to save consultatie to the database: %s\n", errMsg)
 		utils.RespondWithJSON(w, http.StatusInternalServerError, errMsg)
 		return
 	}
 
-	log.Printf("[CONSULTATIE] Successfully created consultatie %d", consultatie.IDConsultatie)
+	log.Printf("[CONSULTATION] Successfully created consultatie %d", consultatie.IDConsultatie)
 	utils.RespondWithJSON(w, http.StatusOK, "Consultatie created")
 }

@@ -14,7 +14,7 @@ import (
 )
 
 func (cController *ConsultatieController) UpdateConsultatieByID(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[CONSULTATIE] Attempting to update a consultatie by ID.")
+	log.Printf("[CONSULTATION] Attempting to update a consultatie by ID.")
 	vars := mux.Vars(r)
 
 	log.Printf("Vars: %v", vars)
@@ -26,7 +26,7 @@ func (cController *ConsultatieController) UpdateConsultatieByID(w http.ResponseW
 		return
 	}
 
-	consultatie := r.Context().Value(utils.DECODED_CONSULTATIE).(*models.Consultatie)
+	consultatie := r.Context().Value(utils.DECODED_CONSULTATION).(*models.Consultatie)
 	consultatie.IDConsultatie = id
 
 	// Ensure a database operation doesn't take longer than utils.REQUEST_TIMEOUT_DURATION seconds
@@ -37,7 +37,7 @@ func (cController *ConsultatieController) UpdateConsultatieByID(w http.ResponseW
 	rowsAffected, err := cController.DbConn.UpdateConsultatieByID(ctx, consultatie)
 	if err != nil {
 		errMsg := fmt.Sprintf("internal server error: %s", err)
-		log.Printf("[CONSULTATIE] Failed to update consultatie by ID: %s\n", errMsg)
+		log.Printf("[CONSULTATION] Failed to update consultatie by ID: %s\n", errMsg)
 		utils.RespondWithJSON(w, http.StatusInternalServerError, errMsg)
 		return
 	}
@@ -48,6 +48,6 @@ func (cController *ConsultatieController) UpdateConsultatieByID(w http.ResponseW
 		return
 	}
 
-	log.Printf("[CONSULTATIE] Successfully updated consultatie %d", consultatie.IDConsultatie)
+	log.Printf("[CONSULTATION] Successfully updated consultatie %d", consultatie.IDConsultatie)
 	utils.RespondWithJSON(w, http.StatusOK, "Consultatie updated")
 }
