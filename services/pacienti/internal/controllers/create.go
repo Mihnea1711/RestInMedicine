@@ -16,7 +16,7 @@ func (dController *PacientController) CreatePacient(w http.ResponseWriter, r *ht
 	doctor := r.Context().Value(utils.DECODED_PATIENT).(*models.Pacient)
 
 	// Ensure a database operation doesn't take longer than 5 seconds
-	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
 	// Use dc.DB to save the doctor to the database

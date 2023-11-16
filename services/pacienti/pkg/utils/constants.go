@@ -11,6 +11,8 @@ const (
 	LIMITER_MINUTE_MULTIPLIER = 1
 )
 
+const DB_REQ_TIMEOUT_SEC_MULTIPLIER = 5
+
 const (
 	// Endpoints
 	CREATE_PATIENT_ENDPOINT           = "/patients"

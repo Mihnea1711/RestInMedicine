@@ -21,7 +21,7 @@ func (dController *PacientController) UpdatePacientByID(w http.ResponseWriter, r
 
 	// Get the pacient ID from the request path
 	vars := mux.Vars(r)
-	idStr := vars["id"]
+	idStr := vars[utils.UPDATE_PATIENT_BY_ID_PARAMETER]
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		errMsg := fmt.Sprintf("Invalid pacient ID: %s", idStr)

@@ -30,7 +30,7 @@ func (dController *PacientController) DeletePacientByID(w http.ResponseWriter, r
 	log.Printf("[PATIENT] Attempting to delete pacient with ID: %d...", id)
 
 	// Ensure a database operation doesn't take longer than 5 seconds
-	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
 	rowsAffected, err := dController.DbConn.DeletePacientByID(ctx, id)
