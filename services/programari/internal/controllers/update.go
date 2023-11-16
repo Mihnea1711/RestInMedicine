@@ -17,7 +17,7 @@ import (
 func (pController *ProgramareController) UpdateProgramareByID(w http.ResponseWriter, r *http.Request) {
 	log.Printf("[APPOINTMENT] Attempting to update an appointment by ID.")
 	vars := mux.Vars(r)
-	id, err := strconv.Atoi(vars["id"])
+	id, err := strconv.Atoi(vars[utils.UPDATE_APPOINTMENT_BY_ID_PARAMETER])
 	if err != nil {
 		response := models.ResponseData{Error: "Invalid appointment ID"}
 		utils.RespondWithJSON(w, http.StatusBadRequest, response)
@@ -28,7 +28,7 @@ func (pController *ProgramareController) UpdateProgramareByID(w http.ResponseWri
 	programare.IDProgramare = id
 
 	// Ensure a database operation doesn't take longer than 5 seconds
-	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
 	// Use pController.DbConn to update the appointment by ID in the database

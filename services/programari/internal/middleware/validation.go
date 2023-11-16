@@ -26,36 +26,36 @@ func ValidateProgramareInfo(next http.Handler) http.Handler {
 			return
 		}
 		// Validate the IDProgramare (assuming it should be greater than 0)
-		if programare.IDProgramare <= 0 {
-			log.Println("[APPOINTMENT] Invalid IDProgramare")
+		if programare.IDProgramare < 0 {
+			log.Println("[MIDDLEWARE] Invalid IDProgramare")
 			http.Error(w, "Invalid IDProgramare", http.StatusBadRequest)
 			return
 		}
 
 		// Validate the IDPacient (assuming it should be greater than 0)
 		if programare.IDPacient <= 0 {
-			log.Println("[APPOINTMENT] Invalid IDPacient")
+			log.Println("[MIDDLEWARE] Invalid IDPacient")
 			http.Error(w, "Invalid IDPacient", http.StatusBadRequest)
 			return
 		}
 
 		// Validate the IDDoctor (assuming it should be greater than 0)
 		if programare.IDDoctor <= 0 {
-			log.Println("[APPOINTMENT] Invalid IDDoctor")
+			log.Println("[MIDDLEWARE] Invalid IDDoctor")
 			http.Error(w, "Invalid IDDoctor", http.StatusBadRequest)
 			return
 		}
 
 		// Validate the Date (assuming it should be a valid date)
 		if programare.Date.IsZero() {
-			log.Println("[APPOINTMENT] Invalid Date")
+			log.Println("[MIDDLEWARE] Invalid Date")
 			http.Error(w, "Invalid Date", http.StatusBadRequest)
 			return
 		}
 
 		// Validate the Status (assuming it should not be empty)
 		if programare.Status == "" {
-			log.Println("[APPOINTMENT] Invalid Status")
+			log.Println("[MIDDLEWARE] Invalid Status")
 			http.Error(w, "Invalid Status", http.StatusBadRequest)
 			return
 		}

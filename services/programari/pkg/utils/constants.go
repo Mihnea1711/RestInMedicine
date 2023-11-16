@@ -33,15 +33,15 @@ const TIME_PARSE_SYNTAX = "2006-01-02"
 
 const (
 	// Endpoints
-	CREATE_APPOINTMENT_ENDPOINT               = "/appointments"                                                              // POST
-	FETCH_ALL_APPOINTMENTS_ENDPOINT           = "/appointments"                                                              // GET
-	FETCH_APPOINTMENT_BY_ID_ENDPOINT          = "/appointments/{" + FETCH_APPOINTMENT_BY_ID_PARAMETER + "}"                  // GET
-	FETCH_APPOINTMENTS_BY_DOCTOR_ID_ENDPOINT  = "/appointments/doctor/{" + FETCH_APPOINTMENTS_BY_DOCTOR_ID_PARAMETER + "}"   // GET
-	FETCH_APPOINTMENTS_BY_PACIENT_ID_ENDPOINT = "/appointments/pacient/{" + FETCH_APPOINTMENTS_BY_PACIENT_ID_PARAMETER + "}" // GET
-	FETCH_APPOINTMENTS_BY_DATE_ENDPOINT       = "/appointments/date/{" + FETCH_APPOINTMENTS_BY_DATE_PARAMETER + "}"          // GET
-	FETCH_APPOINTMENTS_BY_STATUS_ENDPOINT     = "/appointments/status/{" + FETCH_APPOINTMENTS_BY_STATUS_PARAMETER + "}"      // GET
-	UPDATE_APPOINTMENT_BY_ID_ENDPOINT         = "/appointments/{" + UPDATE_APPOINTMENT_BY_ID_PARAMETER + "}"                 // PUT
-	DELETE_APPOINTMENT_BY_ID_ENDPOINT         = "/appointments/{" + DELETE_APPOINTMENT_BY_ID_PARAMETER + "}"                 // DELETE
+	CREATE_APPOINTMENT_ENDPOINT               = "/appointments"                                                               // POST
+	FETCH_ALL_APPOINTMENTS_ENDPOINT           = "/appointments"                                                               // GET
+	FETCH_APPOINTMENT_BY_ID_ENDPOINT          = "/appointments/{" + FETCH_APPOINTMENT_BY_ID_PARAMETER + "}"                   // GET
+	FETCH_APPOINTMENTS_BY_DOCTOR_ID_ENDPOINT  = "/appointments/doctors/{" + FETCH_APPOINTMENTS_BY_DOCTOR_ID_PARAMETER + "}"   // GET
+	FETCH_APPOINTMENTS_BY_PACIENT_ID_ENDPOINT = "/appointments/patients/{" + FETCH_APPOINTMENTS_BY_PACIENT_ID_PARAMETER + "}" // GET
+	FETCH_APPOINTMENTS_BY_DATE_ENDPOINT       = "/appointments/date/{" + FETCH_APPOINTMENTS_BY_DATE_PARAMETER + "}"           // GET
+	FETCH_APPOINTMENTS_BY_STATUS_ENDPOINT     = "/appointments/status/{" + FETCH_APPOINTMENTS_BY_STATUS_PARAMETER + "}"       // GET
+	UPDATE_APPOINTMENT_BY_ID_ENDPOINT         = "/appointments/{" + UPDATE_APPOINTMENT_BY_ID_PARAMETER + "}"                  // PUT
+	DELETE_APPOINTMENT_BY_ID_ENDPOINT         = "/appointments/{" + DELETE_APPOINTMENT_BY_ID_PARAMETER + "}"                  // DELETE
 )
 
 // Parameters

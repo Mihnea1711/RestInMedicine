@@ -50,7 +50,7 @@ func (db *MySQLDatabase) FetchProgramari(ctx context.Context, page, limit int) (
 
 // FetchProgramareByID retrieves a programare by its ID.
 func (db *MySQLDatabase) FetchProgramareByID(ctx context.Context, appointmentId int) (*models.Programare, error) {
-	query := fmt.Sprintf("SELECT * FROM %s WHERE id_programare = ?", utils.AppointmentTableName)
+	query := fmt.Sprintf("SELECT * FROM %s WHERE %s = ?", utils.AppointmentTableName, utils.ColumnIDProgramare)
 
 	row := db.QueryRowContext(ctx, query, appointmentId)
 
@@ -76,7 +76,7 @@ func (db *MySQLDatabase) FetchProgramareByID(ctx context.Context, appointmentId 
 func (db *MySQLDatabase) FetchProgramariByPacientID(ctx context.Context, patientId, page, limit int) ([]models.Programare, error) {
 	offset := (page - 1) * limit
 
-	query := fmt.Sprintf("SELECT * FROM %s WHERE %s = ?", utils.AppointmentTableName, utils.ColumnIDProgramare)
+	query := fmt.Sprintf("SELECT * FROM %s WHERE %s = ? LIMIT ? OFFSET ?", utils.AppointmentTableName, utils.ColumnIDPacient)
 
 	rows, err := db.QueryContext(ctx, query, patientId, limit, offset)
 	if err != nil {

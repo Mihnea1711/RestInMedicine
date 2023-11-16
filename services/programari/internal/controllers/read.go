@@ -21,7 +21,7 @@ func (pController *ProgramareController) GetProgramari(w http.ResponseWriter, r 
 	limit, page := utils.ExtractPaginationParams(r)
 
 	// Ensure a database operation doesn't take longer than 5 seconds
-	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
 	// Use pController.DbConn to fetch all programari from the database
@@ -52,7 +52,7 @@ func (pController *ProgramareController) GetProgramareByID(w http.ResponseWriter
 	log.Printf("[APPOINTMENT] Attempting to retrieve a programare by ID.")
 
 	vars := mux.Vars(r)
-	id, err := strconv.Atoi(vars["id"])
+	id, err := strconv.Atoi(vars[utils.FETCH_APPOINTMENT_BY_ID_PARAMETER])
 	if err != nil {
 		errMsg := "Invalid programare ID"
 		log.Printf("[APPOINTMENT] %s: %s\n", errMsg, err)
@@ -66,7 +66,7 @@ func (pController *ProgramareController) GetProgramareByID(w http.ResponseWriter
 	}
 
 	// Ensure a database operation doesn't take longer than 5 seconds
-	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
 	// Use pController.DbConn to fetch the programare by ID from the database
@@ -110,7 +110,7 @@ func (pController *ProgramareController) GetProgramareByID(w http.ResponseWriter
 func (pController *ProgramareController) GetProgramariByDoctorID(w http.ResponseWriter, r *http.Request) {
 	log.Printf("[APPOINTMENT] Attempting to retrieve programari by Doctor ID.")
 	vars := mux.Vars(r)
-	doctorID, err := strconv.Atoi(vars["id"])
+	doctorID, err := strconv.Atoi(vars[utils.FETCH_APPOINTMENTS_BY_DOCTOR_ID_PARAMETER])
 	if err != nil {
 		errMsg := "Invalid Doctor ID"
 		log.Printf("[APPOINTMENT] %s: %s\n", errMsg, err)
@@ -128,7 +128,7 @@ func (pController *ProgramareController) GetProgramariByDoctorID(w http.Response
 	limit, page := utils.ExtractPaginationParams(r)
 
 	// Ensure a database operation doesn't take longer than 5 seconds
-	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
 	// Use pController.DbConn to fetch programari by Doctor ID from the database
@@ -160,7 +160,7 @@ func (pController *ProgramareController) GetProgramariByDoctorID(w http.Response
 func (pController *ProgramareController) GetProgramariByPacientID(w http.ResponseWriter, r *http.Request) {
 	log.Printf("[APPOINTMENT] Attempting to retrieve programari by Pacient ID.")
 	vars := mux.Vars(r)
-	pacientID, err := strconv.Atoi(vars["id"])
+	pacientID, err := strconv.Atoi(vars[utils.FETCH_APPOINTMENTS_BY_PACIENT_ID_PARAMETER])
 	if err != nil {
 		errMsg := "Invalid Pacient ID"
 		log.Printf("[APPOINTMENT] %s: %s\n", errMsg, err)
@@ -177,7 +177,7 @@ func (pController *ProgramareController) GetProgramariByPacientID(w http.Respons
 	limit, page := utils.ExtractPaginationParams(r)
 
 	// Ensure a database operation doesn't take longer than 5 seconds
-	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
 	// Use pController.DbConn to fetch programari by Pacient ID from the database
@@ -212,10 +212,10 @@ func (pController *ProgramareController) GetProgramariByDate(w http.ResponseWrit
 
 	// Use mux.Vars to get the date parameter from the route
 	vars := mux.Vars(r)
-	dateStr := vars["date"]
+	dateStr := vars[utils.FETCH_APPOINTMENTS_BY_DATE_PARAMETER]
 
 	// Parse the date string into a time.Time object
-	date, err := time.Parse("2006-01-02", dateStr)
+	date, err := time.Parse(utils.TIME_PARSE_SYNTAX, dateStr)
 	if err != nil {
 		errMsg := "Invalid date format"
 		log.Printf("[APPOINTMENT] %s: %s\n", errMsg, err)
@@ -232,7 +232,7 @@ func (pController *ProgramareController) GetProgramariByDate(w http.ResponseWrit
 	limit, page := utils.ExtractPaginationParams(r)
 
 	// Ensure a database operation doesn't take longer than 5 seconds
-	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
 	// Use pController.DbConn to fetch programari by date from the database
@@ -267,13 +267,13 @@ func (pController *ProgramareController) GetProgramariByStatus(w http.ResponseWr
 
 	// Use mux.Vars to get the status parameter from the route
 	vars := mux.Vars(r)
-	status := vars["status"]
+	status := vars[utils.FETCH_APPOINTMENTS_BY_STATUS_PARAMETER]
 
 	// Extract the limit and page query parameters from the request
 	limit, page := utils.ExtractPaginationParams(r)
 
 	// Ensure a database operation doesn't take longer than 5 seconds
-	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
 	// Use pController.DbConn to fetch programari by status from the database

@@ -17,7 +17,7 @@ import (
 func (pController *ProgramareController) DeleteProgramareByID(w http.ResponseWriter, r *http.Request) {
 	log.Printf("[APPOINTMENT] Attempting to delete a programare by ID.")
 	vars := mux.Vars(r)
-	id, err := strconv.Atoi(vars["id"])
+	id, err := strconv.Atoi(vars[utils.DELETE_APPOINTMENT_BY_ID_PARAMETER])
 	if err != nil {
 		response := models.ResponseData{Error: "Invalid programare ID"}
 		utils.RespondWithJSON(w, http.StatusBadRequest, response)
@@ -25,7 +25,7 @@ func (pController *ProgramareController) DeleteProgramareByID(w http.ResponseWri
 	}
 
 	// Ensure a database operation doesn't take longer than 5 seconds
-	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
 	// Use pController.DbConn to delete the programare by ID from the database
