@@ -3,7 +3,7 @@ use idm_db;
 -- Create User Table with a UNIQUE Username Constraint
 CREATE TABLE IF NOT EXISTS User (
     IDUser INT AUTO_INCREMENT PRIMARY KEY,
-    Username VARCHAR(255) NOT NULL UNIQUE, -- Add UNIQUE constraint
+    Username VARCHAR(255) NOT NULL UNIQUE,
     Password VARCHAR(255) NOT NULL
 );
 

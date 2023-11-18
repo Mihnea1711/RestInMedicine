@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -14,20 +15,8 @@ import (
 
 // Register implements the Register RPC method
 func (s *MyIDMServer) Register(ctx context.Context, req *proto_files.RegisterRequest) (*proto_files.InfoResponse, error) {
-	log.Println(s.DbConn)
-	log.Printf("Received gRPC request: %+v", req)
-
-	// Logging for debugging
-	log.Printf("Received RegisterRequest: %+v", req)
-
 	if req == nil || req.UserCredentials == nil {
-		return &proto_files.InfoResponse{
-			Info: &proto_files.Info{
-				Message: "Invalid request format",
-				Status:  http.StatusBadRequest,
-				Error:   "Request or UserCredentials is nil",
-			},
-		}, nil
+		return nil, errors.New("request or user credentials is nil")
 	}
 
 	userCredentials := models.UserRegistration{
@@ -41,13 +30,7 @@ func (s *MyIDMServer) Register(ctx context.Context, req *proto_files.RegisterReq
 	if err != nil {
 		log.Printf("[IDM] Error hashing password: %v", err)
 		// Handle the error and return a meaningful InfoResponse
-		return &proto_files.InfoResponse{
-			Info: &proto_files.Info{
-				Message: "Internal Server Error",
-				Status:  http.StatusInternalServerError,
-				Error:   fmt.Sprintf("Error hashing password: %v", err),
-			},
-		}, err
+		return nil, fmt.Errorf("error hashing password. %v", err)
 	}
 
 	// Set the hashed password back to the user registration
@@ -58,13 +41,7 @@ func (s *MyIDMServer) Register(ctx context.Context, req *proto_files.RegisterReq
 	if err != nil {
 		log.Printf("[IDM] Error adding user to the database: %v", err)
 		// Handle the error and return a meaningful InfoResponse
-		return &proto_files.InfoResponse{
-			Info: &proto_files.Info{
-				Message: "Internal Server Error",
-				Status:  http.StatusInternalServerError,
-				Error:   fmt.Sprintf("Error adding user to the database: %v", err),
-			},
-		}, err
+		return nil, fmt.Errorf("error adding user to the database. %v", err)
 	}
 
 	if lastUserID == 0 {
@@ -74,7 +51,6 @@ func (s *MyIDMServer) Register(ctx context.Context, req *proto_files.RegisterReq
 			Info: &proto_files.Info{
 				Message: "User not added",
 				Status:  http.StatusConflict,
-				Error:   "No rows affected",
 			},
 		}, nil
 	}
@@ -100,22 +76,10 @@ func (s *MyIDMServer) Login(ctx context.Context, req *proto_files.LoginRequest) 
 	if err != nil {
 		if err == sql.ErrNoRows {
 			log.Printf("[IDM] User not found in the database: %s", userCredentials.Username)
-			return &proto_files.LoginResponse{
-				Info: &proto_files.Info{
-					Status:  http.StatusNotFound,
-					Message: "User not found",
-					Error:   fmt.Sprintf("User not found in the database: %s", userCredentials.Username),
-				},
-			}, nil
+			return nil, fmt.Errorf("user not found. %v", err)
 		} else {
 			log.Printf("[IDM] Error retrieving user's hashed password: %v", err)
-			return &proto_files.LoginResponse{
-				Info: &proto_files.Info{
-					Status:  http.StatusInternalServerError,
-					Message: "Internal Server Error",
-					Error:   fmt.Sprintf("Error retrieving user's hashed password: %v", err),
-				},
-			}, nil
+			return nil, fmt.Errorf("error retrieving user's hashed password. %v", err)
 		}
 	}
 
@@ -123,51 +87,27 @@ func (s *MyIDMServer) Login(ctx context.Context, req *proto_files.LoginRequest) 
 	err = utils.VerifyPassword(hashedPassword, userCredentials.Password)
 	if err != nil {
 		log.Printf("[IDM] Invalid password for user: %s", userCredentials.Username)
-		return &proto_files.LoginResponse{
-			Info: &proto_files.Info{
-				Status:  http.StatusUnauthorized,
-				Message: "Invalid credentials",
-				Error:   fmt.Sprintf("Invalid password for user: %s", userCredentials.Username),
-			},
-		}, nil
+		return nil, fmt.Errorf("invalid credentials. %v", err)
 	}
 
 	// Retrieve the user's role
 	userRole, err := s.DbConn.GetUserRoleByUsername(userCredentials.Username)
 	if err != nil {
 		log.Printf("[IDM] Error retrieving user's role: %v", err)
-		return &proto_files.LoginResponse{
-			Info: &proto_files.Info{
-				Status:  http.StatusInternalServerError,
-				Message: "Internal Server Error",
-				Error:   fmt.Sprintf("Error retrieving user's role: %v", err),
-			},
-		}, nil
+		return nil, fmt.Errorf("error retrieving user's role. %v", err)
 	}
 
 	userComplete, err := s.DbConn.GetUserByUsername(userCredentials.Username)
 	if err != nil {
 		log.Printf("[IDM] Error retrieving user info: %v", err)
-		return &proto_files.LoginResponse{
-			Info: &proto_files.Info{
-				Status:  http.StatusInternalServerError,
-				Message: "Internal Server Error",
-				Error:   fmt.Sprintf("Error retrieving user info: %v", err),
-			},
-		}, nil
+		return nil, fmt.Errorf("error retrieving user info. %v", err)
 	}
 
 	// Generate a JWT token
 	token, err := utils.CreateJWT(userComplete.IDUser, userRole, s.JwtConfig)
 	if err != nil {
 		log.Printf("[IDM] Error generating JWT: %v", err)
-		return &proto_files.LoginResponse{
-			Info: &proto_files.Info{
-				Status:  http.StatusInternalServerError,
-				Message: "Internal Server Error",
-				Error:   fmt.Sprintf("Error generating JWT: %v", err),
-			},
-		}, nil
+		return nil, fmt.Errorf("error generating JWT. %v", err)
 	}
 
 	return &proto_files.LoginResponse{

@@ -19,13 +19,7 @@ func (s *MyIDMServer) GetUsers(ctx context.Context, req *proto_files.EmptyReques
 	users, err := s.DbConn.GetAllUsers(int(page), int(limit))
 	if err != nil {
 		log.Printf("[IDM] Error getting all users: %v", err)
-		return &proto_files.UsersResponse{
-			Info: &proto_files.Info{
-				Status:  http.StatusInternalServerError,
-				Message: "Internal Server Error",
-				Error:   "Error getting all users",
-			},
-		}, err
+		return nil, fmt.Errorf("error getting all users. %v", err)
 	}
 
 	// Transform the database user models into proto user models
@@ -55,14 +49,7 @@ func (s *MyIDMServer) GetUserByID(ctx context.Context, req *proto_files.UserIDRe
 	user, err := s.DbConn.GetUserByID(int(userID))
 	if err != nil {
 		log.Printf("[IDM] Error getting user by ID: %v", err)
-		// Handle the error, maybe return an error response
-		return &proto_files.UserResponse{
-			Info: &proto_files.Info{
-				Message: "Error getting user by ID",
-				Status:  http.StatusInternalServerError,
-				Error:   "Internal Server Error",
-			},
-		}, err
+		return nil, fmt.Errorf("error getting user by ID. %v", err)
 	}
 
 	if user.IDUser == 0 {
@@ -103,13 +90,7 @@ func (s *MyIDMServer) UpdateUserByID(ctx context.Context, req *proto_files.Updat
 	rowsAffected, err := s.DbConn.UpdateUserByID(userCredentials, int(userID))
 	if err != nil {
 		log.Printf("[IDM] Error updating user by ID: %v", err)
-		return &proto_files.EnhancedInfoResponse{
-			Info: &proto_files.Info{
-				Message: "Error updating user",
-				Status:  http.StatusInternalServerError,
-				Error:   "Internal Server Error",
-			},
-		}, err
+		return nil, fmt.Errorf("error updating user. %v", err)
 	}
 
 	if rowsAffected == 0 {
@@ -140,13 +121,7 @@ func (s *MyIDMServer) DeleteUserByID(ctx context.Context, req *proto_files.UserI
 	rowsAffected, err := s.DbConn.DeleteUserByID(int(userID))
 	if err != nil {
 		log.Printf("[IDM] Error deleting user by ID: %v", err)
-		return &proto_files.EnhancedInfoResponse{
-			Info: &proto_files.Info{
-				Message: "Error deleting user",
-				Status:  http.StatusInternalServerError,
-				Error:   "Internal Server Error",
-			},
-		}, err
+		return nil, fmt.Errorf("error deleting user. %v", err)
 	}
 
 	if rowsAffected == 0 {
@@ -179,10 +154,10 @@ func (s *MyIDMServer) GetUserRole(ctx context.Context, req *proto_files.UserIDRe
 		log.Printf("[IDM] Error getting user's role: %v", err)
 		return &proto_files.RoleResponse{
 			Info: &proto_files.Info{
-				Error:  "Error getting user's role",
-				Status: http.StatusInternalServerError,
+				Message: "Error getting user's role",
+				Status:  http.StatusInternalServerError,
 			},
-		}, nil
+		}, err
 	}
 
 	if userRole == "" {
@@ -216,8 +191,8 @@ func (s *MyIDMServer) UpdateUserRole(ctx context.Context, req *proto_files.Updat
 		log.Printf("[IDM] Error changing user's role: %v", err)
 		return &proto_files.EnhancedInfoResponse{
 			Info: &proto_files.Info{
-				Error:  fmt.Sprintf("Error changing user's role: %v", err),
-				Status: http.StatusInternalServerError,
+				Message: "Error changing user's role",
+				Status:  http.StatusInternalServerError,
 			},
 		}, err
 	}
@@ -250,8 +225,8 @@ func (s *MyIDMServer) GetUserPassword(ctx context.Context, req *proto_files.User
 		log.Printf("[IDM] Error getting user's password: %v", err)
 		return &proto_files.PasswordResponse{
 			Info: &proto_files.Info{
-				Error:  fmt.Sprintf("Error getting user's password: %v", err),
-				Status: http.StatusInternalServerError,
+				Message: "Error getting user's password",
+				Status:  http.StatusInternalServerError,
 			},
 		}, err
 	}
@@ -274,24 +249,14 @@ func (s *MyIDMServer) UpdateUserPassword(ctx context.Context, req *proto_files.U
 	hashedPassword, err := utils.HashPassword(newPassword)
 	if err != nil {
 		log.Printf("[IDM] Error hashing password: %v", err)
-		return &proto_files.EnhancedInfoResponse{
-			Info: &proto_files.Info{
-				Error:  fmt.Sprintf("Error hashing password: %v", err),
-				Status: http.StatusInternalServerError,
-			},
-		}, err
+		return nil, fmt.Errorf("error hashing password. %v", err)
 	}
 
 	// Call the database method to change the user's password
 	rowsAffected, err := s.DbConn.UpdateUserPasswordByUserID(int(userID), hashedPassword)
 	if err != nil {
 		log.Printf("[IDM] Error changing user's password: %v", err)
-		return &proto_files.EnhancedInfoResponse{
-			Info: &proto_files.Info{
-				Error:  fmt.Sprintf("Error changing user's password: %v", err),
-				Status: http.StatusInternalServerError,
-			},
-		}, err
+		return nil, fmt.Errorf("error changing user's password")
 	}
 
 	if rowsAffected == 0 {

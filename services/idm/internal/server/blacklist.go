@@ -8,7 +8,6 @@ import (
 
 	"github.com/mihnea1711/POS_Project/services/idm/idm/proto_files"
 	"github.com/mihnea1711/POS_Project/services/idm/internal/models"
-	"google.golang.org/grpc/codes"
 )
 
 // AddUserToBlacklist implements the AddUserToBlacklist RPC method
@@ -22,12 +21,7 @@ func (s *MyIDMServer) AddUserToBlacklist(ctx context.Context, req *proto_files.B
 	err := s.RedisConn.AddUserToBlacklistInRedis(ctx, blacklistUserModel)
 	if err != nil {
 		log.Printf("[IDM] Error adding user to blacklist: %v", err)
-		return &proto_files.InfoResponse{
-			Info: &proto_files.Info{
-				Error:  fmt.Sprintf("Error adding user to blacklist: %v", err),
-				Status: http.StatusInternalServerError,
-			},
-		}, nil
+		return nil, fmt.Errorf("error adding user to blacklist. %v", err)
 	}
 
 	// Handle a successful addition to the blacklist.
@@ -47,12 +41,7 @@ func (s *MyIDMServer) CheckUserInBlacklist(ctx context.Context, req *proto_files
 	isInBlacklist, err := s.RedisConn.IsUserInBlacklist(ctx, int(userID))
 	if err != nil {
 		// Handle the error and return an error response
-		return &proto_files.InfoResponse{
-			Info: &proto_files.Info{
-				Status: http.StatusInternalServerError, // Adjust the HTTP status code as needed
-				Error:  "Error checking if user is in blacklist",
-			},
-		}, err
+		return nil, fmt.Errorf("error checking if user is in blacklist. %v", err)
 	}
 
 	if isInBlacklist {
@@ -85,12 +74,7 @@ func (s *MyIDMServer) RemoveUserFromBlacklist(ctx context.Context, req *proto_fi
 	if err != nil {
 		log.Printf("[IDM] Error removing user from blacklist: %v", err)
 		// Handle the error and return an appropriate gRPC response
-		return &proto_files.EnhancedInfoResponse{
-			Info: &proto_files.Info{
-				Error:  fmt.Sprintf("Failed to remove user from blacklist: %v", err),
-				Status: int64(http.StatusInternalServerError),
-			},
-		}, err
+		return nil, fmt.Errorf("failed to remove user from blacklist. %v", err)
 	}
 
 	if rowsAffected == 0 {
@@ -100,7 +84,7 @@ func (s *MyIDMServer) RemoveUserFromBlacklist(ctx context.Context, req *proto_fi
 		return &proto_files.EnhancedInfoResponse{
 			Info: &proto_files.Info{
 				Message: "User not found in the blacklist",
-				Status:  int64(codes.NotFound),
+				Status:  int64(http.StatusNotFound),
 			},
 		}, nil
 	}
