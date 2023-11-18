@@ -25,6 +25,7 @@ type PacientData struct {
 }
 
 type UserData struct {
+	IDUser   int    `json:"id_user"`
 	Username string `json:"username"`
 	// other if needed
 }
@@ -55,4 +56,13 @@ type ResponseData struct {
 	Message string      `json:"message"`
 	Error   string      `json:"error"`
 	Payload interface{} `json:"payload"`
+}
+
+type RowsAffected struct {
+	RowsAffected int `json:"rows_affected"`
+}
+
+type BlacklistData struct {
+	IDUser int    `json:"id_user"`
+	Token  string `json:"token"`
 }

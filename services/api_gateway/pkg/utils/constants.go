@@ -57,6 +57,14 @@ const (
 )
 
 const (
+	ADD_TO_BLACKLIST_ENDPOINT      = "/api/blacklist"
+	CHECK_BLACKLIST_ENDPOINT       = "/api/blacklist/{" + BLACKLIST_USER_ID_PARAMETER + "}"
+	DELETE_FROM_BLACKLIST_ENDPOINT = "/api/blacklist/{" + BLACKLIST_USER_ID_PARAMETER + "}"
+
+	BLACKLIST_USER_ID_PARAMETER = "userID"
+)
+
+const (
 	// Endpoints
 	CREATE_PATIENT_ENDPOINT       = "/api/patients"
 	GET_ALL_PATIENTS_ENDPOINT     = "/api/patients"

@@ -51,4 +51,19 @@ func loadUserRoutes(router *mux.Router, gatewayController *controllers.GatewayCo
 	updateRoleHandler := http.HandlerFunc(gatewayController.UpdateRole)
 	router.Handle(utils.UPDATE_ROLE_ENDPOINT, updateRoleHandler).Methods("POST")
 	log.Printf("[GATEWAY] Route POST %s registered.\n", utils.UPDATE_ROLE_ENDPOINT)
+
+	// AddToBlacklist handles ading a user to the blacklist.
+	addToBlacklistHandler := http.HandlerFunc(gatewayController.AddToBlacklist)
+	router.Handle(utils.ADD_TO_BLACKLIST_ENDPOINT, addToBlacklistHandler).Methods("POST")
+	log.Printf("[GATEWAY] Route POST %s registered.\n", utils.ADD_TO_BLACKLIST_ENDPOINT)
+
+	// CheckBlacklist handles checking if a user is in blacklist.
+	cheeckBlacklistHandler := http.HandlerFunc(gatewayController.CheckBlacklist)
+	router.Handle(utils.CHECK_BLACKLIST_ENDPOINT, cheeckBlacklistHandler).Methods("GET")
+	log.Printf("[GATEWAY] Route POST %s registered.\n", utils.CHECK_BLACKLIST_ENDPOINT)
+
+	// RemoveFromBlacklist handles removing a user from the blacklist.
+	removeFromBlacklistHandler := http.HandlerFunc(gatewayController.RemoveFromBlacklist)
+	router.Handle(utils.DELETE_FROM_BLACKLIST_ENDPOINT, removeFromBlacklistHandler).Methods("DELETE")
+	log.Printf("[GATEWAY] Route POST %s registered.\n", utils.DELETE_FROM_BLACKLIST_ENDPOINT)
 }
