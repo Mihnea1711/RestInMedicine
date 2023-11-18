@@ -8,8 +8,8 @@ import (
 	"github.com/mihnea1711/POS_Project/services/gateway/pkg/utils"
 )
 
-// ProgramConsultation handles programming a consultation.
-func (c *GatewayController) ProgramConsultation(w http.ResponseWriter, r *http.Request) {
+// CreateConsultation handles the creation of a new consultation.
+func (c *GatewayController) CreateConsultation(w http.ResponseWriter, r *http.Request) {
 	var consultationRequest models.ProgramConsultationRequest
 
 	// Parse the request body into the ProgramConsultationRequest struct
@@ -23,4 +23,39 @@ func (c *GatewayController) ProgramConsultation(w http.ResponseWriter, r *http.R
 
 	// Respond with a success message
 	utils.RespondWithJSON(w, http.StatusOK, map[string]interface{}{"message": "Consultation programmed successfully", "cons_data": consultationRequest})
+}
+
+// GetConsultations handles the retrieval of all consultations.
+func (c *GatewayController) GetConsultations(w http.ResponseWriter, r *http.Request) {
+
+}
+
+// GetConsultationsByDoctorID handles the retrieval of consultations by doctor ID.
+func (c *GatewayController) GetConsultationsByDoctorID(w http.ResponseWriter, r *http.Request) {
+
+}
+
+// GetConsultationsByPacientID handles the retrieval of consultations by pacient ID.
+func (c *GatewayController) GetConsultationsByPacientID(w http.ResponseWriter, r *http.Request) {
+
+}
+
+// GetConsultationsByDate handles the retrieval of consultations by date.
+func (c *GatewayController) GetConsultationsByDate(w http.ResponseWriter, r *http.Request) {
+
+}
+
+// GetConsultationByID handles the retrieval of a consultation by ID.
+func (c *GatewayController) GetConsultationByID(w http.ResponseWriter, r *http.Request) {
+
+}
+
+// UpdateConsultationByID handles the update of a specific consultation by ID.
+func (c *GatewayController) UpdateConsultationByID(w http.ResponseWriter, r *http.Request) {
+
+}
+
+// DeleteConsultationByID handles the deletion of a consultation by ID.
+func (c *GatewayController) DeleteConsultationByID(w http.ResponseWriter, r *http.Request) {
+
 }

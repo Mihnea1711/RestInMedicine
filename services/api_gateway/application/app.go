@@ -10,14 +10,15 @@ import (
 	"github.com/mihnea1711/POS_Project/services/gateway/idm"
 	"github.com/mihnea1711/POS_Project/services/gateway/internal/routes"
 	"github.com/mihnea1711/POS_Project/services/gateway/pkg/config"
+	"github.com/mihnea1711/POS_Project/services/gateway/pkg/utils"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
 type App struct {
 	router    http.Handler
-	config    *config.AppConfig
 	idmClient idm.IDMClient
+	config    *config.AppConfig
 }
 
 func New(config *config.AppConfig, parentCtx context.Context) (*App, error) {
@@ -27,7 +28,8 @@ func New(config *config.AppConfig, parentCtx context.Context) (*App, error) {
 
 	// Setup gRPC connection
 	creds := insecure.NewCredentials()
-	conn, err := grpc.Dial("localhost:8080", grpc.WithTransportCredentials(creds))
+	log.Printf("[GATEWAY] Initializing IDM client connection on %s:%d.", utils.IDM_HOST, utils.IDM_PORT)
+	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", utils.IDM_HOST, utils.IDM_PORT), grpc.WithTransportCredentials(creds))
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to IDM gRPC server: %v", err)
 	}
@@ -75,7 +77,7 @@ func (a *App) Start(ctx context.Context) error {
 		// Log the message indicating the server is in the process of shutting down
 		log.Println("[GATEWAY] Server shutting down...")
 
-		timeout, cancel := context.WithTimeout(context.Background(), time.Second*10)
+		timeout, cancel := context.WithTimeout(context.Background(), time.Second*utils.DB_CLEAR_RESOURCES_MULTIPLIER)
 		defer cancel()
 
 		return server.Shutdown(timeout)

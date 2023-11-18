@@ -5,7 +5,6 @@ option go_package = "github.com/mihnea1711/POS_Project/services/gateway/idm/prot
 message Info {
     string Message = 1;
     int64 Status = 2;
-    string Error = 3;
 }
 
 message EmptyRequest {}

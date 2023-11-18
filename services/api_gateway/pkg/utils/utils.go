@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+
+	"github.com/mihnea1711/POS_Project/services/gateway/internal/models"
 )
 
 // RespondWithJSON handles responding to HTTP requests with JSON.
@@ -40,4 +42,20 @@ func writeJSONResponse(w http.ResponseWriter, status int, response []byte) {
 	w.WriteHeader(status)
 	w.Write(response)
 	w.Write([]byte("\n"))
+}
+
+func SendMessageResponse(w http.ResponseWriter, status int, message string, payload interface{}) {
+	responseData := models.ResponseData{
+		Message: message,
+		Payload: payload,
+	}
+	RespondWithJSON(w, status, responseData)
+}
+
+func SendErrorResponse(w http.ResponseWriter, status int, message string, errString string) {
+	responseData := models.ResponseData{
+		Message: message,
+		Error:   errString,
+	}
+	RespondWithJSON(w, status, responseData)
 }
