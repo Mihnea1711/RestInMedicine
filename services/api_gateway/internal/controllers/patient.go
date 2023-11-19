@@ -77,7 +77,7 @@ func (gc *GatewayController) CreatePacient(w http.ResponseWriter, r *http.Reques
 		}
 	default:
 		// Handle default case - internal server error
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", "Something unexpecte happened")
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", "Something unexpected happened")
 		return
 	}
 }
@@ -190,8 +190,8 @@ func (gc *GatewayController) GetPacientByEmail(w http.ResponseWriter, r *http.Re
 	// Redirect the request body to another module
 	response, err := gc.redirectRequestBody(ctx, http.MethodGet, fmt.Sprintf("%s/%s", utils.PATIENT_FETCH_PATIENT_BY_EMAIL_ENDPOINT, pacientEmail), utils.PATIENT_PORT, nil)
 	if err != nil {
-		// Handle the error (e.g., return a response with an error message)
-		utils.RespondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": "Failed to redirect request"})
+		log.Printf("[GATEWAY] Failed to redirect request: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
 		return
 	}
 
@@ -369,7 +369,8 @@ func (gc *GatewayController) DeletePacientByID(w http.ResponseWriter, r *http.Re
 	// Convert pacientIDString to int64
 	pacientID, err := strconv.ParseInt(pacientIDString, 10, 64)
 	if err != nil {
-		utils.RespondWithJSON(w, http.StatusBadRequest, map[string]string{"error": "Invalid pacient ID"})
+		log.Printf("[GATEWAY] Invalid pacient ID: %v", err)
+		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid pacient ID", err.Error())
 		return
 	}
 
@@ -379,8 +380,8 @@ func (gc *GatewayController) DeletePacientByID(w http.ResponseWriter, r *http.Re
 	// Redirect the request body to another module
 	response, err := gc.redirectRequestBody(ctx, http.MethodDelete, fmt.Sprintf("%s/%d", utils.PATIENT_DELETE_PATIENT_BY_ID_ENDPOINT, pacientID), utils.PATIENT_PORT, nil)
 	if err != nil {
-		// Handle the error (e.g., return a response with an error message)
-		utils.RespondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": "Failed to redirect request"})
+		log.Printf("[GATEWAY] Failed to redirect request: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
 		return
 	}
 

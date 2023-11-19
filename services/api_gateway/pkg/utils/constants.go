@@ -80,9 +80,7 @@ const (
 	GET_PATIENT_USER_ID_PARAMETER = "patientUserID"
 	UPDATE_PATIENT_ID_PARAMETER   = "patientID"
 	DELETE_PATIENT_ID_PARAMETER   = "patientID"
-)
 
-const (
 	// PATIENT_Endpoints
 	PATIENT_CREATE_PATIENT_ENDPOINT           = "/patients"
 	PATIENT_FETCH_ALL_PATIENTS_ENDPOINT       = "/patients"
@@ -91,23 +89,17 @@ const (
 	PATIENT_FETCH_PATIENT_BY_USER_ID_ENDPOINT = "/patients/users"
 	PATIENT_UPDATE_PATIENT_BY_ID_ENDPOINT     = "/patients"
 	PATIENT_DELETE_PATIENT_BY_ID_ENDPOINT     = "/patients"
-
-	// PATIENT_Parameters
-	PATIENT_FETCH_PATIENT_BY_ID_PARAMETER      = "patient_id"
-	PATIENT_FETCH_PATIENT_BY_EMAIL_PARAMETER   = "patient_email"
-	PATIENT_FETCH_PATIENT_BY_USER_ID_PARAMETER = "patient_id"
-	PATIENT_UPDATE_PATIENT_BY_ID_PARAMETER     = "patient_id"
-	PATIENT_DELETE_PATIENT_BY_ID_PARAMETER     = "patient_id"
 )
 
 const (
 	// Endpoints
-	CREATE_DOCTOR_ENDPOINT       = "/api/doctors"
-	GET_ALL_DOCTORS_ENDPOINT     = "/api/doctors"
-	GET_DOCTOR_BY_ID_ENDPOINT    = "/api/doctors/{" + GET_DOCTOR_BY_ID_PARAMETER + "}"
-	GET_DOCTOR_BY_EMAIL_ENDPOINT = "/api/doctors/email/{" + GET_DOCTOR_BY_EMAIL_PARAMETER + "}"
-	UPDATE_DOCTOR_BY_ID_ENDPOINT = "/api/doctors/{" + UPDATE_DOCTOR_BY_ID_PARAMETER + "}"
-	DELETE_DOCTOR_BY_ID_ENDPOINT = "/api/doctors/{" + DELETE_DOCTOR_BY_ID_PARAMETER + "}"
+	CREATE_DOCTOR_ENDPOINT         = "/api/doctors"
+	GET_ALL_DOCTORS_ENDPOINT       = "/api/doctors"
+	GET_DOCTOR_BY_ID_ENDPOINT      = "/api/doctors/{" + GET_DOCTOR_BY_ID_PARAMETER + "}"
+	GET_DOCTOR_BY_EMAIL_ENDPOINT   = "/api/doctors/email/{" + GET_DOCTOR_BY_EMAIL_PARAMETER + "}"
+	GET_DOCTOR_BY_USER_ID_ENDPOINT = "/api/doctors/users/{" + GET_DOCTOR_BY_USER_ID_PARAMETER + "}"
+	UPDATE_DOCTOR_BY_ID_ENDPOINT   = "/api/doctors/{" + UPDATE_DOCTOR_BY_ID_PARAMETER + "}"
+	DELETE_DOCTOR_BY_ID_ENDPOINT   = "/api/doctors/{" + DELETE_DOCTOR_BY_ID_PARAMETER + "}"
 
 	// Parameters
 	GET_DOCTOR_BY_ID_PARAMETER      = "doctorID"
@@ -115,6 +107,15 @@ const (
 	GET_DOCTOR_BY_USER_ID_PARAMETER = "doctorID"
 	UPDATE_DOCTOR_BY_ID_PARAMETER   = "doctorID"
 	DELETE_DOCTOR_BY_ID_PARAMETER   = "doctorID"
+
+	// DOCTOR_Endpoints
+	DOCTOR_CREATE_DOCTOR_ENDPOINT           = "/doctors"
+	DOCTOR_FETCH_ALL_DOCTORS_ENDPOINT       = "/doctors"
+	DOCTOR_FETCH_DOCTOR_BY_ID_ENDPOINT      = "/doctors"
+	DOCTOR_FETCH_DOCTOR_BY_EMAIL_ENDPOINT   = "/doctors/email"
+	DOCTOR_FETCH_DOCTOR_BY_USER_ID_ENDPOINT = "/doctors/users"
+	DOCTOR_UPDATE_DOCTOR_BY_ID_ENDPOINT     = "/doctors"
+	DOCTOR_DELETE_DOCTOR_BY_ID_ENDPOINT     = "/doctors"
 )
 
 const (

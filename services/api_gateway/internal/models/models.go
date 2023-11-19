@@ -24,6 +24,17 @@ type PacientData struct {
 	IsActive     bool      `db:"is_active" json:"is_active"`
 }
 
+type Specializare string
+type DoctorData struct {
+	IDDoctor     int          `db:"id_doctor" json:"idDoctor" sql:"type:int primary key generated always as identity"`
+	IDUser       int          `db:"id_user" json:"idUser" sql:"type:int"`
+	Nume         string       `db:"nume" json:"nume" sql:"type:varchar(50)"`
+	Prenume      string       `db:"prenume" json:"prenume" sql:"type:varchar(50)"`
+	Email        string       `db:"email" json:"email" sql:"type:varchar(70) unique"`
+	Telefon      string       `db:"telefon" json:"telefon" sql:"type:char(10) check (telefon ~ '^[0-9]{10}$')"`
+	Specializare Specializare `db:"specializare" json:"specializare" sql:"type:enum"`
+}
+
 type UserData struct {
 	IDUser   int    `json:"id_user"`
 	Username string `json:"username"`
