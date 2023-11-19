@@ -1,12 +1,16 @@
 package controllers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/mihnea1711/POS_Project/services/gateway/idm/proto_files"
 	"github.com/mihnea1711/POS_Project/services/gateway/internal/models"
 	"github.com/mihnea1711/POS_Project/services/gateway/pkg/utils"
 )
@@ -15,18 +19,39 @@ import (
 func (gc *GatewayController) CreatePacient(w http.ResponseWriter, r *http.Request) {
 	var pacientRequest models.PacientData
 
-	// Parse the request body into the PacientRequest struct
+	// Parse the request body into the PacientData struct
 	if err := json.NewDecoder(r.Body).Decode(&pacientRequest); err != nil {
-		// Handle the error (e.g., return a response with an error message)
-		utils.RespondWithJSON(w, http.StatusBadRequest, map[string]string{"error": "Invalid request"})
+		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid request payload", err.Error())
 		return
 	}
 
-	// Perform your pacient creation logic...
+	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_CONTEXT_TIMEOUT*time.Second)
+	defer cancel()
+
+	// check IDUser exists
+	userResponse, err := gc.IDMClient.GetUserByID(ctx, &proto_files.UserIDRequest{UserID: &proto_files.UserID{ID: int64(pacientRequest.IDUser)}})
+	if err != nil {
+		log.Printf("[GATEWAY] Error fetching user by ID: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", err.Error())
+		return
+	}
+
+	if userResponse == nil {
+		log.Println("[GATEWAY] Get User By ID response is nil")
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Get User By ID response is nil", "")
+		return
+	}
+
+	if userResponse.User == nil {
+		log.Println("[GATEWAY] User does not exist")
+		utils.SendErrorResponse(w, http.StatusConflict, "User does not exist", "")
+		return
+	}
+
 	//
 
 	// Redirect the request body to another module
-	response, err := gc.redirectRequestBody(utils.POST, utils.CREATE_PATIENT_ENDPOINT, utils.PATIENT_PORT, pacientRequest)
+	response, err := gc.redirectRequestBody(ctx, utils.POST, utils.CREATE_PATIENT_ENDPOINT, utils.PATIENT_PORT, pacientRequest)
 	if err != nil {
 		// Handle the error (e.g., return a response with an error message)
 		utils.RespondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": "Failed to redirect request"})
@@ -39,8 +64,11 @@ func (gc *GatewayController) CreatePacient(w http.ResponseWriter, r *http.Reques
 
 // GetPacienti handles fetching all pacients.
 func (gc *GatewayController) GetPacienti(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_CONTEXT_TIMEOUT*time.Second)
+	defer cancel()
+
 	// Redirect the request to another module
-	response, err := gc.redirectRequestBody(utils.GET, utils.GET_ALL_PATIENTS_ENDPOINT, utils.PATIENT_PORT, nil)
+	response, err := gc.redirectRequestBody(ctx, utils.GET, utils.GET_ALL_PATIENTS_ENDPOINT, utils.PATIENT_PORT, nil)
 	if err != nil {
 		// Handle the error (e.g., return a response with an error message)
 		utils.RespondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": "Failed to redirect request"})
@@ -63,8 +91,11 @@ func (gc *GatewayController) GetPacientByID(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_CONTEXT_TIMEOUT*time.Second)
+	defer cancel()
+
 	// Redirect the request body to another module
-	response, err := gc.redirectRequestBody(http.MethodGet, fmt.Sprintf("%s%d", utils.GET_PATIENT_BY_ID_ENDPOINT, pacientID), utils.PATIENT_PORT, nil)
+	response, err := gc.redirectRequestBody(ctx, http.MethodGet, fmt.Sprintf("%s%d", utils.GET_PATIENT_BY_ID_ENDPOINT, pacientID), utils.PATIENT_PORT, nil)
 	if err != nil {
 		// Handle the error (e.g., return a response with an error message)
 		utils.RespondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": "Failed to redirect request"})
@@ -79,8 +110,11 @@ func (gc *GatewayController) GetPacientByID(w http.ResponseWriter, r *http.Reque
 func (gc *GatewayController) GetPacientByEmail(w http.ResponseWriter, r *http.Request) {
 	pacientEmail := mux.Vars(r)["email"]
 
+	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_CONTEXT_TIMEOUT*time.Second)
+	defer cancel()
+
 	// Redirect the request body to another module
-	response, err := gc.redirectRequestBody(http.MethodGet, fmt.Sprintf("%s%s", utils.GET_PATIENT_BY_EMAIL_ENDPOINT, pacientEmail), utils.PATIENT_PORT, nil)
+	response, err := gc.redirectRequestBody(ctx, http.MethodGet, fmt.Sprintf("%s%s", utils.GET_PATIENT_BY_EMAIL_ENDPOINT, pacientEmail), utils.PATIENT_PORT, nil)
 	if err != nil {
 		// Handle the error (e.g., return a response with an error message)
 		utils.RespondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": "Failed to redirect request"})
@@ -134,8 +168,11 @@ func (gc *GatewayController) UpdatePacientByID(w http.ResponseWriter, r *http.Re
 		return
 	}
 
+	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_CONTEXT_TIMEOUT*time.Second)
+	defer cancel()
+
 	// Redirect the request body to another module
-	response, err := gc.redirectRequestBody(http.MethodPut, fmt.Sprintf("%s%d", utils.UPDATE_PATIENT_BY_ID_ENDPOINT, pacientID), utils.PATIENT_PORT, pacientData)
+	response, err := gc.redirectRequestBody(ctx, http.MethodPut, fmt.Sprintf("%s%d", utils.UPDATE_PATIENT_BY_ID_ENDPOINT, pacientID), utils.PATIENT_PORT, pacientData)
 	if err != nil {
 		// Handle the error (e.g., return a response with an error message)
 		utils.RespondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": "Failed to redirect request"})
@@ -158,8 +195,11 @@ func (gc *GatewayController) DeletePacientByID(w http.ResponseWriter, r *http.Re
 		return
 	}
 
+	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_CONTEXT_TIMEOUT*time.Second)
+	defer cancel()
+
 	// Redirect the request body to another module
-	response, err := gc.redirectRequestBody(http.MethodDelete, fmt.Sprintf("%s%d", utils.DELETE_PATIENT_BY_ID_ENDPOINT, pacientID), utils.PATIENT_PORT, nil)
+	response, err := gc.redirectRequestBody(ctx, http.MethodDelete, fmt.Sprintf("%s%d", utils.DELETE_PATIENT_BY_ID_ENDPOINT, pacientID), utils.PATIENT_PORT, nil)
 	if err != nil {
 		// Handle the error (e.g., return a response with an error message)
 		utils.RespondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": "Failed to redirect request"})

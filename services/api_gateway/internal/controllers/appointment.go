@@ -1,8 +1,10 @@
 package controllers
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/mihnea1711/POS_Project/services/gateway/internal/models"
 	"github.com/mihnea1711/POS_Project/services/gateway/pkg/utils"
@@ -19,11 +21,14 @@ func (c *GatewayController) CreateAppointment(w http.ResponseWriter, r *http.Req
 		return
 	}
 
+	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_CONTEXT_TIMEOUT*time.Second)
+	defer cancel()
+
 	// Perform your appointment logic...
 	//
 
 	// Redirect the request body to another module
-	response, err := c.redirectRequestBody(utils.POST, utils.CREATE_APPOINTMENT_ENDPOINT, utils.APPOINTMENT_PORT, appointmentRequest)
+	response, err := c.redirectRequestBody(ctx, utils.POST, utils.CREATE_APPOINTMENT_ENDPOINT, utils.APPOINTMENT_PORT, appointmentRequest)
 	if err != nil {
 		// Handle the error (e.g., return a response with an error message)
 		utils.RespondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": "Failed to redirect request"})

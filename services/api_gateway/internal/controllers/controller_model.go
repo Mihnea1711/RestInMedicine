@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -14,7 +15,7 @@ type GatewayController struct {
 	IDMClient idm.IDMClient
 }
 
-func (c *GatewayController) redirectRequestBody(methodType string, endpoint string, port int, data interface{}) (interface{}, error) {
+func (c *GatewayController) redirectRequestBody(ctx context.Context, methodType string, endpoint string, port int, data interface{}) (interface{}, error) {
 	// Convert data to JSON
 	jsonData, err := json.Marshal(data)
 	if err != nil {
@@ -23,7 +24,7 @@ func (c *GatewayController) redirectRequestBody(methodType string, endpoint stri
 	}
 
 	// Create a new request
-	request, err := http.NewRequest(methodType, fmt.Sprintf("http://localhost:%v%v", port, endpoint), bytes.NewBuffer(jsonData))
+	request, err := http.NewRequestWithContext(ctx, methodType, fmt.Sprintf("http://localhost:%v%v", port, endpoint), bytes.NewBuffer(jsonData))
 	if err != nil {
 		log.Printf("[GATEWAY] Error creating HTTP request: %v", err)
 		return nil, err
