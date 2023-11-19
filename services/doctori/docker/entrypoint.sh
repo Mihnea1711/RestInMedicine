@@ -6,14 +6,14 @@ echo "[DOCTOR] Starting entry script..."
 wait_for_mysql() {
     echo "[DOCTOR] Waiting for mysql to be ready..."
     while true; do
-        nc -z mysql 3306 && echo "[DOCTOR] MySQL is ready." && break
+        nc -z doctor_mysql 3306 && echo "[DOCTOR] MySQL is ready." && break
     done
 }
 
 wait_for_redis() {
     echo "[DOCTOR] Waiting for redis to be ready..."
     while true; do
-        nc -z redis 6379 && echo "[DOCTOR] Redis is ready." && break
+        nc -z doctor_redis 6379 && echo "[DOCTOR] Redis is ready." && break
     done
 }
 

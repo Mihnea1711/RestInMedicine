@@ -27,5 +27,11 @@ func (db *MySQLDatabase) DeleteDoctorByID(ctx context.Context, id int) (int, err
 		return 0, err
 	}
 
+	if rowsAffected == 0 {
+		log.Printf("[DOCTOR] No doctor found with ID %d to delete.", id)
+	} else {
+		log.Printf("[DOCTOR] Successfully deleted doctor with ID %d.", id)
+	}
+
 	return int(rowsAffected), nil
 }

@@ -20,7 +20,7 @@ func (dController *DoctorController) CreateDoctor(w http.ResponseWriter, r *http
 	defer cancel()
 
 	// Use dc.DB to save the doctor to the database
-	err := dController.DbConn.SaveDoctor(ctx, doctor)
+	lastInsertID, err := dController.DbConn.SaveDoctor(ctx, doctor)
 	if err != nil {
 		errMsg := fmt.Sprintf("internal server error: %s", err)
 		log.Printf("[DOCTOR] Failed to save doctor to the database: %s\n", errMsg)
@@ -32,8 +32,14 @@ func (dController *DoctorController) CreateDoctor(w http.ResponseWriter, r *http
 		return
 	}
 
-	log.Printf("[DOCTOR] Successfully created doctor %d", doctor.IDDoctor)
+	if lastInsertID == 0 {
+		utils.RespondWithJSON(w, http.StatusConflict, models.ResponseData{
+			Message: "Conflict. Email or CNP are already registered.",
+		})
+		return
+	}
 
+	log.Printf("[DOCTOR] Successfully created doctor %d", lastInsertID)
 	// Use RespondWithJSON for success response
 	utils.RespondWithJSON(w, http.StatusOK, models.ResponseData{
 		Message: "Doctor created",

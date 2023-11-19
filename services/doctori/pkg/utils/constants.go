@@ -66,3 +66,5 @@ const (
 	ColumnTelefon      = "telefon"
 	ColumnSpecializare = "specializare"
 )
+
+const MySQLDuplicateEntryErrorCode = 1062

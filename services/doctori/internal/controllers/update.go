@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"github.com/mihnea1711/POS_Project/services/doctori/internal/models"
 	"github.com/mihnea1711/POS_Project/services/doctori/pkg/utils"
@@ -42,6 +43,16 @@ func (dController *DoctorController) UpdateDoctorByID(w http.ResponseWriter, r *
 	// Use dController.DbConn to update the doctor in the database
 	rowsAffected, err := dController.DbConn.UpdateDoctorByID(ctx, doctor)
 	if err != nil {
+		// Check if the error is a MySQL duplicate entry error
+		if mysqlErr, ok := err.(*mysql.MySQLError); ok && mysqlErr.Number == utils.MySQLDuplicateEntryErrorCode {
+			errMsg := fmt.Sprintf("Conflict error: %s", mysqlErr.Message)
+			log.Printf("[DOCTOR] %s", errMsg)
+
+			// Create a conflict response using ResponseData
+			utils.RespondWithJSON(w, http.StatusConflict, models.ResponseData{Error: errMsg})
+			return
+		}
+
 		errMsg := fmt.Sprintf("internal server error: %s", err)
 		log.Printf("[DOCTOR] Failed to update doctor in the database: %s\n", errMsg)
 
