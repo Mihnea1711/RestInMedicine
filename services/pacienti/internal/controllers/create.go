@@ -34,11 +34,12 @@ func (dController *PacientController) CreatePacient(w http.ResponseWriter, r *ht
 
 	if lastInsertID == 0 {
 		utils.RespondWithJSON(w, http.StatusConflict, models.ResponseData{
-			Message: "Conflict. Email or CNP are already registered.",
+			Message: "Conflict. Email is already registered.",
 		})
 		return
 	}
 
+	log.Printf("[DOCTOR] Successfully created patient %d", lastInsertID)
 	// Use RespondWithJSON for success response
 	utils.RespondWithJSON(w, http.StatusOK, models.ResponseData{
 		Message: "Patient created",

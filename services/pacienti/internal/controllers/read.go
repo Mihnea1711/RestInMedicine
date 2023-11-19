@@ -51,7 +51,7 @@ func (dController *PacientController) GetPacientByID(w http.ResponseWriter, r *h
 		return
 	}
 
-	log.Printf("Fetching pacient with ID: %d...", id)
+	log.Printf("[PATIENT] Fetching pacient with ID: %d...", id)
 
 	// Ensure a database operation doesn't take longer than 5 seconds
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
