@@ -28,6 +28,10 @@ func loadPatientRoutes(router *mux.Router, gatewayController *controllers.Gatewa
 	router.Handle(utils.GET_PATIENT_BY_EMAIL_ENDPOINT, pacientFetchByEmailHandler).Methods("GET")
 	log.Printf("[GATEWAY] Route GET %s registered.\n", utils.GET_PATIENT_BY_EMAIL_ENDPOINT)
 
+	pacientFetchByUserIDHandler := http.HandlerFunc(gatewayController.GetPacientByUserID)
+	router.Handle(utils.GET_PATIENT_BY_USER_ID_ENDPOINT, pacientFetchByUserIDHandler).Methods("GET")
+	log.Printf("[GATEWAY] Route GET %s registered.\n", utils.GET_PATIENT_BY_USER_ID_ENDPOINT)
+
 	// ---------------------------------------------------------- Update --------------------------------------------------------------
 	pacientUpdateByIDHandler := http.HandlerFunc(gatewayController.UpdatePacientByID)
 	router.Handle(utils.UPDATE_PATIENT_BY_ID_ENDPOINT, pacientUpdateByIDHandler).Methods("PUT")

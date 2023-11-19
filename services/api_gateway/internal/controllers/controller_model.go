@@ -15,7 +15,7 @@ type GatewayController struct {
 	IDMClient idm.IDMClient
 }
 
-func (c *GatewayController) redirectRequestBody(ctx context.Context, methodType string, endpoint string, port int, data interface{}) (interface{}, error) {
+func (c *GatewayController) redirectRequestBody(ctx context.Context, methodType string, endpoint string, port int, data interface{}) (*http.Response, error) {
 	// Convert data to JSON
 	jsonData, err := json.Marshal(data)
 	if err != nil {
@@ -40,22 +40,7 @@ func (c *GatewayController) redirectRequestBody(ctx context.Context, methodType 
 		log.Printf("[GATEWAY] Error making HTTP request: %v", err)
 		return nil, err
 	}
-	defer response.Body.Close()
-
-	// Check the response status code
-	if response.StatusCode != http.StatusOK {
-		log.Printf("[GATEWAY] Non-OK status code received: %v", response.Status)
-		// Handle the error (e.g., return a specific error or log it)
-		return nil, err
-	}
-
-	// Optionally, read the response body
-	var responseBody interface{}
-	if err := json.NewDecoder(response.Body).Decode(&responseBody); err != nil {
-		log.Printf("[GATEWAY] Error decoding response body: %v", err)
-		return nil, err
-	}
 
 	log.Printf("[GATEWAY] Request successful")
-	return responseBody, nil
+	return response, nil
 }
