@@ -18,6 +18,7 @@ const (
 )
 
 const DB_REQ_TIMEOUT_SEC_MULTIPLIER = 5
+const CLEAR_DB_RESOURCES_TIMEOUT = 10
 
 const (
 	// Endpoints
@@ -53,3 +54,7 @@ const (
 )
 
 const CNP_DATE_FORMAT = "060102"
+
+const (
+	MySQLDuplicateEntryErrorCode = 1062
+)

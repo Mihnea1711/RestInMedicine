@@ -7,7 +7,7 @@ import (
 )
 
 type Database interface {
-	SavePacient(ctx context.Context, doctor *models.Pacient) error
+	SavePacient(ctx context.Context, doctor *models.Pacient) (int, error)
 
 	FetchPacienti(ctx context.Context, page, limit int) ([]models.Pacient, error)
 	FetchPacientByID(ctx context.Context, id int) (*models.Pacient, error)

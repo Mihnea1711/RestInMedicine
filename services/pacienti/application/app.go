@@ -12,6 +12,7 @@ import (
 	"github.com/mihnea1711/POS_Project/services/pacienti/internal/database/redis"
 	"github.com/mihnea1711/POS_Project/services/pacienti/internal/routes"
 	"github.com/mihnea1711/POS_Project/services/pacienti/pkg/config"
+	"github.com/mihnea1711/POS_Project/services/pacienti/pkg/utils"
 )
 
 type App struct {
@@ -90,7 +91,7 @@ func (a *App) Start(ctx context.Context) error {
 			fmt.Println("[PATIENT] Failed to close redis...", err)
 		}
 
-		timeout, cancel := context.WithTimeout(context.Background(), time.Second*10)
+		timeout, cancel := context.WithTimeout(context.Background(), time.Second*utils.CLEAR_DB_RESOURCES_TIMEOUT)
 		defer cancel()
 
 		return server.Shutdown(timeout)

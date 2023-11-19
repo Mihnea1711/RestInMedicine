@@ -31,7 +31,7 @@ COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # Expose any necessary ports (if required)
-EXPOSE 8080
+EXPOSE 8082
 
 # Command to run the application
 ENTRYPOINT ["/entrypoint.sh"]

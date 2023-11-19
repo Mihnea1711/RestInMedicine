@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"github.com/mihnea1711/POS_Project/services/pacienti/internal/models"
 	"github.com/mihnea1711/POS_Project/services/pacienti/pkg/utils"
@@ -36,12 +37,22 @@ func (dController *PacientController) UpdatePacientByID(w http.ResponseWriter, r
 	pacient.IDPacient = id
 
 	// Ensure a database operation doesn't take longer than 5 seconds
-	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
 	// Use dController.DbConn to update the pacient in the database
 	rowsAffected, err := dController.DbConn.UpdatePacientByID(ctx, pacient)
 	if err != nil {
+		// Check if the error is a MySQL duplicate entry error
+		if mysqlErr, ok := err.(*mysql.MySQLError); ok && mysqlErr.Number == utils.MySQLDuplicateEntryErrorCode {
+			errMsg := fmt.Sprintf("Conflict error: %s", mysqlErr.Message)
+			log.Printf("[PATIENT] %s", errMsg)
+
+			// Create a conflict response using ResponseData
+			utils.RespondWithJSON(w, http.StatusConflict, models.ResponseData{Error: errMsg})
+			return
+		}
+
 		errMsg := fmt.Sprintf("internal server error: %s", err)
 		log.Printf("[PATIENT] Failed to update pacient in the database: %s\n", errMsg)
 
