@@ -47,6 +47,10 @@ func NewMySQL(ctx context.Context, config *config.MySQLConfig) (database.Databas
 	return &MySQLDatabase{DB: db}, nil
 }
 
+func (db *MySQLDatabase) GetDB() *sql.DB {
+	return db.DB
+}
+
 func (db *MySQLDatabase) Close() error {
 	return db.DB.Close()
 }

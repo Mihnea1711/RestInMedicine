@@ -47,3 +47,7 @@ const (
 	ColumnRoleIDUser = "IDUser"
 	ColumnRole       = "Role"
 )
+
+const (
+	MySQLDuplicateEntryErrorCode = 1062
+)

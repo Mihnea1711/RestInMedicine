@@ -1,6 +1,7 @@
 package mysql
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log"
@@ -9,15 +10,15 @@ import (
 )
 
 // GetUserPasswordByUsername retrieves the hashed password of a user from the MySQL database by username.
-func (db *MySQLDatabase) GetUserPasswordByUsername(username string) (string, error) {
+func (db *MySQLDatabase) GetUserPasswordByUsername(ctx context.Context, username string) (string, error) {
 	query := fmt.Sprintf("SELECT %s FROM %s WHERE %s = ?", utils.ColumnUserPassword, utils.UserTable, utils.ColumnUserName)
 
 	var password string
-	err := db.DB.QueryRow(query, username).Scan(&password)
+	err := db.DB.QueryRowContext(ctx, query, username).Scan(&password)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			log.Printf("[IDM] User not found in DB")
-			return "", fmt.Errorf("user not found")
+			return "", err
 		}
 		errMsg := fmt.Sprintf("Error retrieving user's password from DB: %v", err)
 		log.Printf("[IDM] %s", errMsg)
@@ -28,15 +29,15 @@ func (db *MySQLDatabase) GetUserPasswordByUsername(username string) (string, err
 }
 
 // GetUserRoleByUserID retrieves the role of a user from the MySQL database by user ID.
-func (db *MySQLDatabase) GetUserRoleByUserID(userID int) (string, error) {
+func (db *MySQLDatabase) GetUserRoleByUserID(ctx context.Context, userID int) (string, error) {
 	query := fmt.Sprintf("SELECT %s FROM %s WHERE %s = ?", utils.ColumnRole, utils.RoleTable, utils.ColumnRoleIDUser)
 
 	var role string
-	err := db.DB.QueryRow(query, userID).Scan(&role)
+	err := db.DB.QueryRowContext(ctx, query, userID).Scan(&role)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			log.Printf("[IDM] User not found in DB")
-			return "", fmt.Errorf("user not found")
+			return "", err
 		}
 		errMsg := fmt.Sprintf("Error retrieving user's role from DB: %v", err)
 		log.Printf("[IDM] %s", errMsg)
@@ -47,7 +48,7 @@ func (db *MySQLDatabase) GetUserRoleByUserID(userID int) (string, error) {
 }
 
 // GetUserRoleByUsername retrieves the role of a user from the MySQL database by username.
-func (db *MySQLDatabase) GetUserRoleByUsername(username string) (string, error) {
+func (db *MySQLDatabase) GetUserRoleByUsername(ctx context.Context, username string) (string, error) {
 	// query := "SELECT Role FROM Role r JOIN User u ON r.IDUser = u.IDUser WHERE u.Username = ?"
 	query := fmt.Sprintf("SELECT %s FROM %s %s JOIN %s %s ON %s.%s = %s.%s WHERE %s.%s = ?",
 		utils.ColumnRole,
@@ -63,11 +64,11 @@ func (db *MySQLDatabase) GetUserRoleByUsername(username string) (string, error) 
 		utils.ColumnUserName,
 	)
 	var role string
-	err := db.DB.QueryRow(query, username).Scan(&role)
+	err := db.DB.QueryRowContext(ctx, query, username).Scan(&role)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			log.Printf("[IDM] User not found in DB")
-			return "", fmt.Errorf("user not found")
+			return "", err
 		}
 		errMsg := fmt.Sprintf("Error retrieving user's role from DB: %v", err)
 		log.Printf("[IDM] %s", errMsg)
@@ -78,13 +79,13 @@ func (db *MySQLDatabase) GetUserRoleByUsername(username string) (string, error) 
 }
 
 // ChangeUserRoleByUserID updates a user's role in the MySQL database by user ID and returns the number of rows affected.
-func (db *MySQLDatabase) UpdateUserRoleByUserID(userID int, newRole string) (int, error) {
+func (db *MySQLDatabase) UpdateUserRoleByUserID(ctx context.Context, userID int, newRole string) (int, error) {
 	query := fmt.Sprintf("UPDATE %s SET %s = ? WHERE %s = ?",
 		utils.RoleTable,
 		utils.ColumnRole,
 		utils.ColumnRoleIDUser,
 	)
-	result, err := db.DB.Exec(query, newRole, userID)
+	result, err := db.DB.ExecContext(ctx, query, newRole, userID)
 	if err != nil {
 		errMsg := fmt.Sprintf("Error changing user's role in DB: %v", err)
 		log.Printf("[IDM] %s", errMsg)
@@ -96,12 +97,17 @@ func (db *MySQLDatabase) UpdateUserRoleByUserID(userID int, newRole string) (int
 		log.Printf("[IDM] %s", errMsg)
 		return 0, fmt.Errorf(errMsg)
 	}
+	if rowsAffected == 0 {
+		msg := "No rows were changed"
+		log.Printf("[IDM] %s", msg)
+		return 0, nil
+	}
 	log.Printf("[IDM] Changed role for user with ID %d to %s in DB", userID, newRole)
 	return int(rowsAffected), nil
 }
 
 // ChangeUserRoleByUsername updates a user's role in the MySQL database by username and returns the number of rows affected.
-func (db *MySQLDatabase) UpdateUserRoleByUsername(username string, newRole string) (int, error) {
+func (db *MySQLDatabase) UpdateUserRoleByUsername(ctx context.Context, username string, newRole string) (int, error) {
 	query := fmt.Sprintf("UPDATE %s SET %s = ? WHERE %s = (SELECT %s FROM %s WHERE %s = ?)",
 		utils.RoleTable,
 		utils.ColumnRole,
@@ -110,7 +116,7 @@ func (db *MySQLDatabase) UpdateUserRoleByUsername(username string, newRole strin
 		utils.UserTable,
 		utils.ColumnUserName,
 	)
-	result, err := db.DB.Exec(query, newRole, username)
+	result, err := db.DB.ExecContext(ctx, query, newRole, username)
 	if err != nil {
 		errMsg := fmt.Sprintf("Error changing user's role in DB: %v", err)
 		log.Printf("[IDM] %s", errMsg)
@@ -122,18 +128,23 @@ func (db *MySQLDatabase) UpdateUserRoleByUsername(username string, newRole strin
 		log.Printf("[IDM] %s", errMsg)
 		return 0, fmt.Errorf(errMsg)
 	}
+	if rowsAffected == 0 {
+		msg := "No rows were changed"
+		log.Printf("[IDM] %s", msg)
+		return 0, nil
+	}
 	log.Printf("[IDM] Changed role for user with Username %s to %s in DB", username, newRole)
 	return int(rowsAffected), nil
 }
 
 // ChangeUserPasswordByUserID updates a user's password in the MySQL database by user ID and returns the number of rows affected.
-func (db *MySQLDatabase) UpdateUserPasswordByUserID(userID int, newPassword string) (int, error) {
+func (db *MySQLDatabase) UpdateUserPasswordByUserID(ctx context.Context, userID int, newPassword string) (int, error) {
 	query := fmt.Sprintf("UPDATE %s SET %s = ? WHERE %s = ?",
 		utils.UserTable,
 		utils.ColumnUserPassword,
 		utils.ColumnIDUser,
 	)
-	result, err := db.DB.Exec(query, newPassword, userID)
+	result, err := db.DB.ExecContext(ctx, query, newPassword, userID)
 	if err != nil {
 		errMsg := fmt.Sprintf("Error changing user's password in DB: %v", err)
 		log.Printf("[IDM] %s", errMsg)
@@ -144,19 +155,24 @@ func (db *MySQLDatabase) UpdateUserPasswordByUserID(userID int, newPassword stri
 		errMsg := fmt.Sprintf("Error getting rows affected: %v", err)
 		log.Printf("[IDM] %s", errMsg)
 		return 0, fmt.Errorf(errMsg)
+	}
+	if rowsAffected == 0 {
+		msg := "No rows were changed"
+		log.Printf("[IDM] %s", msg)
+		return 0, nil
 	}
 	log.Printf("[IDM] Changed password for user with ID %d in DB", userID)
 	return int(rowsAffected), nil
 }
 
 // ChangeUserPasswordByUsername updates a user's password in the MySQL database by username and returns the number of rows affected.
-func (db *MySQLDatabase) UpdateUserPasswordByUsername(username string, newPassword string) (int, error) {
+func (db *MySQLDatabase) UpdateUserPasswordByUsername(ctx context.Context, username string, newPassword string) (int, error) {
 	query := fmt.Sprintf("UPDATE %s SET %s = ? WHERE %s = ?",
 		utils.UserTable,
 		utils.ColumnUserPassword,
 		utils.ColumnUserName,
 	)
-	result, err := db.DB.Exec(query, newPassword, username)
+	result, err := db.DB.ExecContext(ctx, query, newPassword, username)
 	if err != nil {
 		errMsg := fmt.Sprintf("Error changing user's password in DB: %v", err)
 		log.Printf("[IDM] %s", errMsg)
@@ -167,6 +183,11 @@ func (db *MySQLDatabase) UpdateUserPasswordByUsername(username string, newPasswo
 		errMsg := fmt.Sprintf("Error getting rows affected: %v", err)
 		log.Printf("[IDM] %s", errMsg)
 		return 0, fmt.Errorf(errMsg)
+	}
+	if rowsAffected == 0 {
+		msg := "No rows were changed"
+		log.Printf("[IDM] %s", msg)
+		return 0, nil
 	}
 	log.Printf("[IDM] Changed password for user with Username %s in DB", username)
 	return int(rowsAffected), nil

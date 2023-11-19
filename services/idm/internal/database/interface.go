@@ -1,24 +1,31 @@
 package database
 
-import "github.com/mihnea1711/POS_Project/services/idm/internal/models"
+import (
+	"context"
+	"database/sql"
+
+	"github.com/mihnea1711/POS_Project/services/idm/internal/models"
+)
 
 type Database interface {
-	AddUser(newUser models.UserRegistration) (int, error)
+	AddUser(ctx context.Context, newUser models.UserRegistration) (int, error)
 
-	GetAllUsers(page, limit int) ([]models.User, error)
-	GetUserByID(userID int) (models.User, error)
-	GetUserByUsername(username string) (models.User, error)
+	GetAllUsers(ctx context.Context, page, limit int) ([]models.User, error)
+	GetUserByID(ctx context.Context, userID int) (*models.User, error)
+	GetUserByUsername(ctx context.Context, username string) (*models.User, error)
 
-	UpdateUserByID(userCredentials models.CredentialsRequest, userId int) (int, error)
+	UpdateUserByID(ctx context.Context, userCredentials models.CredentialsRequest, userID int) (int, error)
 
-	DeleteUserByID(userID int) (int, error)
+	DeleteUserByID(ctx context.Context, userID int) (int, error)
 
-	GetUserPasswordByUsername(username string) (string, error)
+	GetUserPasswordByUsername(ctx context.Context, username string) (string, error)
 
-	GetUserRoleByUserID(userID int) (string, error)
-	GetUserRoleByUsername(username string) (string, error)
-	UpdateUserRoleByUserID(userID int, newRole string) (int, error)
+	GetUserRoleByUserID(ctx context.Context, userID int) (string, error)
+	GetUserRoleByUsername(ctx context.Context, username string) (string, error)
+	UpdateUserRoleByUserID(ctx context.Context, userID int, newRole string) (int, error)
 
-	UpdateUserPasswordByUserID(userID int, newPassword string) (int, error)
+	UpdateUserPasswordByUserID(ctx context.Context, userID int, newPassword string) (int, error)
+
+	GetDB() *sql.DB
 	Close() error
 }

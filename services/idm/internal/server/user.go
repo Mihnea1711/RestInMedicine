@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/mihnea1711/POS_Project/services/idm/idm/proto_files"
 	"github.com/mihnea1711/POS_Project/services/idm/internal/models"
@@ -15,8 +16,12 @@ import (
 func (s *MyIDMServer) GetUsers(ctx context.Context, req *proto_files.EmptyRequest) (*proto_files.UsersResponse, error) {
 	limit, page := utils.ExtractPaginationParams(req)
 
+	// Ensure a database operation doesn't take longer than 5 seconds
+	childCtx, cancel := context.WithTimeout(ctx, utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
+	defer cancel()
+
 	// Call the database method to retrieve all users
-	users, err := s.DbConn.GetAllUsers(int(page), int(limit))
+	users, err := s.DbConn.GetAllUsers(childCtx, int(page), int(limit))
 	if err != nil {
 		log.Printf("[IDM] Error getting all users: %v", err)
 		return nil, fmt.Errorf("error getting all users. %v", err)
@@ -45,16 +50,19 @@ func (s *MyIDMServer) GetUsers(ctx context.Context, req *proto_files.EmptyReques
 func (s *MyIDMServer) GetUserByID(ctx context.Context, req *proto_files.UserIDRequest) (*proto_files.UserResponse, error) {
 	userID := req.UserID.ID
 
+	// Ensure a database operation doesn't take longer than 5 seconds
+	childCtx, cancel := context.WithTimeout(ctx, utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
+	defer cancel()
+
 	// Call the database method to retrieve the user by ID
-	user, err := s.DbConn.GetUserByID(int(userID))
+	user, err := s.DbConn.GetUserByID(childCtx, int(userID))
 	if err != nil {
 		log.Printf("[IDM] Error getting user by ID: %v", err)
 		return nil, fmt.Errorf("error getting user by ID. %v", err)
 	}
 
-	if user.IDUser == 0 {
+	if user == nil {
 		// User not found
-		// Handle the not found case, maybe return a not found response
 		return &proto_files.UserResponse{
 			Info: &proto_files.Info{
 				Message: "User not found",
@@ -86,8 +94,12 @@ func (s *MyIDMServer) UpdateUserByID(ctx context.Context, req *proto_files.Updat
 		Username: req.UserData.Username,
 	}
 
+	// Ensure a database operation doesn't take longer than 5 seconds
+	childCtx, cancel := context.WithTimeout(ctx, utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
+	defer cancel()
+
 	// Call the database method to update the user by ID
-	rowsAffected, err := s.DbConn.UpdateUserByID(userCredentials, int(userID))
+	rowsAffected, err := s.DbConn.UpdateUserByID(childCtx, userCredentials, int(userID))
 	if err != nil {
 		log.Printf("[IDM] Error updating user by ID: %v", err)
 		return nil, fmt.Errorf("error updating user. %v", err)
@@ -97,7 +109,7 @@ func (s *MyIDMServer) UpdateUserByID(ctx context.Context, req *proto_files.Updat
 		// No rows were affected, which means the user was not found
 		return &proto_files.EnhancedInfoResponse{
 			Info: &proto_files.Info{
-				Message: "User not found or no changes made",
+				Message: "User not found or No changes made due to conflict",
 				Status:  http.StatusNotFound,
 			},
 		}, nil
@@ -117,8 +129,12 @@ func (s *MyIDMServer) UpdateUserByID(ctx context.Context, req *proto_files.Updat
 func (s *MyIDMServer) DeleteUserByID(ctx context.Context, req *proto_files.UserIDRequest) (*proto_files.EnhancedInfoResponse, error) {
 	userID := req.UserID.ID
 
+	// Ensure a database operation doesn't take longer than 5 seconds
+	childCtx, cancel := context.WithTimeout(ctx, utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
+	defer cancel()
+
 	// Call the database method to delete the user by ID
-	rowsAffected, err := s.DbConn.DeleteUserByID(int(userID))
+	rowsAffected, err := s.DbConn.DeleteUserByID(childCtx, int(userID))
 	if err != nil {
 		log.Printf("[IDM] Error deleting user by ID: %v", err)
 		return nil, fmt.Errorf("error deleting user. %v", err)
@@ -148,8 +164,12 @@ func (s *MyIDMServer) DeleteUserByID(ctx context.Context, req *proto_files.UserI
 func (s *MyIDMServer) GetUserRole(ctx context.Context, req *proto_files.UserIDRequest) (*proto_files.RoleResponse, error) {
 	userID := req.UserID.ID
 
+	// Ensure a database operation doesn't take longer than 5 seconds
+	childCtx, cancel := context.WithTimeout(ctx, utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
+	defer cancel()
+
 	// Call the database method to retrieve the user's role by ID
-	userRole, err := s.DbConn.GetUserRoleByUserID(int(userID))
+	userRole, err := s.DbConn.GetUserRoleByUserID(childCtx, int(userID))
 	if err != nil {
 		log.Printf("[IDM] Error getting user's role: %v", err)
 		return &proto_files.RoleResponse{
@@ -185,8 +205,12 @@ func (s *MyIDMServer) UpdateUserRole(ctx context.Context, req *proto_files.Updat
 	userID := req.UserID.ID
 	newRole := req.Role
 
+	// Ensure a database operation doesn't take longer than 5 seconds
+	childCtx, cancel := context.WithTimeout(ctx, utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
+	defer cancel()
+
 	// Call the database method to change the user's role
-	rowsAffected, err := s.DbConn.UpdateUserRoleByUserID(int(userID), newRole)
+	rowsAffected, err := s.DbConn.UpdateUserRoleByUserID(childCtx, int(userID), newRole)
 	if err != nil {
 		log.Printf("[IDM] Error changing user's role: %v", err)
 		return &proto_files.EnhancedInfoResponse{
@@ -220,7 +244,12 @@ func (s *MyIDMServer) UpdateUserRole(ctx context.Context, req *proto_files.Updat
 // GetUserPassword implements the GetUserPassword RPC method
 func (s *MyIDMServer) GetUserPassword(ctx context.Context, req *proto_files.UsernameRequest) (*proto_files.PasswordResponse, error) {
 	username := req.Username
-	password, err := s.DbConn.GetUserPasswordByUsername(username)
+
+	// Ensure a database operation doesn't take longer than 5 seconds
+	childCtx, cancel := context.WithTimeout(ctx, utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
+	defer cancel()
+
+	password, err := s.DbConn.GetUserPasswordByUsername(childCtx, username)
 	if err != nil {
 		log.Printf("[IDM] Error getting user's password: %v", err)
 		return &proto_files.PasswordResponse{
@@ -245,6 +274,10 @@ func (s *MyIDMServer) UpdateUserPassword(ctx context.Context, req *proto_files.U
 	userID := req.UserID.ID
 	newPassword := req.Password
 
+	// Ensure a database operation doesn't take longer than 5 seconds
+	childCtx, cancel := context.WithTimeout(ctx, utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
+	defer cancel()
+
 	// Hash the new password before updating it
 	hashedPassword, err := utils.HashPassword(newPassword)
 	if err != nil {
@@ -253,7 +286,7 @@ func (s *MyIDMServer) UpdateUserPassword(ctx context.Context, req *proto_files.U
 	}
 
 	// Call the database method to change the user's password
-	rowsAffected, err := s.DbConn.UpdateUserPasswordByUserID(int(userID), hashedPassword)
+	rowsAffected, err := s.DbConn.UpdateUserPasswordByUserID(childCtx, int(userID), hashedPassword)
 	if err != nil {
 		log.Printf("[IDM] Error changing user's password: %v", err)
 		return nil, fmt.Errorf("error changing user's password")

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/mihnea1711/POS_Project/services/idm/idm/proto_files"
 	"github.com/mihnea1711/POS_Project/services/idm/internal/models"
@@ -18,6 +19,10 @@ func (s *MyIDMServer) Register(ctx context.Context, req *proto_files.RegisterReq
 	if req == nil || req.UserCredentials == nil {
 		return nil, errors.New("request or user credentials is nil")
 	}
+
+	// Ensure a database operation doesn't take longer than 5 seconds
+	childCtx, cancel := context.WithTimeout(ctx, utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
+	defer cancel()
 
 	userCredentials := models.UserRegistration{
 		Username: req.UserCredentials.Username,
@@ -37,7 +42,7 @@ func (s *MyIDMServer) Register(ctx context.Context, req *proto_files.RegisterReq
 	userCredentials.Password = hashedPassword
 
 	// Call the database method to add the user to the database
-	lastUserID, err := s.DbConn.AddUser(userCredentials)
+	lastUserID, err := s.DbConn.AddUser(childCtx, userCredentials)
 	if err != nil {
 		log.Printf("[IDM] Error adding user to the database: %v", err)
 		// Handle the error and return a meaningful InfoResponse
@@ -45,11 +50,11 @@ func (s *MyIDMServer) Register(ctx context.Context, req *proto_files.RegisterReq
 	}
 
 	if lastUserID == 0 {
+		log.Println("[IDM] User not added to the db. Username already exists.")
 		// No rows were affected, which means the user was not added
-		// Handle the conflict situation and return a meaningful InfoResponse
 		return &proto_files.InfoResponse{
 			Info: &proto_files.Info{
-				Message: "User not added",
+				Message: "Username already exists",
 				Status:  http.StatusConflict,
 			},
 		}, nil
@@ -71,14 +76,36 @@ func (s *MyIDMServer) Login(ctx context.Context, req *proto_files.LoginRequest) 
 		Password: req.UserCredentials.Password,
 	}
 
+	// Ensure a database operation doesn't take longer than 5 seconds
+	childCtx, cancel := context.WithTimeout(ctx, utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
+	defer cancel()
+
+	// Start a database transaction
+	tx, err := s.DbConn.GetDB().BeginTx(childCtx, &sql.TxOptions{Isolation: sql.LevelSerializable})
+	if err != nil {
+		log.Printf("[IDM] Error starting database transaction: %v", err)
+		return nil, fmt.Errorf("error starting database transaction. %v", err)
+	}
+	defer tx.Rollback()
+
 	// Retrieve the hashed password for the user from the database
-	hashedPassword, err := s.DbConn.GetUserPasswordByUsername(userCredentials.Username)
+	hashedPassword, err := s.DbConn.GetUserPasswordByUsername(childCtx, userCredentials.Username)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			log.Printf("[IDM] User not found in the database: %s", userCredentials.Username)
-			return nil, fmt.Errorf("user not found. %v", err)
+			// Roll back the transaction
+			tx.Rollback()
+			return &proto_files.LoginResponse{
+				Token: "",
+				Info: &proto_files.Info{
+					Status:  http.StatusNotFound,
+					Message: "Username or Password are incorrect",
+				},
+			}, nil
 		} else {
 			log.Printf("[IDM] Error retrieving user's hashed password: %v", err)
+			// Roll back the transaction
+			tx.Rollback()
 			return nil, fmt.Errorf("error retrieving user's hashed password. %v", err)
 		}
 	}
@@ -87,27 +114,72 @@ func (s *MyIDMServer) Login(ctx context.Context, req *proto_files.LoginRequest) 
 	err = utils.VerifyPassword(hashedPassword, userCredentials.Password)
 	if err != nil {
 		log.Printf("[IDM] Invalid password for user: %s", userCredentials.Username)
-		return nil, fmt.Errorf("invalid credentials. %v", err)
+		// Roll back the transaction
+		tx.Rollback()
+		return &proto_files.LoginResponse{
+			Token: "",
+			Info: &proto_files.Info{
+				Status:  http.StatusNotFound,
+				Message: "Username or Password are incorrect",
+			},
+		}, nil
 	}
 
 	// Retrieve the user's role
-	userRole, err := s.DbConn.GetUserRoleByUsername(userCredentials.Username)
+	userRole, err := s.DbConn.GetUserRoleByUsername(childCtx, userCredentials.Username)
 	if err != nil {
-		log.Printf("[IDM] Error retrieving user's role: %v", err)
-		return nil, fmt.Errorf("error retrieving user's role. %v", err)
+		if err == sql.ErrNoRows {
+			log.Printf("[IDM] User not found in the database: %s", userCredentials.Username)
+			// Roll back the transaction
+			tx.Rollback()
+			return &proto_files.LoginResponse{
+				Token: "",
+				Info: &proto_files.Info{
+					Status:  http.StatusNotFound,
+					Message: "Username does not exist",
+				},
+			}, nil
+		} else {
+			log.Printf("[IDM] Error retrieving user's role: %v", err)
+			// Roll back the transaction
+			tx.Rollback()
+			return nil, fmt.Errorf("error retrieving user's role. %v", err)
+		}
 	}
 
-	userComplete, err := s.DbConn.GetUserByUsername(userCredentials.Username)
+	userComplete, err := s.DbConn.GetUserByUsername(childCtx, userCredentials.Username)
 	if err != nil {
-		log.Printf("[IDM] Error retrieving user info: %v", err)
-		return nil, fmt.Errorf("error retrieving user info. %v", err)
+		if err == sql.ErrNoRows {
+			log.Printf("[IDM] User not found in the database: %s", userCredentials.Username)
+			// Roll back the transaction
+			tx.Rollback()
+			return &proto_files.LoginResponse{
+				Token: "",
+				Info: &proto_files.Info{
+					Status:  http.StatusNotFound,
+					Message: "Username or Password are incorrect",
+				},
+			}, nil
+		} else {
+			log.Printf("[IDM] Error retrieving user info: %v", err)
+			// Roll back the transaction
+			tx.Rollback()
+			return nil, fmt.Errorf("error retrieving user info. %v", err)
+		}
 	}
 
 	// Generate a JWT token
 	token, err := utils.CreateJWT(userComplete.IDUser, userRole, s.JwtConfig)
-	if err != nil {
+	if err != nil || token == "" {
+		tx.Rollback()
 		log.Printf("[IDM] Error generating JWT: %v", err)
 		return nil, fmt.Errorf("error generating JWT. %v", err)
+	}
+
+	// Commit the transaction if everything is successful
+	if err := tx.Commit(); err != nil {
+		log.Printf("[IDM] Error committing database transaction: %v", err)
+		return nil, fmt.Errorf("error committing database transaction. %v", err)
 	}
 
 	return &proto_files.LoginResponse{
