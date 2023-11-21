@@ -20,7 +20,7 @@ func (pController *ProgramareController) CreateProgramare(w http.ResponseWriter,
 	defer cancel()
 
 	// Use pController.DbConn to save the appointment to the database
-	err := pController.DbConn.SaveProgramare(ctx, programare)
+	lastInsertID, err := pController.DbConn.SaveProgramare(ctx, programare)
 	if err != nil {
 		errMsg := fmt.Sprintf("internal server error: %s", err)
 		log.Printf("[APPOINTMENT] Failed to save programare to the database: %s\n", errMsg)
@@ -29,7 +29,14 @@ func (pController *ProgramareController) CreateProgramare(w http.ResponseWriter,
 		return
 	}
 
-	log.Printf("[APPOINTMENT] Successfully created programare %d", programare.IDProgramare)
+	if lastInsertID == 0 {
+		utils.RespondWithJSON(w, http.StatusConflict, models.ResponseData{
+			Message: "Appointment not saved",
+		})
+		return
+	}
+
+	log.Printf("[APPOINTMENT] Successfully created programare %d", lastInsertID)
 	response := models.ResponseData{Message: "Programare created"}
 	utils.RespondWithJSON(w, http.StatusOK, response)
 }

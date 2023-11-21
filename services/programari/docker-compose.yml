@@ -1,14 +1,14 @@
 version: '3.7'
 services:
-  app:
+  appointment_app:
     build:
       context: .  # Points to the directory containing docker-compose.yml
       dockerfile: docker/api.Dockerfile  # Path to your Dockerfile relative to the build context
     ports:
-      - "8080:8080"
+      - "8084:8084"
     depends_on:
-      - mysql
-      - redis
+      - appointment_mysql
+      - appointment_redis
     env_file:
       - .env
     environment:
@@ -17,9 +17,9 @@ services:
     volumes:
       - .:/workspace/
 
-  mysql:
+  appointment_mysql:
     image: mysql:8.2.0
-    container_name: "mysql"
+    container_name: "appointment_mysql"
     build: 
       context: .
       dockerfile: docker/mysql.Dockerfile
@@ -29,17 +29,17 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
-      - "3306:3306"
+      - "3309:3306"
     restart: always
     volumes:
       - mysql_data:/var/lib/mysql
     command: --default-authentication-plugin=caching_sha2_password
 
-  redis:
+  appointment_redis:
     image: redis:latest
-    container_name: "redis"
+    container_name: "appointment_redis"
     ports:
-      - "6379:6379"
+      - "6376:6379"
     volumes:
       - redis_data:/data
     environment:

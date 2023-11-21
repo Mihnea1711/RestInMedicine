@@ -32,6 +32,11 @@ func (db *MySQLDatabase) UpdateProgramareByID(ctx context.Context, programare *m
 		return 0, err
 	}
 
-	log.Printf("[APPOINTMENT] %d programare updated successfully.", rowsAffected)
+	if rowsAffected == 0 {
+		log.Printf("[APPOINTMENT] No appointment found with ID %d to update.", programare.IDDoctor)
+	} else {
+		log.Printf("[APPOINTMENT] Successfully updated appointment with ID %d.", programare.IDDoctor)
+	}
+
 	return int(rowsAffected), nil
 }

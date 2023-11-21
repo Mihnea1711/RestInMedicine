@@ -64,3 +64,5 @@ const (
 	ColumnDate           = "date"
 	ColumnStatus         = "status"
 )
+
+const MySQLDuplicateEntryErrorCode = 1062

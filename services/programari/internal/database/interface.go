@@ -8,7 +8,7 @@ import (
 )
 
 type Database interface {
-	SaveProgramare(ctx context.Context, programare *models.Programare) error
+	SaveProgramare(ctx context.Context, programare *models.Programare) (int, error)
 
 	FetchProgramari(ctx context.Context, page, limit int) ([]models.Programare, error)
 	FetchProgramareByID(ctx context.Context, id int) (*models.Programare, error)

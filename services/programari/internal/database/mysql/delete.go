@@ -12,7 +12,7 @@ func (db *MySQLDatabase) DeleteProgramareByID(ctx context.Context, id int) (int,
 	query := fmt.Sprintf("DELETE FROM %s WHERE %s = ?", utils.AppointmentTableName, utils.ColumnIDProgramare)
 	res, err := db.ExecContext(ctx, query, id)
 	if err != nil {
-		log.Printf("[APPOINTMENT] Error executing query to delete programare: %v", err)
+		log.Printf("[APPOINTMENT] Error executing query to delete appointment: %v", err)
 		return 0, err
 	}
 
@@ -22,6 +22,11 @@ func (db *MySQLDatabase) DeleteProgramareByID(ctx context.Context, id int) (int,
 		return 0, err
 	}
 
-	log.Printf("[APPOINTMENT] %d programare deleted successfully.", rowsAffected)
+	if rowsAffected == 0 {
+		log.Printf("[APPOINTMENT] No appointment found with ID %d to delete.", id)
+	} else {
+		log.Printf("[APPOINTMENT] Successfully deleted appointment with ID %d.", id)
+	}
+
 	return int(rowsAffected), nil
 }

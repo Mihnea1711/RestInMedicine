@@ -63,12 +63,14 @@ func (db *MySQLDatabase) FetchProgramareByID(ctx context.Context, appointmentId 
 		&programare.Status,
 	); err != nil {
 		if err == sql.ErrNoRows {
+			log.Printf("[APPOINTMENT] Appointment with ID %d not found.", appointmentId)
 			return nil, nil
 		}
 		log.Printf("[APPOINTMENT] Error retrieving programare by ID: %v", err)
 		return nil, err
 	}
 
+	log.Printf("[DOCTOR] Successfully fetched appointment by ID %d.", appointmentId)
 	return &programare, nil
 }
 
