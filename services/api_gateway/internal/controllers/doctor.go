@@ -56,15 +56,16 @@ func (gc *GatewayController) CreateDoctor(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	var responseBody *models.ResponseData
+	if err := json.NewDecoder(response.Body).Decode(&responseBody); err != nil {
+		log.Printf("[GATEWAY] Error decoding response body: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Error decoding response body", err.Error())
+		return
+	}
+
 	switch response.StatusCode {
 	case http.StatusOK:
 		{
-			var responseBody *models.ResponseData
-			if err := json.NewDecoder(response.Body).Decode(&responseBody); err != nil {
-				log.Printf("[GATEWAY] Error decoding response body: %v", err)
-				utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
-				return
-			}
 			// Respond with the response from the other module
 			utils.SendMessageResponse(w, http.StatusOK, responseBody.Message, responseBody.Payload)
 			return
@@ -72,7 +73,7 @@ func (gc *GatewayController) CreateDoctor(w http.ResponseWriter, r *http.Request
 	case http.StatusConflict:
 		{
 			// Handle conflict case
-			utils.SendErrorResponse(w, http.StatusConflict, "Conflict in the request.", "")
+			utils.SendErrorResponse(w, http.StatusConflict, responseBody.Message, responseBody.Error)
 			return
 		}
 	default:

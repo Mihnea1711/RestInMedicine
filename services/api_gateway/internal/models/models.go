@@ -35,6 +35,15 @@ type DoctorData struct {
 	Specializare Specializare `db:"specializare" json:"specializare" sql:"type:enum"`
 }
 
+type StatusProgramare string
+type AppointmentData struct {
+	IDProgramare int              `db:"id_programare" json:"idProgramare"`
+	IDPacient    int              `db:"id_pacient" json:"idPacient"`
+	IDDoctor     int              `db:"id_doctor" json:"idDoctor"`
+	Date         time.Time        `db:"date" json:"date"`
+	Status       StatusProgramare `db:"status" json:"status"`
+}
+
 type UserData struct {
 	IDUser   int    `json:"id_user"`
 	Username string `json:"username"`
