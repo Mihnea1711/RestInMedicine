@@ -24,43 +24,51 @@ func ValidateDoctorInfo(next http.Handler) http.Handler {
 
 		err := dec.Decode(&doctor)
 		if checkErrorOnDecode(err, w) {
+			errMsg := "Failed to decode patient"
+			log.Printf("[PATIENT_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
+			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Patient validation failed due to decoding."})
 			return
 		}
 
 		// Basic validation for each field
 		if doctor.Nume == "" || len(doctor.Nume) > 255 {
-			log.Printf("[MIDDLEWARE] Invalid or missing Nume in request: %s", r.RequestURI)
-			http.Error(w, "Invalid or missing Nume", http.StatusBadRequest)
+			errMsg := "Invalid or missing Nume"
+			log.Printf("[PATIENT_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
+			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Patient validation failed due to first name"})
 			return
 		}
 
 		if doctor.Prenume == "" || len(doctor.Prenume) > 255 {
-			log.Printf("[MIDDLEWARE] Invalid or missing Prenume in request: %s", r.RequestURI)
-			http.Error(w, "Invalid or missing Prenume", http.StatusBadRequest)
+			errMsg := "Invalid or missing Prenume"
+			log.Printf("[PATIENT_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
+			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Patient validation failed due to second name"})
 			return
 		}
 
 		// Validate email format using regex
 		if !utils.EmailRegex.MatchString(doctor.Email) || len(doctor.Email) > 255 {
-			log.Printf("[MIDDLEWARE] Invalid or missing Email in request: %s", r.RequestURI)
-			http.Error(w, "Invalid or missing Email", http.StatusBadRequest)
+			errMsg := "Invalid or missing Email"
+			log.Printf("[PATIENT_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
+			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Patient validation failed due to email"})
 			return
 		}
 
 		// Validate Romanian phone number format
 		if !utils.PhoneRegex.MatchString(doctor.Telefon) || len(doctor.Telefon) != 10 {
-			log.Printf("[MIDDLEWARE] Invalid or missing Telefon in request: %s", r.RequestURI)
-			http.Error(w, "Invalid or missing Telefon", http.StatusBadRequest)
+			errMsg := "Invalid or missing Telefon"
+			log.Printf("[PATIENT_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
+			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Patient validation failed due to phone nr"})
 			return
 		}
 
 		if !isValidSpecializare(models.Specializare(doctor.Specializare)) {
-			log.Printf("[MIDDLEWARE] Invalid Specializare in request: %s", r.RequestURI)
-			http.Error(w, "Invalid Specializare", http.StatusBadRequest)
+			errMsg := "Invalid Specializare in request"
+			log.Printf("[DOCTOR_VALIDATION] %s: %s", errMsg, r.RequestURI)
+			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Patient validation failed due to specialization"})
 			return
 		}
 
-		log.Printf("[MIDDLEWARE] Doctor info validated successfully in request: %s", r.RequestURI)
+		log.Printf("[DOCTOR_VALIDATION] Doctor info validated successfully in request: %s", r.RequestURI)
 
 		// If all validations pass, proceed to the actual controller
 		ctx := context.WithValue(r.Context(), utils.DECODED_DOCTOR, &doctor)
@@ -69,11 +77,13 @@ func ValidateDoctorInfo(next http.Handler) http.Handler {
 }
 
 func isValidSpecializare(specializare models.Specializare) bool {
+	log.Printf("[DOCTOR_VALIDATION] Checking validity of specializare: %v...", specializare)
 	for _, validSpec := range utils.ValidSpecializari {
 		if specializare == validSpec {
 			return true
 		}
 	}
+	log.Printf("[DOCTOR_VALIDATION] Specializare %v is not valid.", specializare)
 	return false
 }
 
@@ -131,7 +141,7 @@ func checkErrorOnDecode(err error, w http.ResponseWriter) bool {
 		errMsg = err.Error()
 	}
 
-	log.Printf("[MIDDLEWARE] %s", errMsg)
+	log.Printf("[DOCTOR_VALIDATION] %s", errMsg)
 	http.Error(w, errMsg, http.StatusBadRequest)
 	return true
 }
@@ -141,18 +151,20 @@ func ValidateEmail(next http.Handler) http.Handler {
 		vars := mux.Vars(r)
 		email, ok := vars[utils.FETCH_DOCTOR_BY_EMAIL_PARAMETER]
 		if !ok {
-			log.Printf("[MIDDLEWARE] Email not provided in request: %s", r.RequestURI)
-			http.Error(w, "Email not provided", http.StatusBadRequest)
+			errMsg := "Email not provided in request"
+			log.Printf("[DOCTOR_VALIDATION] Email not provided in request: %s", r.RequestURI)
+			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg})
 			return
 		}
 
 		if !utils.EmailRegex.MatchString(email) {
-			log.Printf("[MIDDLEWARE] Invalid email format for email: %s in request: %s", email, r.RequestURI)
-			http.Error(w, "Invalid email format", http.StatusBadRequest)
+			errMsg := "Invalid email format"
+			log.Printf("[DOCTOR_VALIDATION] %s for email: %s in request: %s", errMsg, email, r.RequestURI)
+			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg})
 			return
 		}
 
-		log.Printf("[MIDDLEWARE] Email validated successfully: %s", email)
+		log.Printf("[DOCTOR_VALIDATION] Email validated successfully: %s", email)
 		next.ServeHTTP(w, r)
 	})
 }

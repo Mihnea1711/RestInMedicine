@@ -23,79 +23,101 @@ func (dController *DoctorController) GetDoctors(w http.ResponseWriter, r *http.R
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
+	log.Printf("[DOCTOR] Fetching doctors with limit: %d, page: %d", limit, page)
+
 	doctors, err := dController.DbConn.FetchDoctors(ctx, page, limit)
 	if err != nil {
 		errMsg := fmt.Sprintf("internal server error: %s", err)
-		log.Println("[DOCTOR] " + errMsg)
-		utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{Error: errMsg})
+		log.Printf("[DOCTOR] Error fetching doctors: %s", errMsg)
+
+		// Use RespondWithJSON for error response with a message
+		utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{
+			Message: "Failed to fetch doctors",
+			Error:   errMsg,
+		})
 		return
 	}
 
-	utils.RespondWithJSON(w, http.StatusOK, models.ResponseData{Payload: doctors})
+	log.Printf("[DOCTOR] Successfully fetched %d doctors", len(doctors))
+	// Use RespondWithJSON for success response with a message
+	utils.RespondWithJSON(w, http.StatusOK, models.ResponseData{
+		Message: fmt.Sprintf("Successfully fetched %d doctors", len(doctors)),
+		Payload: doctors,
+	})
 }
 
 func (dController *DoctorController) GetDoctorByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	idStr := vars[utils.FETCH_DOCTOR_BY_ID_PARAMETER]
+	doctorIDStr := vars[utils.FETCH_DOCTOR_BY_ID_PARAMETER]
 
-	id, err := strconv.Atoi(idStr)
+	doctorID, err := strconv.Atoi(doctorIDStr)
 	if err != nil {
-		errMsg := fmt.Sprintf("Invalid doctor ID: %s", idStr)
-		log.Println("[DOCTOR] " + errMsg)
-		utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg})
+		errMsg := fmt.Sprintf("Invalid doctor ID: %s", doctorIDStr)
+		log.Printf("[DOCTOR] %s", errMsg)
+		utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Message: "Bad Request", Error: errMsg})
 		return
 	}
 
-	log.Printf("[DOCTOR] Fetching doctor with ID: %d...", id)
+	log.Printf("[DOCTOR] Fetching doctor with ID: %d...", doctorID)
 
 	// Ensure a database operation doesn't take longer than 5 seconds
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
-	doctor, err := dController.DbConn.FetchDoctorByID(ctx, id)
+	doctor, err := dController.DbConn.FetchDoctorByID(ctx, doctorID)
 	if err != nil {
-		errMsg := fmt.Sprintf("Failed to fetch doctor with ID %d: %s", id, err)
-		log.Println("[DOCTOR] " + errMsg)
-		utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{Error: errMsg})
+		errMsg := fmt.Sprintf("Failed to fetch doctor with ID %d: %s", doctorID, err)
+		log.Printf("[DOCTOR] %s", errMsg)
+		utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{Message: "Failed to fetch doctor by id", Error: errMsg})
 		return
 	}
 
 	if doctor == nil {
-		errMsg := fmt.Sprintf("No doctor found with ID: %d", id)
-		log.Println("[DOCTOR] " + errMsg)
-		utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Error: errMsg})
+		errMsg := fmt.Sprintf("No doctor found with ID: %d", doctorID)
+		log.Printf("[DOCTOR] %s", errMsg)
+		utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Message: "Doctor not found or an unexpected error happened.", Error: errMsg})
 		return
 	}
 
-	utils.RespondWithJSON(w, http.StatusOK, models.ResponseData{Payload: doctor})
+	log.Printf("[DOCTOR] Successfully fetched doctor with ID: %d", doctorID)
+	// Use RespondWithJSON for success response with a message
+	utils.RespondWithJSON(w, http.StatusOK, models.ResponseData{
+		Message: fmt.Sprintf("Successfully fetched doctor with ID: %d", doctorID),
+		Payload: doctor,
+	})
 }
 
 func (dController *DoctorController) GetDoctorByEmail(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	email := vars[utils.FETCH_DOCTOR_BY_EMAIL_PARAMETER]
+	doctorEmail := vars[utils.FETCH_DOCTOR_BY_EMAIL_PARAMETER]
 
-	log.Printf("[DOCTOR] Fetching doctor with email: %s...", email)
+	log.Printf("[DOCTOR] Fetching doctor with email: %s...", doctorEmail)
 
 	// Ensure a database operation doesn't take longer than 5 seconds
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
-	doctor, err := dController.DbConn.FetchDoctorByEmail(ctx, email)
+	doctor, err := dController.DbConn.FetchDoctorByEmail(ctx, doctorEmail)
 	if err != nil {
-		errMsg := fmt.Sprintf("Failed to fetch doctor with email %s: %s", email, err)
-		log.Println("[DOCTOR] " + errMsg)
-		utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{Error: errMsg})
+		errMsg := fmt.Sprintf("Failed to fetch doctor with email %s: %s", doctorEmail, err)
+		log.Printf("[DOCTOR] %s", errMsg)
+		utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{Message: "Failed to fetch doctor by email", Error: errMsg})
 		return
 	}
 
 	if doctor == nil {
-		errMsg := fmt.Sprintf("No doctor found with email: %s", email)
-		log.Println("[DOCTOR] " + errMsg)
-		utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Error: errMsg})
+		errMsg := fmt.Sprintf("No doctor found with email: %s", doctorEmail)
+		log.Printf("[DOCTOR] %s", errMsg)
+		utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Message: "Doctor not found or an unexpected error happened.", Error: errMsg})
 		return
 	}
 
-	utils.RespondWithJSON(w, http.StatusOK, models.ResponseData{Payload: doctor})
+	log.Printf("[DOCTOR] Successfully fetched doctor with email: %s", doctorEmail)
+	// Use RespondWithJSON for success response with a message
+	utils.RespondWithJSON(w, http.StatusOK, models.ResponseData{
+		Message: fmt.Sprintf("Successfully fetched doctor with email: %s", doctorEmail),
+		Payload: doctor,
+	})
 }
 
 func (dController *DoctorController) GetDoctorByUserID(w http.ResponseWriter, r *http.Request) {
@@ -105,8 +127,8 @@ func (dController *DoctorController) GetDoctorByUserID(w http.ResponseWriter, r 
 	userID, err := strconv.Atoi(userIDString)
 	if err != nil {
 		errMsg := fmt.Sprintf("Invalid User ID: %s", userIDString)
-		log.Println("[DOCTOR] " + errMsg)
-		utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg})
+		log.Printf("[DOCTOR] %s", errMsg)
+		utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Message: "Bad Request", Error: errMsg})
 		return
 	}
 
@@ -119,17 +141,22 @@ func (dController *DoctorController) GetDoctorByUserID(w http.ResponseWriter, r 
 	doctor, err := dController.DbConn.FetchDoctorByUserID(ctx, userID)
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to fetch doctor with user ID %d: %s", userID, err)
-		log.Println("[DOCTOR] " + errMsg)
-		utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{Error: errMsg})
+		log.Printf("[DOCTOR] %s", errMsg)
+		utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{Message: "Failed to fetch doctor by userID", Error: errMsg})
 		return
 	}
 
 	if doctor == nil {
 		errMsg := fmt.Sprintf("No doctor found with user ID: %d", userID)
-		log.Println("[DOCTOR] " + errMsg)
-		utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Error: errMsg})
+		log.Printf("[DOCTOR] %s", errMsg)
+		utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Message: "Doctor not found or an unexpected error happened.", Error: errMsg})
 		return
 	}
 
-	utils.RespondWithJSON(w, http.StatusOK, models.ResponseData{Payload: doctor})
+	log.Printf("[DOCTOR] Successfully fetched doctor with user ID: %d", userID)
+	// Use RespondWithJSON for success response with a message
+	utils.RespondWithJSON(w, http.StatusOK, models.ResponseData{
+		Message: fmt.Sprintf("Successfully fetched doctor with user ID: %d", userID),
+		Payload: doctor,
+	})
 }

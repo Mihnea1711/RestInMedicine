@@ -17,11 +17,19 @@ import (
 func SetupRoutes(parentCtx context.Context, dbConn database.Database, rdb *redis.RedisClient) *mux.Router {
 	log.Println("[DOCTOR] Setting up rate limiter...")
 	rateLimiter := middleware.NewRedisRateLimiter(rdb.GetClient(), parentCtx, utils.LIMITER_REQUESTS_ALLOWED, utils.LIMITER_MINUTE_MULTIPLIER*time.Minute)
+	log.Println("[PATIENT] Rate limiter set up successfully.")
 
 	log.Println("[DOCTOR] Setting up routes...")
 	router := mux.NewRouter()
+
+	log.Println("[PATIENT] Rate limiter middleware set up successfully.")
 	router.Use(rateLimiter.Limit)
+
+	log.Println("[PATIENT] Route logger middleware set up successfully.")
 	router.Use(middleware.RouteLogger)
+
+	log.Println("[PATIENT] Input sanitizer middleware set up successfully.")
+	router.Use(middleware.SanitizeInputMiddleware) // comment this out if you want to see pretty JSON :)
 
 	doctorController := &controllers.DoctorController{
 		DbConn: dbConn,
@@ -29,7 +37,7 @@ func SetupRoutes(parentCtx context.Context, dbConn database.Database, rdb *redis
 
 	loadCrudRoutes(router, doctorController)
 
-	log.Println("[DOCTOR] Routes setup completed.")
+	log.Println("[PATIENT] Routes loaded successfully.")
 	return router
 }
 

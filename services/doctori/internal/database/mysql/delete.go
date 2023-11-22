@@ -8,29 +8,30 @@ import (
 	"github.com/mihnea1711/POS_Project/services/doctori/pkg/utils"
 )
 
-func (db *MySQLDatabase) DeleteDoctorByID(ctx context.Context, id int) (int, error) {
+func (db *MySQLDatabase) DeleteDoctorByID(ctx context.Context, doctorID int) (int, error) {
+	// Construct the SQL delete query
 	query := fmt.Sprintf("DELETE FROM %s WHERE %s = ?", utils.DoctorTableName, utils.ColumnIDDoctor)
 
-	log.Printf("[DOCTOR] Executing delete query for doctor with ID %d...", id)
+	log.Printf("[DOCTOR] Attempting to delete doctor with doctorID %d...", doctorID)
 
 	// Execute the SQL statement
-	result, err := db.ExecContext(ctx, query, id)
+	result, err := db.ExecContext(ctx, query, doctorID)
 	if err != nil {
-		log.Printf("[DOCTOR] Error deleting doctor with ID %d: %v", id, err)
+		log.Printf("[DOCTOR] Error executing query to delete doctor with doctorID %d: %v", doctorID, err)
 		return 0, err
 	}
 
 	// Get the number of rows affected by the delete operation
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		log.Printf("[DOCTOR] Error fetching rows affected for delete query of doctor with ID %d: %v", id, err)
+		log.Printf("[DOCTOR] Error fetching rows affected for delete query of doctor with doctorID %d: %v", doctorID, err)
 		return 0, err
 	}
 
 	if rowsAffected == 0 {
-		log.Printf("[DOCTOR] No doctor found with ID %d to delete.", id)
+		log.Printf("[DOCTOR] No doctor found with doctorID %d to delete.", doctorID)
 	} else {
-		log.Printf("[DOCTOR] Successfully deleted doctor with ID %d.", id)
+		log.Printf("[DOCTOR] Successfully deleted doctor with doctorID %d.", doctorID)
 	}
 
 	return int(rowsAffected), nil

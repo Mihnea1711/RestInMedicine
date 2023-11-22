@@ -11,8 +11,10 @@ import (
 )
 
 func (db *MySQLDatabase) FetchDoctors(ctx context.Context, page, limit int) ([]models.Doctor, error) {
+	// Get the offset based on page and limit
 	offset := (page - 1) * limit
 
+	// Construct the SQL insert query
 	query := fmt.Sprintf("SELECT %s, %s, %s, %s, %s, %s, %s FROM %s LIMIT ? OFFSET ?",
 		utils.ColumnIDDoctor,
 		utils.ColumnIDUser,
@@ -24,6 +26,8 @@ func (db *MySQLDatabase) FetchDoctors(ctx context.Context, page, limit int) ([]m
 		utils.DoctorTableName,
 	)
 
+	log.Printf("[DOCTOR] Attempting to fetch doctors with limit=%d, offset=%d", limit, offset)
+
 	// Execute the SQL query with context
 	rows, err := db.QueryContext(ctx, query, limit, offset)
 	if err != nil {
@@ -33,7 +37,6 @@ func (db *MySQLDatabase) FetchDoctors(ctx context.Context, page, limit int) ([]m
 	defer rows.Close()
 
 	var doctors []models.Doctor
-
 	for rows.Next() {
 		var doctor models.Doctor
 		err := rows.Scan(&doctor.IDDoctor, &doctor.IDUser, &doctor.Nume, &doctor.Prenume, &doctor.Email, &doctor.Telefon, &doctor.Specializare)
@@ -55,7 +58,8 @@ func (db *MySQLDatabase) FetchDoctors(ctx context.Context, page, limit int) ([]m
 	return doctors, nil
 }
 
-func (db *MySQLDatabase) FetchDoctorByID(ctx context.Context, id int) (*models.Doctor, error) {
+func (db *MySQLDatabase) FetchDoctorByID(ctx context.Context, doctorID int) (*models.Doctor, error) {
+	// Construct the SQL insert query
 	query := fmt.Sprintf("SELECT %s, %s, %s, %s, %s, %s, %s FROM %s WHERE %s = ?",
 		utils.ColumnIDDoctor,
 		utils.ColumnIDUser,
@@ -67,25 +71,29 @@ func (db *MySQLDatabase) FetchDoctorByID(ctx context.Context, id int) (*models.D
 		utils.DoctorTableName,
 		utils.ColumnIDDoctor,
 	)
-	row := db.QueryRowContext(ctx, query, id)
+
+	log.Printf("[PATIENT] Attempting to fetch doctor with ID %d", doctorID)
+
+	// Execute the SQL query with context
+	row := db.QueryRowContext(ctx, query, doctorID)
 
 	var doctor models.Doctor
 	err := row.Scan(&doctor.IDDoctor, &doctor.IDUser, &doctor.Nume, &doctor.Prenume, &doctor.Email, &doctor.Telefon, &doctor.Specializare)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			// Not found
-			log.Printf("[DOCTOR] Doctor with ID %d not found.", id)
+			log.Printf("[DOCTOR] Doctor with ID %d not found.", doctorID)
 			return nil, nil
 		}
-		log.Printf("[DOCTOR] Error fetching doctor by ID %d: %v", id, err)
+		log.Printf("[DOCTOR] Error fetching doctor by ID %d: %v", doctorID, err)
 		return nil, err
 	}
 
-	log.Printf("[DOCTOR] Successfully fetched doctor by ID %d.", id)
+	log.Printf("[DOCTOR] Successfully fetched doctor by ID %d.", doctorID)
 	return &doctor, nil
 }
 
 func (db *MySQLDatabase) FetchDoctorByEmail(ctx context.Context, email string) (*models.Doctor, error) {
+	// Construct the SQL insert query
 	query := fmt.Sprintf("SELECT %s, %s, %s, %s, %s, %s, %s FROM %s WHERE %s = ?",
 		utils.ColumnIDDoctor,
 		utils.ColumnIDUser,
@@ -97,13 +105,16 @@ func (db *MySQLDatabase) FetchDoctorByEmail(ctx context.Context, email string) (
 		utils.DoctorTableName,
 		utils.ColumnEmail,
 	)
+
+	log.Printf("[PATIENT] Attempting to fetch doctor with email %s", email)
+
+	// Execute the SQL query with context
 	row := db.QueryRowContext(ctx, query, email)
 
 	var doctor models.Doctor
 	err := row.Scan(&doctor.IDDoctor, &doctor.IDUser, &doctor.Nume, &doctor.Prenume, &doctor.Email, &doctor.Telefon, &doctor.Specializare)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			// Not found
 			log.Printf("[DOCTOR] Doctor with email %s not found.", email)
 			return nil, nil
 		}
@@ -116,6 +127,7 @@ func (db *MySQLDatabase) FetchDoctorByEmail(ctx context.Context, email string) (
 }
 
 func (db *MySQLDatabase) FetchDoctorByUserID(ctx context.Context, userID int) (*models.Doctor, error) {
+	// Construct the SQL insert query
 	query := fmt.Sprintf("SELECT %s, %s, %s, %s, %s, %s, %s FROM %s WHERE %s = ?",
 		utils.ColumnIDDoctor,
 		utils.ColumnIDUser,
@@ -127,6 +139,10 @@ func (db *MySQLDatabase) FetchDoctorByUserID(ctx context.Context, userID int) (*
 		utils.DoctorTableName,
 		utils.ColumnIDUser,
 	)
+
+	log.Printf("[PATIENT] Attempting to fetch doctor with user ID %d", userID)
+
+	// Execute the SQL query with context
 	row := db.QueryRowContext(ctx, query, userID)
 
 	var doctor models.Doctor
