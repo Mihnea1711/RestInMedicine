@@ -4,7 +4,7 @@
 PORT=$(yq e '.server.port' configs/config.yaml)
 
 curl \
-    -X PUT http://localhost:"$PORT"/pacienti/1 \
+    -X PUT http://localhost:"$PORT"/patients/1 \
     -H "Content-Type: application/json" \
     -d '{
         "id_user": 1,

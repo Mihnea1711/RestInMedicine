@@ -18,68 +18,75 @@ import (
 
 func ValidatePacientInfo(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var pacient models.Pacient
+		var patient models.Pacient
 
 		dec := json.NewDecoder(r.Body)
 		dec.DisallowUnknownFields()
 
-		err := dec.Decode(&pacient)
+		err := dec.Decode(&patient)
 		if checkErrorOnDecode(err, w) {
-			log.Printf("[MIDDLEWARE] Failed to decode pacient in request: %s", r.RequestURI)
-			http.Error(w, "Failed to decode pacient", http.StatusBadRequest)
+			errMsg := "Failed to decode patient"
+			log.Printf("[PATIENT_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
+			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Patient validation failed due to decoding."})
 			return
 		}
 
 		// Basic validation for each field
-		if pacient.Nume == "" || len(pacient.Nume) > 255 {
-			log.Printf("[MIDDLEWARE] Invalid or missing Nume in request: %s", r.RequestURI)
-			http.Error(w, "Invalid or missing Nume", http.StatusBadRequest)
+		if patient.Nume == "" || len(patient.Nume) > 255 {
+			errMsg := "Invalid or missing Nume"
+			log.Printf("[PATIENT_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
+			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Patient validation failed due to first name"})
 			return
 		}
 
-		if pacient.Prenume == "" || len(pacient.Prenume) > 255 {
-			log.Printf("[MIDDLEWARE] Invalid or missing Prenume in request: %s", r.RequestURI)
-			http.Error(w, "Invalid or missing Prenume", http.StatusBadRequest)
+		if patient.Prenume == "" || len(patient.Prenume) > 255 {
+			errMsg := "Invalid or missing Prenume"
+			log.Printf("[PATIENT_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
+			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Patient validation failed due to second name"})
 			return
 		}
 
 		// Validate email format using regex
-		if !utils.EmailRegex.MatchString(pacient.Email) || len(pacient.Email) > 255 {
-			log.Printf("[MIDDLEWARE] Invalid or missing Email in request: %s", r.RequestURI)
-			http.Error(w, "Invalid or missing Email", http.StatusBadRequest)
+		if !utils.EmailRegex.MatchString(patient.Email) || len(patient.Email) > 255 {
+			errMsg := "Invalid or missing Email"
+			log.Printf("[PATIENT_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
+			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Patient validation failed due to email"})
 			return
 		}
 
 		// Validate Romanian phone number format
-		if !utils.PhoneRegex.MatchString(pacient.Telefon) || len(pacient.Telefon) != 10 {
-			log.Printf("[MIDDLEWARE] Invalid or missing Telefon in request: %s", r.RequestURI)
-			http.Error(w, "Invalid or missing Telefon", http.StatusBadRequest)
+		if !utils.PhoneRegex.MatchString(patient.Telefon) || len(patient.Telefon) != 10 {
+			errMsg := "Invalid or missing Telefon"
+			log.Printf("[PATIENT_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
+			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Patient validation failed due to phone nr"})
 			return
 		}
 
 		// Check if DataNasterii is valid (18 years in the past)
 		minimumBirthDate := time.Now().AddDate(-18, 0, 0)
-		if pacient.DataNasterii.After(minimumBirthDate) {
-			log.Printf("[MIDDLEWARE] Invalid DataNasterii (must be at least 18 years ago) in request: %s", r.RequestURI)
-			http.Error(w, "Invalid DataNasterii (must be at least 18 years ago)", http.StatusBadRequest)
+		if patient.DataNasterii.After(minimumBirthDate) {
+			errMsg := "Invalid DataNasterii (must be at least 18 years ago)"
+			log.Printf("[PATIENT_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
+			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Patient validation failed due to birthdate"})
 			return
 		}
 
 		// In your ValidatePacientInfo middleware
-		if !validateCNPBirthdate(pacient.CNP, pacient.DataNasterii) {
-			log.Printf("[MIDDLEWARE] CNP birthdate does not match DataNasterii in request: %s", r.RequestURI)
-			http.Error(w, "CNP birthdate does not match DataNasterii", http.StatusBadRequest)
+		if ok, errMsg := validateCNPBirthdate(patient.CNP, patient.DataNasterii); !ok {
+			log.Printf("[PATIENT_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
+			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Patient validation failed due to cnp"})
 			return
 		}
 
-		log.Printf("[MIDDLEWARE] Pacient info validated successfully in request: %s", r.RequestURI)
+		log.Printf("[PATIENT_VALIDATION] Patient info validated successfully in request: %s", r.RequestURI)
 
 		// If all validations pass, proceed to the actual controller
-		ctx := context.WithValue(r.Context(), utils.DECODED_PATIENT, &pacient)
+		ctx := context.WithValue(r.Context(), utils.DECODED_PATIENT, &patient)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
+// Function to check the error when decoding an object
 func checkErrorOnDecode(err error, w http.ResponseWriter) bool {
 	if err == nil {
 		return false
@@ -134,43 +141,54 @@ func checkErrorOnDecode(err error, w http.ResponseWriter) bool {
 		errMsg = err.Error()
 	}
 
-	log.Printf("[MIDDLEWARE] %s", errMsg)
+	log.Printf("[PATIENT_VALIDATION] %s", errMsg)
 	http.Error(w, errMsg, http.StatusBadRequest)
 	return true
 }
 
 // Function to validate the CNP birthdate against DataNasterii
-func validateCNPBirthdate(cnp string, dataNasterii time.Time) bool {
+func validateCNPBirthdate(cnp string, dataNasterii time.Time) (bool, string) {
 	if len(cnp) != 13 || cnp == "" {
-		log.Println("[MIDDLEWARE] Incorrect CNP format")
-		return false
+		errMsg := "Incorrect CNP format"
+		log.Printf("[PATIENT_VALIDATION] %s", errMsg)
+		return false, errMsg
 	}
 
 	// Extract birthdate from CNP
 	cnpBirthdateStr := cnp[1:7] // Extract the 6-digit date of birth from the CNP
 	cnpBirthdate, err := time.Parse(utils.CNP_DATE_FORMAT, cnpBirthdateStr)
 	if err != nil {
-		log.Println("[MIDDLEWARE] CNP not matching birthdate")
-		return false
+		errMsg := "CNP not matching birthdate"
+		log.Printf("[PATIENT_VALIDATION] %s", errMsg)
+		return false, errMsg
 	}
 
 	// Compare the extracted CNP birthdate with DataNasterii
-	return cnpBirthdate.Equal(dataNasterii)
+	if !cnpBirthdate.Equal(dataNasterii) {
+		errMsg := "CNP birthdate does not match DataNasterii"
+		log.Printf("[PATIENT_VALIDATION] %s", errMsg)
+		return false, errMsg
+	}
+
+	return true, ""
 }
 
+// Middleware to validate the email param in the request
 func ValidateEmail(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		email, ok := vars[utils.FETCH_PATIENT_BY_EMAIL_PARAMETER]
 		if !ok {
-			log.Println("[MIDDLEWARE] Email not provided in request:", r.RequestURI)
-			http.Error(w, "Email not provided", http.StatusBadRequest)
+			errMsg := "Email not provided in request"
+			log.Printf("[PATIENT_VALIDATION] %s: %s", errMsg, r.RequestURI)
+			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg})
 			return
 		}
 
 		if !utils.EmailRegex.MatchString(email) {
-			log.Printf("[MIDDLEWARE] Invalid email format for email: %s in request: %s", email, r.RequestURI)
-			http.Error(w, "Invalid email format", http.StatusBadRequest)
+			errMsg := "Invalid email format"
+			log.Printf("[PATIENT_VALIDATION] %s for email: %s in request: %s", errMsg, email, r.RequestURI)
+			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg})
 			return
 		}
 

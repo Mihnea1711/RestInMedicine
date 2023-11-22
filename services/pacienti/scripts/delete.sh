@@ -3,4 +3,4 @@
 # Extract port from config.yaml
 PORT=$(yq e '.server.port' configs/config.yaml)
 
-curl -X DELETE http://localhost:"$PORT"/pacienti/1
+curl -X DELETE http://localhost:"$PORT"/patients/1

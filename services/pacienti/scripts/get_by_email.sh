@@ -5,4 +5,4 @@ PORT=$(yq e '.server.port' configs/config.yaml)
 EMAIL="ion.popescu@example.com"
 
 # Use the extracted port in curl or other commands
-curl -X GET "http://localhost:$PORT/pacienti/email/$EMAIL"
+curl -X GET "http://localhost:$PORT/patients/email/$EMAIL"

@@ -7,15 +7,15 @@ import (
 )
 
 type Database interface {
-	SavePacient(ctx context.Context, doctor *models.Pacient) (int, error)
+	SavePatient(ctx context.Context, patient *models.Pacient) (int, error)
 
-	FetchPacienti(ctx context.Context, page, limit int) ([]models.Pacient, error)
-	FetchPacientByID(ctx context.Context, id int) (*models.Pacient, error)
-	FetchPacientByEmail(ctx context.Context, email string, page, limit int) (*models.Pacient, error)
-	FetchPacientByUserID(ctx context.Context, userID int) (*models.Pacient, error)
+	FetchPatients(ctx context.Context, page, limit int) ([]models.Pacient, error)
+	FetchPatientByID(ctx context.Context, patientID int) (*models.Pacient, error)
+	FetchPatientByEmail(ctx context.Context, email string, page, limit int) (*models.Pacient, error)
+	FetchPatientByUserID(ctx context.Context, userID int) (*models.Pacient, error)
 
-	UpdatePacientByID(ctx context.Context, doctor *models.Pacient) (int, error)
-	DeletePacientByID(ctx context.Context, id int) (int, error)
+	UpdatePatientByID(ctx context.Context, patient *models.Pacient) (int, error)
+	DeletePatientByID(ctx context.Context, patientID int) (int, error)
 
 	// ... add more methods
 

@@ -27,22 +27,25 @@ func New(config *config.AppConfig, parentCtx context.Context) (*App, error) {
 		config: config,
 	}
 
-	// setup mysql connection for the app
+	// Setup MySQL connection for the app
 	mysqlDB, err := mysql.NewMySQL(parentCtx, &config.MySQL)
 	if err != nil {
 		log.Printf("[PATIENT] Error initializing MySQL: %v", err)
 		return nil, fmt.Errorf("failed to initialize MySQL: %w", err)
 	}
 	app.database = mysqlDB
+	log.Println("[PATIENT] MySQL connection successfully established.")
 
-	// setup redis and init cnnection
+	// Setup Redis and initialize the connection
 	rdb, err := redis.NewRedisClient(parentCtx, &config.Redis)
 	if err != nil {
-		return nil, err
+		log.Printf("[PATIENT] Error initializing Redis: %v", err)
+		return nil, fmt.Errorf("failed to initialize Redis: %w", err)
 	}
 	app.rdb = rdb
+	log.Println("[PATIENT] Redis connection successfully established.")
 
-	// setup router for the app
+	// Setup router for the app
 	router := routes.SetupRoutes(parentCtx, app.database, app.rdb)
 	app.router = router
 
@@ -56,10 +59,7 @@ func (a *App) Start(ctx context.Context) error {
 		Handler: a.router,
 	}
 
-	log.Println("[PATIENT] Starting server...") // Logging the server start
-
-	// Log the message just before starting the server in the goroutine
-	fmt.Printf("[PATIENT] Server started and listening on port %d\n", a.config.Server.Port)
+	log.Printf("[PATIENT] Starting server on port %d...", a.config.Server.Port)
 
 	channel := make(chan error, 1)
 	go func() {
@@ -72,9 +72,9 @@ func (a *App) Start(ctx context.Context) error {
 
 	select {
 	case err, open := <-channel:
-		// second value is called open
+		// The second value is called open
 		if !open {
-			//channel is closed
+			// Channel is closed
 			log.Println("[PATIENT] Context channel error. Channel is closed.")
 		}
 		return err
@@ -88,12 +88,18 @@ func (a *App) Start(ctx context.Context) error {
 		}
 
 		if err := a.rdb.Close(); err != nil {
-			fmt.Println("[PATIENT] Failed to close redis...", err)
+			fmt.Println("[PATIENT] Failed to close Redis...", err)
 		}
 
 		timeout, cancel := context.WithTimeout(context.Background(), time.Second*utils.CLEAR_DB_RESOURCES_TIMEOUT)
 		defer cancel()
 
-		return server.Shutdown(timeout)
+		if err := server.Shutdown(timeout); err != nil {
+			log.Printf("[PATIENT] Failed to shut down server gracefully: %v", err)
+		} else {
+			log.Println("[PATIENT] Server shut down gracefully.")
+		}
+
+		return nil
 	}
 }
