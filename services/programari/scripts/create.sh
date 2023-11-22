@@ -4,7 +4,7 @@ PORT=$(yq e '.server.port' configs/config.yaml)
 
 # Use the extracted port in curl or other commands
 curl \
-      -X POST http://localhost:"$PORT"/programari \
+      -X POST http://localhost:"$PORT"/appointments \
       -H "Content-Type: application/json"    \
       -d '{
           "idPacient": 1, 

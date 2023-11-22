@@ -8,17 +8,17 @@ import (
 )
 
 type Database interface {
-	SaveProgramare(ctx context.Context, programare *models.Programare) (int, error)
+	SaveAppointment(ctx context.Context, programare *models.Appointment) (int, error)
 
-	FetchProgramari(ctx context.Context, page, limit int) ([]models.Programare, error)
-	FetchProgramareByID(ctx context.Context, id int) (*models.Programare, error)
-	FetchProgramariByPacientID(ctx context.Context, id, page, limit int) ([]models.Programare, error)
-	FetchProgramariByDoctorID(ctx context.Context, id, page, limit int) ([]models.Programare, error)
-	FetchProgramariByDate(ctx context.Context, date time.Time, page, limit int) ([]models.Programare, error)
-	FetchProgramariByStatus(ctx context.Context, state string, page, limit int) ([]models.Programare, error)
+	FetchAppointments(ctx context.Context, page, limit int) ([]models.Appointment, error)
+	FetchAppointmentByID(ctx context.Context, appointmentID int) (*models.Appointment, error)
+	FetchAppointmentsByPatientID(ctx context.Context, patientID, page, limit int) ([]models.Appointment, error)
+	FetchAppointmentsByDoctorID(ctx context.Context, doctorID, page, limit int) ([]models.Appointment, error)
+	FetchAppointmentsByDate(ctx context.Context, date time.Time, page, limit int) ([]models.Appointment, error)
+	FetchAppointmentsByStatus(ctx context.Context, status string, page, limit int) ([]models.Appointment, error)
 
-	UpdateProgramareByID(ctx context.Context, programare *models.Programare) (int, error)
-	DeleteProgramareByID(ctx context.Context, id int) (int, error)
+	UpdateAppointmentByID(ctx context.Context, programare *models.Appointment) (int, error)
+	DeleteAppointmentByID(ctx context.Context, appointmentID int) (int, error)
 
 	// add more
 

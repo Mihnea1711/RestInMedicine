@@ -13,9 +13,9 @@ import (
 	"github.com/mihnea1711/POS_Project/services/programari/pkg/utils"
 )
 
-// Retrieve all programari
-func (pController *ProgramareController) GetProgramari(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[APPOINTMENT] Attempting to retrieve programari.")
+// Retrieve all appointments
+func (aController *AppointmentController) GetAppointments(w http.ResponseWriter, r *http.Request) {
+	log.Printf("[APPOINTMENT] Attempting to retrieve appointments.")
 
 	// Extract the limit and page query parameters from the request
 	limit, page := utils.ExtractPaginationParams(r)
@@ -24,42 +24,48 @@ func (pController *ProgramareController) GetProgramari(w http.ResponseWriter, r 
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
-	// Use pController.DbConn to fetch all programari from the database
-	programari, err := pController.DbConn.FetchProgramari(ctx, page, limit)
+	log.Printf("[PATIENT] Fetching appointments with limit: %d, page: %d", limit, page)
+
+	// Use aController.DbConn to fetch all appointments from the database
+	appointments, err := aController.DbConn.FetchAppointments(ctx, page, limit)
 	if err != nil {
 		errMsg := fmt.Sprintf("internal server error: %s", err)
-		log.Printf("[APPOINTMENT] Failed to fetch programari: %s\n", errMsg)
+		log.Printf("[APPOINTMENT] Failed to fetch appointments: %s\n", errMsg)
 
 		// Respond with an error using the ResponseData struct
 		response := models.ResponseData{
-			Error: errMsg,
+			Error:   errMsg,
+			Message: "Failed to fetch appointments",
 		}
 		utils.RespondWithJSON(w, http.StatusInternalServerError, response)
 		return
 	}
 
-	log.Printf("[APPOINTMENT] Successfully fetched all programari")
+	log.Printf("[APPOINTMENT] Successfully fetched %d appointments", len(appointments))
 
 	// Respond with success using the ResponseData struct
 	response := models.ResponseData{
-		Payload: programari,
+		Payload: appointments,
+		Message: fmt.Sprintf("Successfully fetched %d appointments", len(appointments)),
 	}
 	utils.RespondWithJSON(w, http.StatusOK, response)
 }
 
-// Retrieve a programare by ID
-func (pController *ProgramareController) GetProgramareByID(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[APPOINTMENT] Attempting to retrieve a programare by ID.")
+// GetAppointmentByID retrieves an appointment by ID
+func (aController *AppointmentController) GetAppointmentByID(w http.ResponseWriter, r *http.Request) {
+	log.Printf("[APPOINTMENT] Attempting to retrieve an appointment by ID.")
 
+	// Extract appointment ID from request parameters
 	vars := mux.Vars(r)
-	id, err := strconv.Atoi(vars[utils.FETCH_APPOINTMENT_BY_ID_PARAMETER])
+	appointmentID, err := strconv.Atoi(vars[utils.FETCH_APPOINTMENT_BY_ID_PARAMETER])
 	if err != nil {
-		errMsg := "Invalid programare ID"
+		errMsg := "Invalid appointment ID"
 		log.Printf("[APPOINTMENT] %s: %s\n", errMsg, err)
 
 		// Respond with an error using the ResponseData struct
 		response := models.ResponseData{
-			Error: errMsg,
+			Message: "Bad Request",
+			Error:   errMsg,
 		}
 		utils.RespondWithJSON(w, http.StatusBadRequest, response)
 		return
@@ -69,46 +75,50 @@ func (pController *ProgramareController) GetProgramareByID(w http.ResponseWriter
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
-	// Use pController.DbConn to fetch the programare by ID from the database
-	programare, err := pController.DbConn.FetchProgramareByID(ctx, id)
+	// Use aController.DbConn to fetch the appointment by ID from the database
+	appointment, err := aController.DbConn.FetchAppointmentByID(ctx, appointmentID)
 	if err != nil {
-		errMsg := fmt.Sprintf("internal server error: %s", err)
-		log.Printf("[APPOINTMENT] Failed to fetch programare by ID: %s\n", errMsg)
+		errMsg := fmt.Sprintf("Internal server error: %s", err)
+		log.Printf("[APPOINTMENT] Failed to fetch appointment by ID: %s\n", errMsg)
 
 		// Respond with an error using the ResponseData struct
 		response := models.ResponseData{
-			Error: errMsg,
+			Message: "Failed to fetch appointment by id",
+			Error:   errMsg,
 		}
 		utils.RespondWithJSON(w, http.StatusInternalServerError, response)
 		return
 	}
 
-	// Check if the programare exists
-	if programare == nil {
-		errMsg := "Programare not found"
+	// Check if the appointment exists
+	if appointment == nil {
+		errMsg := fmt.Sprintf("No appointment found with ID: %d", appointmentID)
 		log.Printf("[APPOINTMENT] %s\n", errMsg)
 
 		// Respond with an error using the ResponseData struct
 		response := models.ResponseData{
-			Error: errMsg,
+			Message: "Appointment not found or an unexpected error happened.",
+			Error:   errMsg,
 		}
 		utils.RespondWithJSON(w, http.StatusNotFound, response)
 		return
 	}
 
-	log.Printf("[APPOINTMENT] Successfully fetched programare %d", programare.IDProgramare)
+	log.Printf("[APPOINTMENT] Successfully fetched appointment with ID %d", appointment.IDProgramare)
 
 	// Respond with success using the ResponseData struct
 	response := models.ResponseData{
-		Message: "Successfully fetched programare",
-		Payload: programare,
+		Message: fmt.Sprintf("Successfully fetched appointment with ID: %d", appointment.IDProgramare),
+		Payload: appointment,
 	}
 	utils.RespondWithJSON(w, http.StatusOK, response)
 }
 
-// Retrieve programari by doctor ID
-func (pController *ProgramareController) GetProgramariByDoctorID(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[APPOINTMENT] Attempting to retrieve programari by Doctor ID.")
+// GetAppointmentsByDoctorID retrieves appointments by Doctor ID
+func (aController *AppointmentController) GetAppointmentsByDoctorID(w http.ResponseWriter, r *http.Request) {
+	log.Printf("[APPOINTMENT] Attempting to retrieve appointments by Doctor ID.")
+
+	// Extract Doctor ID from request parameters
 	vars := mux.Vars(r)
 	doctorID, err := strconv.Atoi(vars[utils.FETCH_APPOINTMENTS_BY_DOCTOR_ID_PARAMETER])
 	if err != nil {
@@ -117,8 +127,8 @@ func (pController *ProgramareController) GetProgramariByDoctorID(w http.Response
 
 		// Respond with an error using the ResponseData struct
 		response := models.ResponseData{
-
-			Error: errMsg,
+			Message: "Bad Request",
+			Error:   errMsg,
 		}
 		utils.RespondWithJSON(w, http.StatusBadRequest, response)
 		return
@@ -131,43 +141,49 @@ func (pController *ProgramareController) GetProgramariByDoctorID(w http.Response
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
-	// Use pController.DbConn to fetch programari by Doctor ID from the database
-	programari, err := pController.DbConn.FetchProgramariByDoctorID(ctx, doctorID, page, limit)
+	log.Printf("[PATIENT] Fetching appointments by doctor ID %d with limit: %d, page: %d", doctorID, limit, page)
+
+	// Use aController.DbConn to fetch appointments by Doctor ID from the database
+	appointments, err := aController.DbConn.FetchAppointmentsByDoctorID(ctx, doctorID, page, limit)
 	if err != nil {
-		errMsg := fmt.Sprintf("internal server error: %s", err)
-		log.Printf("[APPOINTMENT] Failed to fetch programari by Doctor ID: %s\n", errMsg)
+		errMsg := fmt.Sprintf("Internal server error: %s", err)
+		log.Printf("[APPOINTMENT] Failed to fetch appointments by Doctor ID: %s\n", errMsg)
 
 		// Respond with an error using the ResponseData struct
 		response := models.ResponseData{
-			Error: errMsg,
+			Message: "Failed to fetch appointments by doctor ID",
+			Error:   errMsg,
 		}
 		utils.RespondWithJSON(w, http.StatusInternalServerError, response)
 		return
 	}
 
-	log.Printf("[APPOINTMENT] Successfully fetched programari of doctor %d", doctorID)
+	log.Printf("[APPOINTMENT] Successfully fetched appointments of doctor %d", doctorID)
 
 	// Respond with success using the ResponseData struct
 	response := models.ResponseData{
-		Message: "Successfully fetched programari",
-		Error:   "",
-		Payload: programari,
+		Message: fmt.Sprintf("Successfully fetched appointments for Doctor ID: %d", doctorID),
+		Payload: appointments,
 	}
 	utils.RespondWithJSON(w, http.StatusOK, response)
 }
 
-// Retrieve programari by pacient ID
-func (pController *ProgramareController) GetProgramariByPacientID(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[APPOINTMENT] Attempting to retrieve programari by Pacient ID.")
+// GetAppointmentsByPatientID retrieves appointments by Patient ID
+func (aController *AppointmentController) GetAppointmentsByPatientID(w http.ResponseWriter, r *http.Request) {
+	// Log: Start attempting to retrieve appointments by Patient ID
+	log.Printf("[APPOINTMENT] Attempting to retrieve appointments by Patient ID.")
+
+	// Extract Patient ID from request parameters
 	vars := mux.Vars(r)
-	pacientID, err := strconv.Atoi(vars[utils.FETCH_APPOINTMENTS_BY_PACIENT_ID_PARAMETER])
+	patientID, err := strconv.Atoi(vars[utils.FETCH_APPOINTMENTS_BY_PACIENT_ID_PARAMETER])
 	if err != nil {
-		errMsg := "Invalid Pacient ID"
+		errMsg := "Invalid Patient ID"
 		log.Printf("[APPOINTMENT] %s: %s\n", errMsg, err)
 
 		// Respond with an error using the ResponseData struct
 		response := models.ResponseData{
-			Error: errMsg,
+			Message: "Bad Request",
+			Error:   errMsg,
 		}
 		utils.RespondWithJSON(w, http.StatusBadRequest, response)
 		return
@@ -180,35 +196,39 @@ func (pController *ProgramareController) GetProgramariByPacientID(w http.Respons
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
-	// Use pController.DbConn to fetch programari by Pacient ID from the database
-	programari, err := pController.DbConn.FetchProgramariByPacientID(ctx, pacientID, page, limit)
+	log.Printf("[PATIENT] Fetching appointments by patient ID %d with limit: %d, page: %d", patientID, limit, page)
+
+	// Use aController.DbConn to fetch appointments by Patient ID from the database
+	appointments, err := aController.DbConn.FetchAppointmentsByPatientID(ctx, patientID, page, limit)
 	if err != nil {
-		errMsg := fmt.Sprintf("internal server error: %s", err)
-		log.Printf("[APPOINTMENT] Failed to fetch programari by Pacient ID: %s\n", errMsg)
+		errMsg := fmt.Sprintf("Internal server error: %s", err)
+		log.Printf("[APPOINTMENT] Failed to fetch appointments by Patient ID: %s\n", errMsg)
 
 		// Respond with an error using the ResponseData struct
 		response := models.ResponseData{
-			Error: errMsg,
+			Message: "Failed to fetch appointments by Patient ID",
+			Error:   errMsg,
 		}
 		utils.RespondWithJSON(w, http.StatusInternalServerError, response)
 		return
 	}
 
-	log.Printf("[APPOINTMENT] Successfully fetched programari of pacient %d", pacientID)
+	// Log: Successfully fetched appointments
+	log.Printf("[APPOINTMENT] Successfully fetched appointments of patient %d", patientID)
 
 	// Respond with success using the ResponseData struct
 	response := models.ResponseData{
-		Message: "Successfully fetched programari",
-		Payload: programari,
+		Message: fmt.Sprintf("Successfully fetched appointments for Patient ID: %d", patientID),
+		Payload: appointments,
 	}
 
-	// Serialize the programari to JSON and send the response
+	// Serialize the appointments to JSON and send the response
 	utils.RespondWithJSON(w, http.StatusOK, response)
 }
 
-// Retrieve programari by date
-func (pController *ProgramareController) GetProgramariByDate(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[APPOINTMENT] Attempting to retrieve programari by date.")
+// GetAppointmentsByDate retrieves appointments by date
+func (aController *AppointmentController) GetAppointmentsByDate(w http.ResponseWriter, r *http.Request) {
+	log.Printf("[APPOINTMENT] Attempting to retrieve appointments by date.")
 
 	// Use mux.Vars to get the date parameter from the route
 	vars := mux.Vars(r)
@@ -222,7 +242,8 @@ func (pController *ProgramareController) GetProgramariByDate(w http.ResponseWrit
 
 		// Respond with an error using the ResponseData struct
 		response := models.ResponseData{
-			Error: errMsg,
+			Message: "Bad Request",
+			Error:   errMsg,
 		}
 		utils.RespondWithJSON(w, http.StatusBadRequest, response)
 		return
@@ -235,35 +256,38 @@ func (pController *ProgramareController) GetProgramariByDate(w http.ResponseWrit
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
-	// Use pController.DbConn to fetch programari by date from the database
-	programari, err := pController.DbConn.FetchProgramariByDate(ctx, date, page, limit)
+	log.Printf("[PATIENT] Fetching appointments by date %s with limit: %d, page: %d", date, limit, page)
+
+	// Use aController.DbConn to fetch appointments by date from the database
+	appointments, err := aController.DbConn.FetchAppointmentsByDate(ctx, date, page, limit)
 	if err != nil {
-		errMsg := fmt.Sprintf("internal server error: %s", err)
-		log.Printf("[APPOINTMENT] Failed to fetch programari by date: %s\n", errMsg)
+		errMsg := fmt.Sprintf("Internal server error: %s", err)
+		log.Printf("[APPOINTMENT] Failed to fetch appointments by date: %s\n", errMsg)
 
 		// Respond with an error using the ResponseData struct
 		response := models.ResponseData{
-			Error: errMsg,
+			Message: "Failed to fetch appointments by date",
+			Error:   errMsg,
 		}
 		utils.RespondWithJSON(w, http.StatusInternalServerError, response)
 		return
 	}
 
-	log.Printf("[APPOINTMENT] Successfully fetched programari from %s", date)
+	log.Printf("[APPOINTMENT] Successfully fetched appointments from %s", date)
 
 	// Respond with success using the ResponseData struct
 	response := models.ResponseData{
-		Message: "Successfully fetched programari",
-		Payload: programari,
+		Message: fmt.Sprintf("Successfully fetched appointments for date: %s", date),
+		Payload: appointments,
 	}
 
-	// Serialize the programari to JSON and send the response
+	// Serialize the appointments to JSON and send the response
 	utils.RespondWithJSON(w, http.StatusOK, response)
 }
 
-// Retrieve programari by status
-func (pController *ProgramareController) GetProgramariByStatus(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[APPOINTMENT] Attempting to retrieve programari by status.")
+// GetAppointmentsByStatus retrieves appointments by status
+func (aController *AppointmentController) GetAppointmentsByStatus(w http.ResponseWriter, r *http.Request) {
+	log.Printf("[APPOINTMENT] Attempting to retrieve appointments by status.")
 
 	// Use mux.Vars to get the status parameter from the route
 	vars := mux.Vars(r)
@@ -276,28 +300,31 @@ func (pController *ProgramareController) GetProgramariByStatus(w http.ResponseWr
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
-	// Use pController.DbConn to fetch programari by status from the database
-	programari, err := pController.DbConn.FetchProgramariByStatus(ctx, status, page, limit)
+	log.Printf("[PATIENT] Fetching appointments by status %s with limit: %d, page: %d", status, limit, page)
+
+	// Use aController.DbConn to fetch appointments by status from the database
+	appointments, err := aController.DbConn.FetchAppointmentsByStatus(ctx, status, page, limit)
 	if err != nil {
-		errMsg := fmt.Sprintf("internal server error: %s", err)
-		log.Printf("[APPOINTMENT] Failed to fetch programari by status: %s\n", errMsg)
+		errMsg := fmt.Sprintf("Internal server error: %s", err)
+		log.Printf("[APPOINTMENT] Failed to fetch appointments by status: %s\n", errMsg)
 
 		// Respond with an error using the ResponseData struct
 		response := models.ResponseData{
-			Error: errMsg,
+			Message: "Failed to fetch appointments by status",
+			Error:   errMsg,
 		}
 		utils.RespondWithJSON(w, http.StatusInternalServerError, response)
 		return
 	}
 
-	log.Printf("[APPOINTMENT] Successfully fetched programari with status of %s", status)
+	log.Printf("[APPOINTMENT] Successfully fetched appointments with status of %s", status)
 
 	// Respond with success using the ResponseData struct
 	response := models.ResponseData{
-		Message: "Successfully fetched programari",
-		Payload: programari,
+		Message: fmt.Sprintf("Successfully fetched appointments with status: %s", status),
+		Payload: appointments,
 	}
 
-	// Serialize the programari to JSON and send the response
+	// Serialize the appointments to JSON and send the response
 	utils.RespondWithJSON(w, http.StatusOK, response)
 }

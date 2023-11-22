@@ -9,7 +9,8 @@ import (
 	"github.com/mihnea1711/POS_Project/services/programari/pkg/utils"
 )
 
-func (db *MySQLDatabase) UpdateProgramareByID(ctx context.Context, programare *models.Programare) (int, error) {
+func (db *MySQLDatabase) UpdateAppointmentByID(ctx context.Context, appointment *models.Appointment) (int, error) {
+	// Construct the SQL insert query
 	query := fmt.Sprintf(
 		"UPDATE %s SET %s = ?, %s = ?, %s = ?, %s = ? WHERE %s = ?",
 		utils.AppointmentTableName,
@@ -20,9 +21,12 @@ func (db *MySQLDatabase) UpdateProgramareByID(ctx context.Context, programare *m
 		utils.ColumnIDProgramare,
 	)
 
-	res, err := db.ExecContext(ctx, query, programare.IDPacient, programare.IDDoctor, programare.Date, programare.Status, programare.IDProgramare)
+	log.Println("[APPOINTMENT] Attempting to update appointment")
+
+	// Execute the SQL statement
+	res, err := db.ExecContext(ctx, query, appointment.IDPacient, appointment.IDDoctor, appointment.Date, appointment.Status, appointment.IDProgramare)
 	if err != nil {
-		log.Printf("[APPOINTMENT] Error executing query to update programare: %v", err)
+		log.Printf("[APPOINTMENT] Error executing query to update appointment: %v", err)
 		return 0, err
 	}
 
@@ -33,9 +37,9 @@ func (db *MySQLDatabase) UpdateProgramareByID(ctx context.Context, programare *m
 	}
 
 	if rowsAffected == 0 {
-		log.Printf("[APPOINTMENT] No appointment found with ID %d to update.", programare.IDDoctor)
+		log.Printf("[APPOINTMENT] No appointment found with ID %d to update.", appointment.IDDoctor)
 	} else {
-		log.Printf("[APPOINTMENT] Successfully updated appointment with ID %d.", programare.IDDoctor)
+		log.Printf("[APPOINTMENT] Successfully updated appointment with ID %d.", appointment.IDDoctor)
 	}
 
 	return int(rowsAffected), nil

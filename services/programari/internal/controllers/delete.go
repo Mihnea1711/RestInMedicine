@@ -14,13 +14,16 @@ import (
 )
 
 // Delete a appointment by ID
-func (pController *ProgramareController) DeleteProgramareByID(w http.ResponseWriter, r *http.Request) {
+func (aController *AppointmentController) DeleteAppointmentByID(w http.ResponseWriter, r *http.Request) {
 	log.Printf("[APPOINTMENT] Attempting to delete a appointment by ID.")
 	vars := mux.Vars(r)
-	id, err := strconv.Atoi(vars[utils.DELETE_APPOINTMENT_BY_ID_PARAMETER])
+	appointmentID, err := strconv.Atoi(vars[utils.DELETE_APPOINTMENT_BY_ID_PARAMETER])
 	if err != nil {
-		response := models.ResponseData{Error: "Invalid appointment ID"}
-		utils.RespondWithJSON(w, http.StatusBadRequest, response)
+		errMsg := fmt.Sprintf("Invalid appointment ID: %d", appointmentID)
+		log.Printf("[APPOINTMENT] %s", errMsg)
+
+		// Use utils.RespondWithJSON for error response
+		utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Invalid appointment delete request"})
 		return
 	}
 
@@ -28,8 +31,8 @@ func (pController *ProgramareController) DeleteProgramareByID(w http.ResponseWri
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
-	// Use pController.DbConn to delete the appointment by ID from the database
-	rowsAffected, err := pController.DbConn.DeleteProgramareByID(ctx, id)
+	// Use aController.DbConn to delete the appointment by ID from the database
+	rowsAffected, err := aController.DbConn.DeleteAppointmentByID(ctx, appointmentID)
 	if err != nil {
 		errMsg := fmt.Sprintf("internal server error: %s", err)
 		log.Printf("[APPOINTMENT] Failed to delete appointment by ID: %s\n", errMsg)
@@ -40,7 +43,7 @@ func (pController *ProgramareController) DeleteProgramareByID(w http.ResponseWri
 
 	// Check if the appointment exists and was deleted
 	if rowsAffected == 0 {
-		errMsg := fmt.Sprintf("No appointment found with ID: %d", id)
+		errMsg := fmt.Sprintf("No appointment found with ID: %d", appointmentID)
 		log.Println("[APPOINTMENT] " + errMsg)
 
 		response := models.ResponseData{Error: "Appointment not found"}
@@ -48,7 +51,12 @@ func (pController *ProgramareController) DeleteProgramareByID(w http.ResponseWri
 		return
 	}
 
-	log.Printf("[APPOINTMENT] Successfully deleted appointment %d", id)
-	response := models.ResponseData{Message: "Appointment deleted"}
-	utils.RespondWithJSON(w, http.StatusOK, response)
+	log.Printf("[APPOINTMENT] Successfully deleted appointment %d", appointmentID)
+	// Use utils.RespondWithJSON for success response
+	utils.RespondWithJSON(w, http.StatusOK, models.ResponseData{
+		Message: fmt.Sprintf("Appointment with ID: %d deleted successfully", appointmentID),
+		Payload: models.RowsAffected{
+			RowsAffected: rowsAffected,
+		},
+	})
 }

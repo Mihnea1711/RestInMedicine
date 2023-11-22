@@ -12,6 +12,7 @@ import (
 	"github.com/mihnea1711/POS_Project/services/programari/internal/database/redis"
 	"github.com/mihnea1711/POS_Project/services/programari/internal/routes"
 	"github.com/mihnea1711/POS_Project/services/programari/pkg/config"
+	"github.com/mihnea1711/POS_Project/services/programari/pkg/utils"
 )
 
 type App struct {
@@ -26,22 +27,25 @@ func New(config *config.AppConfig, parentCtx context.Context) (*App, error) {
 		config: config,
 	}
 
-	// setup mysql connection for the app
+	// Setup MySQL connection for the app
 	mysqlDB, err := mysql.NewMySQL(parentCtx, &config.MySQL)
 	if err != nil {
 		log.Printf("[APPOINTMENT] Error initializing MySQL: %v", err)
 		return nil, fmt.Errorf("failed to initialize MySQL: %w", err)
 	}
 	app.database = mysqlDB
+	log.Println("[APPOINTMENT] MySQL connection successfully established.")
 
-	// setup redis and init cnnection
+	// Setup Redis and initialize the connection
 	rdb, err := redis.NewRedisClient(parentCtx, &config.Redis)
 	if err != nil {
-		log.Fatalf("[APPOINTMENT] Failed to connect to Redis: %s", err)
+		log.Printf("[APPOINTMENT] Error initializing Redis: %v", err)
+		return nil, fmt.Errorf("failed to initialize Redis: %w", err)
 	}
 	app.rdb = rdb
+	log.Println("[APPOINTMENT] Redis connection successfully established.")
 
-	// setup router for the app
+	// Setup router for the app
 	router := routes.SetupRoutes(parentCtx, app.database, app.rdb)
 	app.router = router
 
@@ -55,10 +59,7 @@ func (a *App) Start(ctx context.Context) error {
 		Handler: a.router,
 	}
 
-	log.Println("[APPOINTMENT] Starting server...") // Logging the server start
-
-	// Log the message just before starting the server in the goroutine
-	fmt.Printf("[APPOINTMENT] Server started and listening on port %d\n", a.config.Server.Port)
+	log.Printf("[APPOINTMENT] Starting server on port %d...", a.config.Server.Port)
 
 	channel := make(chan error, 1)
 	go func() {
@@ -71,9 +72,9 @@ func (a *App) Start(ctx context.Context) error {
 
 	select {
 	case err, open := <-channel:
-		// second value is called open
+		// The second value is called open
 		if !open {
-			//channel is closed
+			// Channel is closed
 			log.Println("[APPOINTMENT] Context channel error. Channel is closed.")
 		}
 		return err
@@ -87,12 +88,18 @@ func (a *App) Start(ctx context.Context) error {
 		}
 
 		if err := a.rdb.Close(); err != nil {
-			fmt.Println("[APPOINTMENT] Failed to close redis...", err)
+			fmt.Println("[APPOINTMENT] Failed to close Redis...", err)
 		}
 
-		timeout, cancel := context.WithTimeout(context.Background(), time.Second*10)
+		timeout, cancel := context.WithTimeout(context.Background(), time.Second*utils.CLEAR_DB_RESOURCES_TIMEOUT)
 		defer cancel()
 
-		return server.Shutdown(timeout)
+		if err := server.Shutdown(timeout); err != nil {
+			log.Printf("[APPOINTMENT] Failed to shut down server gracefully: %v", err)
+		} else {
+			log.Println("[APPOINTMENT] Server shut down gracefully.")
+		}
+
+		return nil
 	}
 }

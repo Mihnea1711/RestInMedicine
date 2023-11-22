@@ -7,7 +7,7 @@ PROGRAMARE_ID=1
 
 # Use the extracted port in curl or other commands
 curl \
-      -X PUT http://localhost:"$PORT"/programari/"$PROGRAMARE_ID" \
+      -X PUT http://localhost:"$PORT"/appointments/"$PROGRAMARE_ID" \
       -H "Content-Type: application/json"    \
       -d '{
           "idPacient": 2, 

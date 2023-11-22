@@ -5,12 +5,14 @@ import "github.com/mihnea1711/POS_Project/services/programari/internal/models"
 type contextKey string
 
 const (
-	StatusOnorata    models.StatusProgramare = "onorata"
-	StatusNeprezenta models.StatusProgramare = "neprezenta"
-	StatusAnulata    models.StatusProgramare = "anulata"
+	StatusProgramata   models.StatusProgramare = "programata"
+	StatusConfirmata   models.StatusProgramare = "confirmata"
+	StatusNeprezentata models.StatusProgramare = "neprezentata"
+	StatusAnulata      models.StatusProgramare = "anulata"
+	StatusOnorata      models.StatusProgramare = "onorata"
 )
 
-var ValidStatus = [...]models.StatusProgramare{StatusOnorata, StatusNeprezenta, StatusAnulata}
+var ValidStatus = [...]models.StatusProgramare{StatusOnorata, StatusNeprezentata, StatusAnulata, StatusProgramata, StatusConfirmata}
 
 const CONFIG_PATH = "configs/config.yaml"
 
@@ -28,6 +30,7 @@ const (
 )
 
 const DB_REQ_TIMEOUT_SEC_MULTIPLIER = 5
+const CLEAR_DB_RESOURCES_TIMEOUT = 10
 
 const TIME_PARSE_SYNTAX = "2006-01-02"
 
@@ -59,7 +62,7 @@ const (
 	DatabaseName         = "pdp_db"
 	AppointmentTableName = "appointment"
 	ColumnIDProgramare   = "id_programare"
-	ColumnIDPacient      = "id_pacient"
+	ColumnIDPacient      = "id_patient"
 	ColumnIDDoctor       = "id_doctor"
 	ColumnDate           = "date"
 	ColumnStatus         = "status"

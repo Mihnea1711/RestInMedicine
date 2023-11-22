@@ -18,8 +18,8 @@ docker network prune --force
 echo "[APPOINTMENT] Removing unused images..."
 docker image prune --force
 
-echo "[PROGRAMARE] Building Docker images..."
+echo "[APPOINTMENT] Building Docker images..."
 docker compose build
 
-echo "[PROGRAMARE] Starting containers..."
+echo "[APPOINTMENT] Starting containers..."
 docker compose up --force-recreate

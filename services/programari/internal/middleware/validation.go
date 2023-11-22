@@ -14,54 +14,58 @@ import (
 	"github.com/mihnea1711/POS_Project/services/programari/pkg/utils"
 )
 
-func ValidateProgramareInfo(next http.Handler) http.Handler {
+func ValidateAppointmentInfo(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var programare models.Programare
+		var appointment models.Appointment
 
 		dec := json.NewDecoder(r.Body)
 		dec.DisallowUnknownFields()
 
-		err := dec.Decode(&programare)
+		err := dec.Decode(&appointment)
 		if checkErrorOnDecode(err, w) {
+			errMsg := "Failed to decode appointment"
+			log.Printf("[APPOINTMENT_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
+			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Appointment validation failed due to decoding."})
 			return
 		}
+
 		// Validate the IDProgramare (assuming it should be greater than 0)
-		if programare.IDProgramare < 0 {
+		if appointment.IDProgramare < 0 {
 			log.Println("[MIDDLEWARE] Invalid IDProgramare")
-			http.Error(w, "Invalid IDProgramare", http.StatusBadRequest)
+			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: "Invalid IDProgramare", Message: "Validation failed due to appointment id"})
 			return
 		}
 
 		// Validate the IDPacient (assuming it should be greater than 0)
-		if programare.IDPacient <= 0 {
+		if appointment.IDPacient <= 0 {
 			log.Println("[MIDDLEWARE] Invalid IDPacient")
-			http.Error(w, "Invalid IDPacient", http.StatusBadRequest)
+			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: "Invalid IDPacient", Message: "Validation failed due to patient id"})
 			return
 		}
 
 		// Validate the IDDoctor (assuming it should be greater than 0)
-		if programare.IDDoctor <= 0 {
+		if appointment.IDDoctor <= 0 {
 			log.Println("[MIDDLEWARE] Invalid IDDoctor")
-			http.Error(w, "Invalid IDDoctor", http.StatusBadRequest)
+			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: "Invalid IDDoctor", Message: "Validation failed due to doctor id"})
 			return
 		}
 
 		// Validate the Date (assuming it should be a valid date)
-		if programare.Date.IsZero() {
+		if appointment.Date.IsZero() {
 			log.Println("[MIDDLEWARE] Invalid Date")
-			http.Error(w, "Invalid Date", http.StatusBadRequest)
+			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: "Invalid Date", Message: "Validation failed due to date"})
 			return
 		}
 
-		// Validate the Status (assuming it should not be empty)
-		if programare.Status == "" {
+		// Validate the Status (assuming it should be in the list of valid statuses)
+		if !validateStatus(appointment.Status) {
 			log.Println("[MIDDLEWARE] Invalid Status")
-			http.Error(w, "Invalid Status", http.StatusBadRequest)
+			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: "Invalid Status", Message: "Validation failed due to status"})
 			return
 		}
 
 		// If all validations pass, proceed to the actual controller
-		ctx := context.WithValue(r.Context(), utils.DECODED_APPOINTMENT, &programare)
+		ctx := context.WithValue(r.Context(), utils.DECODED_APPOINTMENT, &appointment)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
@@ -123,4 +127,14 @@ func checkErrorOnDecode(err error, w http.ResponseWriter) bool {
 	log.Printf("[MIDDLEWARE] %s", errMsg)
 	http.Error(w, errMsg, http.StatusBadRequest)
 	return true
+}
+
+// ValidateStatus checks if the provided status is valid.
+func validateStatus(status models.StatusProgramare) bool {
+	for _, validStatus := range utils.ValidStatus {
+		if status == validStatus {
+			return true
+		}
+	}
+	return false
 }

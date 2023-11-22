@@ -11,214 +11,247 @@ import (
 	"github.com/mihnea1711/POS_Project/services/programari/pkg/utils"
 )
 
-// FetchProgramari lists all programari with pagination.
-func (db *MySQLDatabase) FetchProgramari(ctx context.Context, page, limit int) ([]models.Programare, error) {
+// FetchAppointments lists all appointments with pagination.
+func (db *MySQLDatabase) FetchAppointments(ctx context.Context, page, limit int) ([]models.Appointment, error) {
+	// Get the offset based on page and limit
 	offset := (page - 1) * limit
 
+	// Construct the SQL insert query
 	query := fmt.Sprintf("SELECT * FROM %s LIMIT ? OFFSET ?", utils.AppointmentTableName)
 
+	log.Printf("[APPOINTMENT] Attempting to fetch appoitments with limit=%d, offset=%d", limit, offset)
+
+	// Execute the SQL query with context
 	rows, err := db.QueryContext(ctx, query, limit, offset)
 	if err != nil {
-		log.Printf("[APPOINTMENT] Error executing query to fetch programari: %v", err)
+		log.Printf("[APPOINTMENT] Error executing query to fetch appointments: %v", err)
 		return nil, err
 	}
 	defer rows.Close()
 
-	programari := []models.Programare{}
+	appointments := []models.Appointment{}
 	for rows.Next() {
-		programare := models.Programare{}
+		appointment := models.Appointment{}
 		if err := rows.Scan(
-			&programare.IDProgramare,
-			&programare.IDPacient,
-			&programare.IDDoctor,
-			&programare.Date,
-			&programare.Status,
+			&appointment.IDProgramare,
+			&appointment.IDPacient,
+			&appointment.IDDoctor,
+			&appointment.Date,
+			&appointment.Status,
 		); err != nil {
-			log.Printf("[APPOINTMENT] Error scanning programare: %v", err)
+			log.Printf("[APPOINTMENT] Error scanning appointment: %v", err)
 			return nil, err
 		}
-		programari = append(programari, programare)
+		appointments = append(appointments, appointment)
 	}
 
 	if err := rows.Err(); err != nil {
-		log.Printf("[APPOINTMENT] Error scanning programari: %v", err)
+		log.Printf("[APPOINTMENT] Error after iterating over rows: %v", err)
 		return nil, err
 	}
 
-	return programari, nil
+	log.Printf("[PATIENT] Successfully fetched %d appointments.", len(appointments))
+	return appointments, nil
 }
 
-// FetchProgramareByID retrieves a programare by its ID.
-func (db *MySQLDatabase) FetchProgramareByID(ctx context.Context, appointmentId int) (*models.Programare, error) {
+// FetchAppointmentByID retrieves a appointment by its ID.
+func (db *MySQLDatabase) FetchAppointmentByID(ctx context.Context, appointmentID int) (*models.Appointment, error) {
+	// Construct the SQL insert query
 	query := fmt.Sprintf("SELECT * FROM %s WHERE %s = ?", utils.AppointmentTableName, utils.ColumnIDProgramare)
 
-	row := db.QueryRowContext(ctx, query, appointmentId)
+	log.Printf("[APPOINTMENT] Attempting to fetch appointment with ID %d", appointmentID)
 
-	programare := models.Programare{}
+	// Execute the SQL query with context
+	row := db.QueryRowContext(ctx, query, appointmentID)
+
+	appointment := models.Appointment{}
 	if err := row.Scan(
-		&programare.IDProgramare,
-		&programare.IDPacient,
-		&programare.IDDoctor,
-		&programare.Date,
-		&programare.Status,
+		&appointment.IDProgramare,
+		&appointment.IDPacient,
+		&appointment.IDDoctor,
+		&appointment.Date,
+		&appointment.Status,
 	); err != nil {
 		if err == sql.ErrNoRows {
-			log.Printf("[APPOINTMENT] Appointment with ID %d not found.", appointmentId)
+			log.Printf("[APPOINTMENT] Appointment with ID %d not found.", appointmentID)
 			return nil, nil
 		}
-		log.Printf("[APPOINTMENT] Error retrieving programare by ID: %v", err)
+		log.Printf("[APPOINTMENT] Error fetching appointment by ID: %v", err)
 		return nil, err
 	}
 
-	log.Printf("[DOCTOR] Successfully fetched appointment by ID %d.", appointmentId)
-	return &programare, nil
+	log.Printf("[DOCTOR] Successfully fetched appointment by ID %d.", appointmentID)
+	return &appointment, nil
 }
 
-// FetchProgramariByPacientID lists programari for a specific pacient with pagination.
-func (db *MySQLDatabase) FetchProgramariByPacientID(ctx context.Context, patientId, page, limit int) ([]models.Programare, error) {
+// FetchAppointmentsByPacientID lists appointments for a specific patient with pagination.
+func (db *MySQLDatabase) FetchAppointmentsByPatientID(ctx context.Context, patientID, page, limit int) ([]models.Appointment, error) {
+	// Get the offset based on page and limit
 	offset := (page - 1) * limit
 
+	// Construct the SQL insert query
 	query := fmt.Sprintf("SELECT * FROM %s WHERE %s = ? LIMIT ? OFFSET ?", utils.AppointmentTableName, utils.ColumnIDPacient)
 
-	rows, err := db.QueryContext(ctx, query, patientId, limit, offset)
+	log.Printf("[APPOINTMENT] Attempting to fetch appoitments by patientID %d with limit=%d, offset=%d", patientID, limit, offset)
+
+	// Execute the SQL query with context
+	rows, err := db.QueryContext(ctx, query, patientID, limit, offset)
 	if err != nil {
-		log.Printf("[APPOINTMENT] Error executing query to fetch programari by pacient ID: %v", err)
+		log.Printf("[APPOINTMENT] Error executing query to fetch appointments by patientID: %v", err)
 		return nil, err
 	}
 	defer rows.Close()
 
-	programari := []models.Programare{}
+	appointments := []models.Appointment{}
 	for rows.Next() {
-		programare := models.Programare{}
+		appointment := models.Appointment{}
 		if err := rows.Scan(
-			&programare.IDProgramare,
-			&programare.IDPacient,
-			&programare.IDDoctor,
-			&programare.Date,
-			&programare.Status,
+			&appointment.IDProgramare,
+			&appointment.IDPacient,
+			&appointment.IDDoctor,
+			&appointment.Date,
+			&appointment.Status,
 		); err != nil {
-			log.Printf("[APPOINTMENT] Error scanning programare by pacient ID: %v", err)
+			log.Printf("[APPOINTMENT] Error scanning appointment by patientID: %v", err)
 			return nil, err
 		}
-		programari = append(programari, programare)
+		appointments = append(appointments, appointment)
 	}
 
 	if err := rows.Err(); err != nil {
-		log.Printf("[APPOINTMENT] Error scanning programari by pacient ID: %v", err)
+		log.Printf("[APPOINTMENT] Error after iterating over rows by patientID: %v", err)
 		return nil, err
 	}
 
-	return programari, nil
+	log.Printf("[PATIENT] Successfully fetched %d appointments by patientID %d.", len(appointments), patientID)
+	return appointments, nil
 }
 
-// FetchProgramariByDoctorID lists programari for a specific doctor with pagination.
-func (db *MySQLDatabase) FetchProgramariByDoctorID(ctx context.Context, doctorId, page, limit int) ([]models.Programare, error) {
+// FetchAppointmentsByDoctorID lists appointments for a specific doctor with pagination.
+func (db *MySQLDatabase) FetchAppointmentsByDoctorID(ctx context.Context, doctorID, page, limit int) ([]models.Appointment, error) {
+	// Get the offset based on page and limit
 	offset := (page - 1) * limit
 
+	// Construct the SQL insert query
 	query := fmt.Sprintf("SELECT * FROM %s WHERE %s = ? LIMIT ? OFFSET ?", utils.AppointmentTableName, utils.ColumnIDDoctor)
 
-	rows, err := db.QueryContext(ctx, query, doctorId, limit, offset)
+	log.Printf("[APPOINTMENT] Attempting to fetch appoitments by doctorID %d with limit=%d, offset=%d", doctorID, limit, offset)
+
+	// Execute the SQL query with context
+	rows, err := db.QueryContext(ctx, query, doctorID, limit, offset)
 	if err != nil {
-		log.Printf("[APPOINTMENT] Error executing query to fetch programari by doctor ID: %v", err)
+		log.Printf("[APPOINTMENT] Error executing query to fetch appointments by doctorID: %v", err)
 		return nil, err
 	}
 	defer rows.Close()
 
-	programari := []models.Programare{}
+	appointments := []models.Appointment{}
 	for rows.Next() {
-		programare := models.Programare{}
+		appointment := models.Appointment{}
 		if err := rows.Scan(
-			&programare.IDProgramare,
-			&programare.IDPacient,
-			&programare.IDDoctor,
-			&programare.Date,
-			&programare.Status,
+			&appointment.IDProgramare,
+			&appointment.IDPacient,
+			&appointment.IDDoctor,
+			&appointment.Date,
+			&appointment.Status,
 		); err != nil {
-			log.Printf("[APPOINTMENT] Error scanning programari by doctor ID: %v", err)
+			log.Printf("[APPOINTMENT] Error scanning appointments by doctorID: %v", err)
 			return nil, err
 		}
-		programari = append(programari, programare)
+		appointments = append(appointments, appointment)
 	}
 
 	if err := rows.Err(); err != nil {
-		log.Printf("[APPOINTMENT] Error scanning programari by doctor ID: %v", err)
+		log.Printf("[APPOINTMENT] Error after iterating over rows by doctorID: %v", err)
 		return nil, err
 	}
 
-	return programari, nil
+	log.Printf("[PATIENT] Successfully fetched %d appointments by doctorID %d.", len(appointments), doctorID)
+	return appointments, nil
 }
 
-// FetchProgramariByDate lists programari based on a specific date with pagination.
-func (db *MySQLDatabase) FetchProgramariByDate(ctx context.Context, date time.Time, page, limit int) ([]models.Programare, error) {
+// FetchAppointmentsByDate lists appointments based on a specific date with pagination.
+func (db *MySQLDatabase) FetchAppointmentsByDate(ctx context.Context, date time.Time, page, limit int) ([]models.Appointment, error) {
+	// Get the offset based on page and limit
 	offset := (page - 1) * limit
 
+	// Construct the SQL insert query
 	query := fmt.Sprintf("SELECT * FROM %s WHERE %s = ? LIMIT ? OFFSET ?", utils.AppointmentTableName, utils.ColumnDate)
-	log.Printf("%s / %s / %d / %d", query, date, page, limit)
 
+	log.Printf("[APPOINTMENT] Attempting to fetch appointments by date %s with limit=%d, offset=%d", date, limit, offset)
+
+	// Execute the SQL query with context
 	rows, err := db.QueryContext(ctx, query, date, limit, offset)
 	if err != nil {
-		log.Printf("[APPOINTMENT] Error executing query to fetch programari by date: %v", err)
+		log.Printf("[APPOINTMENT] Error executing query to fetch appointments by date: %v", err)
 		return nil, err
 	}
 	defer rows.Close()
 
-	programari := []models.Programare{}
+	appointments := []models.Appointment{}
 	for rows.Next() {
-		programare := models.Programare{}
+		appointment := models.Appointment{}
 		if err := rows.Scan(
-			&programare.IDProgramare,
-			&programare.IDPacient,
-			&programare.IDDoctor,
-			&programare.Date,
-			&programare.Status,
+			&appointment.IDProgramare,
+			&appointment.IDPacient,
+			&appointment.IDDoctor,
+			&appointment.Date,
+			&appointment.Status,
 		); err != nil {
-			log.Printf("[APPOINTMENT] Error scanning programari by date: %v", err)
+			log.Printf("[APPOINTMENT] Error scanning appointments by date: %v", err)
 			return nil, err
 		}
-		programari = append(programari, programare)
+		appointments = append(appointments, appointment)
 	}
 
 	if err := rows.Err(); err != nil {
-		log.Printf("[APPOINTMENT] Error scanning programari by date: %v", err)
+		log.Printf("[APPOINTMENT] Error after iterating over rows by date: %v", err)
 		return nil, err
 	}
 
-	return programari, nil
+	log.Printf("[PATIENT] Successfully fetched %d appointments by date %s.", len(appointments), date)
+	return appointments, nil
 }
 
-// FetchProgramariByState lists programari based on a specific status with pagination.
-func (db *MySQLDatabase) FetchProgramariByStatus(ctx context.Context, state string, page, limit int) ([]models.Programare, error) {
+// FetchAppointmentsByState lists appointments based on a specific status with pagination.
+func (db *MySQLDatabase) FetchAppointmentsByStatus(ctx context.Context, status string, page, limit int) ([]models.Appointment, error) {
+	// Get the offset based on page and limit
 	offset := (page - 1) * limit
 
+	// Construct the SQL insert query
 	query := fmt.Sprintf("SELECT * FROM %s WHERE %s = ? LIMIT ? OFFSET ?", utils.AppointmentTableName, utils.ColumnStatus)
 
-	rows, err := db.QueryContext(ctx, query, state, limit, offset)
+	log.Printf("[APPOINTMENT] Attempting to fetch appointments by status %s with limit=%d, offset=%d", status, limit, offset)
+
+	// Execute the SQL query with context
+	rows, err := db.QueryContext(ctx, query, status, limit, offset)
 	if err != nil {
-		log.Printf("[APPOINTMENT] Error executing query to fetch programari by state: %v", err)
+		log.Printf("[APPOINTMENT] Error executing query to fetch appointments by status: %v", err)
 		return nil, err
 	}
 	defer rows.Close()
 
-	programari := []models.Programare{}
+	appointments := []models.Appointment{}
 	for rows.Next() {
-		programare := models.Programare{}
+		appointment := models.Appointment{}
 		if err := rows.Scan(
-			&programare.IDProgramare,
-			&programare.IDPacient,
-			&programare.IDDoctor,
-			&programare.Date,
-			&programare.Status,
+			&appointment.IDProgramare,
+			&appointment.IDPacient,
+			&appointment.IDDoctor,
+			&appointment.Date,
+			&appointment.Status,
 		); err != nil {
-			log.Printf("[APPOINTMENT] Error scanning programari by state: %v", err)
+			log.Printf("[APPOINTMENT] Error scanning appointments by state: %v", err)
 			return nil, err
 		}
-		programari = append(programari, programare)
+		appointments = append(appointments, appointment)
 	}
 
 	if err := rows.Err(); err != nil {
-		log.Printf("[APPOINTMENT] Error scanning programari by state: %v", err)
+		log.Printf("[APPOINTMENT] Error scanning appointments by state: %v", err)
 		return nil, err
 	}
 
-	return programari, nil
+	log.Printf("[PATIENT] Successfully fetched %d appointments by status %s.", len(appointments), status)
+	return appointments, nil
 }

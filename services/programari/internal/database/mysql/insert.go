@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/go-sql-driver/mysql"
 	"github.com/mihnea1711/POS_Project/services/programari/internal/models"
 	"github.com/mihnea1711/POS_Project/services/programari/pkg/utils"
 )
 
-func (db *MySQLDatabase) SaveProgramare(ctx context.Context, programare *models.Programare) (int, error) {
+func (db *MySQLDatabase) SaveAppointment(ctx context.Context, appointment *models.Appointment) (int, error) {
+	// Construct the SQL insert query
 	query := fmt.Sprintf(
 		"INSERT INTO %s (%s, %s, %s, %s) VALUES (?, ?, ?, ?)",
 		utils.AppointmentTableName,
@@ -20,16 +20,12 @@ func (db *MySQLDatabase) SaveProgramare(ctx context.Context, programare *models.
 		utils.ColumnStatus,
 	)
 
-	result, err := db.ExecContext(ctx, query, programare.IDPacient, programare.IDDoctor, programare.Date, programare.Status)
-	if err != nil {
-		// Check if the error is due to a duplicate entry violation
-		mysqlErr, ok := err.(*mysql.MySQLError)
-		if ok && mysqlErr.Number == utils.MySQLDuplicateEntryErrorCode {
-			log.Printf("[APPOINTMENT] Conflict error executing query to save programare: %v", err)
-			return 0, nil
-		}
+	log.Println("[APPOINTMENT] Attempting to save appointment")
 
-		log.Printf("[APPOINTMENT] Error executing query to save programare: %v", err)
+	// Execute the SQL statement
+	result, err := db.ExecContext(ctx, query, appointment.IDPacient, appointment.IDDoctor, appointment.Date, appointment.Status)
+	if err != nil {
+		log.Printf("[APPOINTMENT] Error executing query to save appointment: %v", err)
 		return 0, err
 	}
 
@@ -39,6 +35,11 @@ func (db *MySQLDatabase) SaveProgramare(ctx context.Context, programare *models.
 		return 0, err
 	}
 
-	log.Println("[APPOINTMENT] Appointment saved successfully.")
+	if lastInsertID == 0 {
+		log.Printf("[APPOINTMENT] Something unexpected happened and the appointment could not be saved.")
+	} else {
+		log.Printf("[APPOINTMENT] Appointment saved successfully. ID: %d", lastInsertID)
+	}
+
 	return int(lastInsertID), nil
 }
