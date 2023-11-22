@@ -12,32 +12,58 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func (cController *ConsultatieController) CreateConsultatie(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[CONSULTATION] Attempting to create a new consultatie.")
-	consultatie := r.Context().Value(utils.DECODED_CONSULTATION).(*models.Consultatie)
+// Create a new consultation
+func (cController *ConsultationController) CreateConsultation(w http.ResponseWriter, r *http.Request) {
+	log.Printf("[CONSULTATION] Attempting to create a new consultation.")
 
-	// Ensure a database operation doesn't take longer than 5 seconds
+	// Extract the consultation from the request context
+	consultation := r.Context().Value(utils.DECODED_CONSULTATION).(*models.Consultation)
+
+	// Ensure a database operation doesn't take longer than utils.REQUEST_TIMEOUT_DURATION seconds
 	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_TIMEOUT_DURATION*time.Second)
 	defer cancel()
 
-	// assign an id to the doc
-	consultatie.IDConsultatie = primitive.NewObjectID()
+	// Assign an ID to the consultation
+	consultation.IDConsultatie = primitive.NewObjectID()
 
-	// Use cController.DbConn to save the programare to the database
-	err := cController.DbConn.SaveConsultatie(ctx, consultatie)
+	// Use cController.DbConn to save the consultation to the database
+	insertedID, err := cController.DbConn.SaveConsultation(ctx, consultation)
 	if err != nil {
-		errMsg := fmt.Sprintf("internal server error: %s", err)
-		log.Printf("[CONSULTATION] Failed to save consultatie to the database: %s\n", errMsg)
+		// Handle the case where an internal server error occurs during the save
+		errMsg := fmt.Sprintf("Internal server error: %s", err)
+		log.Printf("[CONSULTATION] Failed to save consultation to the database: %s\n", errMsg)
+
+		// Respond with an error using the ResponseData struct
 		response := models.ResponseData{
-			Error: errMsg,
+			Error:   errMsg,
+			Message: "Failed to create consultation. Internal server error.",
 		}
 		utils.RespondWithJSON(w, http.StatusInternalServerError, response)
 		return
 	}
 
-	log.Printf("[CONSULTATION] Successfully created consultatie %d", consultatie.IDConsultatie)
-	response := models.ResponseData{
-		Message: "Consultatie created",
+	// Check if the inserted ID is valid
+	if insertedID != primitive.NilObjectID {
+		// Log the successful creation of the consultation
+		log.Printf("[CONSULTATION] Successfully created consultation with ID: %s", insertedID.Hex())
+
+		// Respond with success using the ResponseData struct
+		response := models.ResponseData{
+			Message: "Consultation created successfully.",
+			Payload: models.LastInsertedID{
+				LastInsertedID: insertedID.String(),
+			},
+		}
+		utils.RespondWithJSON(w, http.StatusOK, response)
+	} else {
+		// Log the failure to get a valid inserted ID
+		log.Printf("[CONSULTATION] Failed to get valid inserted ID after creating consultation.")
+
+		// Respond with an error using the ResponseData struct
+		response := models.ResponseData{
+			Error:   "Failed to get valid inserted ID after creating consultation",
+			Message: "Failed to create consultation. Error getting valid inserted ID.",
+		}
+		utils.RespondWithJSON(w, http.StatusInternalServerError, response)
 	}
-	utils.RespondWithJSON(w, http.StatusOK, response)
 }

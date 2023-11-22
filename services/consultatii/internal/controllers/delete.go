@@ -13,47 +13,62 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// Delete a consultatie by ID
-func (cController *ConsultatieController) DeleteConsultatieByID(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[CONSULTATION] Attempting to delete a consultatie by ID.")
+// Delete a consultation by ID
+func (cController *ConsultationController) DeleteConsultationByID(w http.ResponseWriter, r *http.Request) {
+	// Log the attempt to delete a consultation by ID
+	log.Printf("[CONSULTATION] Attempting to delete a consultation by ID.")
+
+	// Extract the consultation ID from the request URL parameters
 	vars := mux.Vars(r)
-	id, err := primitive.ObjectIDFromHex(vars[utils.DELETE_CONSULTATIE_BY_ID_PARAMETER])
+	consultationID, err := primitive.ObjectIDFromHex(vars[utils.DELETE_CONSULTATIE_BY_ID_PARAMETER])
 	if err != nil {
+		// Handle the case where an invalid consultation ID is provided
 		response := models.ResponseData{
-			Error: "Invalid consultatie ID",
+			Error:   "Invalid consultation ID",
+			Message: "Failed to delete consultation. Invalid consultation ID provided.",
 		}
 		utils.RespondWithJSON(w, http.StatusBadRequest, response)
 		return
 	}
 
-	// Ensure a database operation doesn't take longer than 5 seconds
+	// Ensure a database operation doesn't take longer than utils.REQUEST_TIMEOUT_DURATION seconds
 	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_TIMEOUT_DURATION*time.Second)
 	defer cancel()
 
-	// Use cController.DbConn to delete the consultatie by ID from the database
-	rowsAffected, err := cController.DbConn.DeleteConsultatieByID(ctx, id)
+	// Use cController.DbConn to delete the consultation by ID from the database
+	rowsAffected, err := cController.DbConn.DeleteConsultationByID(ctx, consultationID)
 	if err != nil {
-		errMsg := fmt.Sprintf("internal server error: %s", err)
-		log.Printf("[CONSULTATION] Failed to delete consultatie by ID: %s\n", errMsg)
+		// Handle the case where an internal server error occurs during the deletion
+		errMsg := fmt.Sprintf("Internal server error: %s", err)
+		log.Printf("[CONSULTATION] Failed to delete consultation by ID: %s\n", errMsg)
 		response := models.ResponseData{
-			Error: errMsg,
+			Error:   errMsg,
+			Message: "Failed to delete consultation. Internal server error.",
 		}
 		utils.RespondWithJSON(w, http.StatusInternalServerError, response)
 		return
 	}
 
-	// Check if the consultatie exists and was deleted
+	// Check if the consultation exists and was deleted
 	if rowsAffected == 0 {
+		// Handle the case where the consultation is not found
 		response := models.ResponseData{
-			Error: "Consultatie not found",
+			Error:   "Consultation not found",
+			Message: "Failed to delete consultation. Consultation not found.",
 		}
 		utils.RespondWithJSON(w, http.StatusNotFound, response)
 		return
 	}
 
-	log.Printf("[CONSULTATION] Successfully deleted consultatie %d", id)
+	// Log the successful deletion of the consultation
+	log.Printf("[CONSULTATION] Successfully deleted consultation %s", consultationID.Hex())
+
+	// Respond with a success message
 	response := models.ResponseData{
-		Message: "Consultatie deleted",
+		Message: "Consultation deleted successfully.",
+		Payload: models.RowsAffected{
+			RowsAffected: rowsAffected,
+		},
 	}
 	utils.RespondWithJSON(w, http.StatusOK, response)
 }

@@ -6,4 +6,4 @@ PORT=$(yq e '.server.port' configs/config.yaml)
 DATE="2023-11-15"
 
 # Use the extracted port in curl to retrieve programari by Date
-curl -X GET http://localhost:"$PORT"/consultatii/date/"$DATE"
+curl -X GET http://localhost:"$PORT"/consultations/date/"$DATE"

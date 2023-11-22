@@ -7,9 +7,11 @@ var db = db.getSiblingDB(dbName);
 // Define the collection name SAME AS THE CONTSTANTS
 var collectionName = "consultation";
 
+db[collectionName].createIndex({ id_patient: 1, id_doctor: 1, date: 1 }, { unique: true });
+
 // Define two Consultatie objects
 var consultatie1 = {
-    id_consultation: "000000000000000000000000",
+    id_consultation: ObjectId(),
     id_patient: 1,
     id_doctor: 1,
     date: new ISODate("2023-11-10"),
@@ -24,7 +26,7 @@ var consultatie1 = {
 };
 
 var consultatie2 = {
-    id_consultation: "000000000000000000000001",
+    id_consultation: ObjectId(),
     id_patient: 2,
     id_doctor: 2,
     date: new ISODate("2023-11-15"),

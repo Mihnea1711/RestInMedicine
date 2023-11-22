@@ -6,4 +6,4 @@ PORT=$(yq e '.server.port' configs/config.yaml)
 DOCTOR_ID=2
 
 # Use the extracted port in curl to retrieve programari by Doctor ID
-curl -X GET http://localhost:"$PORT"/consultatii/doctor/"$DOCTOR_ID"
+curl -X GET http://localhost:"$PORT"/consultations/doctor/"$DOCTOR_ID"

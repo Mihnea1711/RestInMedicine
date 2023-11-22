@@ -34,13 +34,16 @@ func New(config *config.AppConfig, parentCtx context.Context) (*App, error) {
 		return nil, fmt.Errorf("failed to initialize MongoDB: %w", err)
 	}
 	app.database = mongoDB
+	log.Println("[CONSULTATION] Mongo connection successfully established.")
 
 	// Create a Redis connection
 	rdb, err := redis.NewRedisClient(parentCtx, &config.Redis)
 	if err != nil {
+		log.Printf("[CONSULTATION] Error initializing Redis: %v", err)
 		return nil, err
 	}
 	app.rdb = rdb
+	log.Println("[CONSULTATION] Redis connection successfully established.")
 
 	// setup router for the app
 	router := routes.SetupRoutes(parentCtx, app.database, app.rdb)
@@ -55,8 +58,6 @@ func (a *App) Start(ctx context.Context) error {
 		Addr:    fmt.Sprintf(":%d", a.config.Server.Port),
 		Handler: a.router,
 	}
-
-	log.Println("[CONSULTATION] Starting server...") // Logging the server start
 
 	// Log the message just before starting the server in the goroutine
 	fmt.Printf("[CONSULTATION] Server started and listening on port %d\n", a.config.Server.Port)
@@ -94,6 +95,12 @@ func (a *App) Start(ctx context.Context) error {
 		timeout, cancel := context.WithTimeout(context.Background(), time.Second*utils.RESOURCES_CLOSE_TIMEOUT)
 		defer cancel()
 
-		return server.Shutdown(timeout)
+		if err := server.Shutdown(timeout); err != nil {
+			log.Printf("[CONSULTATION] Failed to shut down server gracefully: %v", err)
+			return err
+		}
+
+		log.Println("[CONSULTATION] Server shut down gracefully.")
+		return nil
 	}
 }

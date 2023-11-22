@@ -5,7 +5,7 @@ PORT=$(yq e '.server.port' configs/config.yaml)
 # Specify the JSON payload for creating a Consultatie
 JSON_PAYLOAD='
 {
-  "id_pacient": 3,
+  "id_patient": 3,
   "id_doctor": 3,
   "date": "2023-11-17T00:00:00Z",
   "diagnostic": "Sample diagnostic",
@@ -20,7 +20,7 @@ JSON_PAYLOAD='
 
 # Use curl to create a new Consultatie
 curl \
-    -X POST http://localhost:"$PORT"/consultatii \
+    -X POST http://localhost:"$PORT"/consultations \
     -H "Content-Type: application/json" \
     -d "$JSON_PAYLOAD" 
 

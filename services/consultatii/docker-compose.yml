@@ -1,9 +1,9 @@
-version: '3'
+version: '3.7'
 services:
   # MongoDB container
-  mongodb:
+  consultation_mongodb:
     image: mongo:latest  # Use your MongoDB Docker image and tag
-    container_name: mongodb
+    container_name: consultation_mongodb
     build:
       context: .  # Use the context of your application's Dockerfile
       dockerfile: docker/mongo.Dockerfile
@@ -16,26 +16,26 @@ services:
       - ./docker/db:/docker-entrypoint-initdb.d
 
   # Redis container
-  redis:
+  consultation_redis:
     image: redis:latest
-    container_name: redis
+    container_name: consultation_redis
     ports:
-      - "6379:6379"
+      - "6375:6379"
     environment:
       REDIS_PASSWORD: ${REDIS_CONSULTATII_PASSWORD}
 
   # Your Go application container
-  app_consultatii:
+  consultation_app:
     build:
       context: .  # Use the context of your application's Dockerfile
       dockerfile: docker/api.Dockerfile
-    container_name: app_consultatii
+    container_name: consultation_app
     ports:
-      - "8080:8080"
+      - "8085:8085"
+    depends_on:
+      - consultation_mongodb
+      - consultation_redis
     env_file:
       - .env
     environment:
       MONGO_CONSULTATII_DB: ${MONGO_CONSULTATII_DB}
-    depends_on:
-      - mongodb
-      - redis

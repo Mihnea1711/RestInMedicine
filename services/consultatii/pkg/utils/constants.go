@@ -10,8 +10,8 @@ const DATABASE_NAME = "consultations_db"
 const CONSULTATIE_TABLE = "consultation"
 
 const (
-	ID_CONSULTATIE = "id_consultatie"
-	ID_PACIENT     = "id_pacient"
+	ID_CONSULTATIE = "id_consultation"
+	ID_PACIENT     = "id_patient"
 	ID_DOCTOR      = "id_doctor"
 	DATE           = "date"
 	DIAGNOSTIC     = "diagnostic"
@@ -50,8 +50,8 @@ const (
 	FETCH_CONSULTATIE_BY_DOCTOR_ID_ENDPOINT  = "/consultations/doctors/{" + FETCH_CONSULTATIE_BY_DOCTOR_ID_PARAMETER + "}"
 	FETCH_CONSULTATIE_BY_DOCTOR_ID_PARAMETER = "id_doctor"
 
-	FETCH_CONSULTATIE_BY_PACIENT_ID_ENDPOINT  = "/consultations/patients/{" + FETCH_CONSULTATIE_BY_PACIENT_ID_PARAMETER + "}"
-	FETCH_CONSULTATIE_BY_PACIENT_ID_PARAMETER = "id_pacient"
+	FETCH_CONSULTATIE_BY_PATIENT_ID_ENDPOINT  = "/consultations/patients/{" + FETCH_CONSULTATIE_BY_PATIENT_ID_PARAMETER + "}"
+	FETCH_CONSULTATIE_BY_PATIENT_ID_PARAMETER = "id_pacient"
 
 	FETCH_CONSULTATIE_BY_DATE_ENDPOINT  = "/consultations/date/{" + FETCH_CONSULTATIE_BY_DATE_PARAMETER + "}"
 	FETCH_CONSULTATIE_BY_DATE_PARAMETER = "id_date"

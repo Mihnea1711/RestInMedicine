@@ -19,33 +19,31 @@ type MongoDB struct {
 }
 
 func NewMongoDB(ctx context.Context, cfg *config.MongoDBConfig) (database.Database, error) {
-	// log.Printf("[MONGO] MongoDB Configuration: %+v", cfg)
-
 	clientOptions := options.Client().
 		ApplyURI(fmt.Sprintf("mongodb://%s:%s@%s:%d", cfg.User, cfg.Password, cfg.Host, cfg.Port))
 
 	client, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
-		log.Printf("[MONGO] Error connecting to MongoDB: %v", err)
+		log.Printf("[CONSULTATION] Error connecting to MongoDB: %v", err)
 		return nil, err
 	}
 
 	// Ping the MongoDB server to ensure connectivity
 	if err := client.Ping(ctx, readpref.Primary()); err != nil {
-		log.Printf("[MONGO] Error pinging MongoDB server: %v", err)
+		log.Printf("[CONSULTATION] Error pinging MongoDB server: %v", err)
 		return nil, err
 	}
 
 	db := client.Database(cfg.Database)
 
-	log.Printf("[MONGO] Connected to MongoDB: %s", cfg.Database)
+	log.Printf("[CONSULTATION] Connected to MongoDB: %s", cfg.Database)
 	return &MongoDB{client: client, db: db}, nil
 }
 
 func (db *MongoDB) Close(ctx context.Context) error {
 	err := db.client.Disconnect(ctx)
 	if err != nil {
-		log.Printf("[MONGO] Error disconnecting from MongoDB: %v", err)
+		log.Printf("[CONSULTATION] Error disconnecting from MongoDB: %v", err)
 	}
 	return err
 }

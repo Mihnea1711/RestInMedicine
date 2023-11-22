@@ -14,9 +14,9 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// Retrieve all consultatii
-func (cController *ConsultatieController) GetConsultatii(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[CONSULTATION] Attempting to retrieve consultatii.")
+// Retrieve all consultations
+func (cController *ConsultationController) GetConsultations(w http.ResponseWriter, r *http.Request) {
+	log.Printf("[CONSULTATION] Attempting to retrieve consultations.")
 
 	// Extract the limit and page query parameters from the request
 	limit, page := utils.ExtractPaginationParams(r)
@@ -25,39 +25,47 @@ func (cController *ConsultatieController) GetConsultatii(w http.ResponseWriter, 
 	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_TIMEOUT_DURATION*time.Second)
 	defer cancel()
 
-	// Use cController.DbConn to fetch all consultatii from the database
-	consultatii, err := cController.DbConn.FetchAllConsultatii(ctx, page, limit)
+	// Use cController.DbConn to fetch all consultations from the database
+	consultations, err := cController.DbConn.FetchAllConsultations(ctx, page, limit)
 	if err != nil {
-		errMsg := fmt.Sprintf("internal server error: %s", err)
-		log.Printf("[CONSULTATION] Failed to fetch consultatii: %s\n", errMsg)
+		// Handle the case where an internal server error occurs during fetch
+		errMsg := fmt.Sprintf("Internal server error: %s", err)
+		log.Printf("[CONSULTATION] Failed to fetch consultations: %s\n", errMsg)
+
+		// Respond with an error using the ResponseData struct
 		response := models.ResponseData{
-			Error: errMsg,
+			Error:   errMsg,
+			Message: "Failed to retrieve consultations. Internal server error.",
 		}
 		utils.RespondWithJSON(w, http.StatusInternalServerError, response)
 		return
 	}
 
-	log.Printf("[CONSULTATION] Successfully fetched all consultatii")
+	log.Printf("[CONSULTATION] Successfully fetched %d consultations", len(consultations))
 
-	// Serialize the consultatii to JSON and send the response
+	// Serialize the consultations to JSON and send the response
 	response := models.ResponseData{
-		Payload: consultatii,
+		Message: fmt.Sprintf("%d Consultations retrieved successfully.", len(consultations)), Payload: consultations,
 	}
 	utils.RespondWithJSON(w, http.StatusOK, response)
 }
 
-// Retrieve a consultatie by ID
-func (cController *ConsultatieController) GetConsultatieByID(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[CONSULTATION] Attempting to retrieve a consultatie by ID.")
+// Retrieve a consultation by ID
+func (cController *ConsultationController) GetConsultationByID(w http.ResponseWriter, r *http.Request) {
+	// Log the attempt to retrieve a consultation by ID
+	log.Printf("[CONSULTATION] Attempting to retrieve a consultation by ID.")
 
+	// Extract the consultation ID from the request URL parameters
 	vars := mux.Vars(r)
-	id := vars[utils.FETCH_CONSULTATIE_BY_ID_PARAMETER]
+	consultationID := vars[utils.FETCH_CONSULTATIE_BY_ID_PARAMETER]
 
 	// Convert the ID to a primitive.ObjectID
-	objectID, err := primitive.ObjectIDFromHex(id)
+	objectID, err := primitive.ObjectIDFromHex(consultationID)
 	if err != nil {
+		// Handle the case where an invalid consultation ID is provided
 		response := models.ResponseData{
-			Error: "Invalid consultatie ID",
+			Error:   "Invalid consultation ID",
+			Message: "Invalid consultation ID. Please provide a valid ID.",
 		}
 		utils.RespondWithJSON(w, http.StatusBadRequest, response)
 		return
@@ -67,50 +75,64 @@ func (cController *ConsultatieController) GetConsultatieByID(w http.ResponseWrit
 	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_TIMEOUT_DURATION*time.Second)
 	defer cancel()
 
-	// Use cController.DbConn to fetch the consultatie by ID from the database
-	consultatie, err := cController.DbConn.FetchConsultatieByID(ctx, objectID)
+	// Use cController.DbConn to fetch the consultation by ID from the database
+	consultation, err := cController.DbConn.FetchConsultationByID(ctx, objectID)
 	if err != nil {
-		errMsg := fmt.Sprintf("internal server error: %s", err)
-		log.Printf("[CONSULTATION] Failed to fetch consultatie by ID: %s\n", errMsg)
+		// Handle the case where an internal server error occurs during fetch
+		errMsg := fmt.Sprintf("Internal server error: %s", err)
+		log.Printf("[CONSULTATION] Failed to fetch consultation by ID: %s\n", errMsg)
+
+		// Respond with an error using the ResponseData struct
 		response := models.ResponseData{
-			Error: errMsg,
+			Error:   errMsg,
+			Message: "Failed to retrieve consultation by ID. Internal server error.",
 		}
 		utils.RespondWithJSON(w, http.StatusInternalServerError, response)
 		return
 	}
 
-	// Check if the consultatie exists
-	if consultatie == nil {
+	// Check if the consultation exists
+	if consultation == nil {
+		// Handle the case where the consultation is not found
 		response := models.ResponseData{
-			Error: "Consultatie not found",
+			Error:   "Consultation not found",
+			Message: "Consultation not found with the provided ID.",
 		}
 		utils.RespondWithJSON(w, http.StatusNotFound, response)
 		return
 	}
 
-	log.Printf("[CONSULTATION] Successfully fetched consultatie %s", consultatie.IDConsultatie)
-	// Serialize the consultatie to JSON and send the response
+	// Log the successful retrieval of the consultation
+	log.Printf("[CONSULTATION] Successfully fetched consultation %s", consultation.IDConsultatie)
+
+	// Serialize the consultation to JSON and send the response
 	response := models.ResponseData{
-		Payload: consultatie,
+		Message: "Consultation retrieved successfully.",
+		Payload: consultation,
 	}
 	utils.RespondWithJSON(w, http.StatusOK, response)
 }
 
-// Retrieve consultatii by doctor ID
-func (cController *ConsultatieController) GetConsultatiiByDoctorID(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[CONSULTATION] Attempting to retrieve consultatii by Doctor ID.")
+// Retrieve consultations by Doctor ID
+func (cController *ConsultationController) GetConsultationsByDoctorID(w http.ResponseWriter, r *http.Request) {
+	// Log the attempt to retrieve consultations by Doctor ID
+	log.Printf("[CONSULTATION] Attempting to retrieve consultations by Doctor ID.")
 
+	// Extract Doctor ID from the request URL parameters
 	vars := mux.Vars(r)
 	doctorID, err := strconv.Atoi(vars[utils.FETCH_CONSULTATIE_BY_DOCTOR_ID_PARAMETER])
 	if err != nil {
+		// Handle the case where an invalid Doctor ID is provided
 		response := models.ResponseData{
-			Error: "Invalid Doctor ID",
+			Error:   "Invalid Doctor ID",
+			Message: "Invalid Doctor ID. Please provide a valid ID.",
 		}
 		utils.RespondWithJSON(w, http.StatusBadRequest, response)
 		return
 	}
 
-	log.Printf("READ: %d", doctorID)
+	// Log the Doctor ID being read
+	log.Printf("Doctor ID: %d", doctorID)
 
 	// Extract the limit and page query parameters from the request
 	limit, page := utils.ExtractPaginationParams(r)
@@ -119,39 +141,52 @@ func (cController *ConsultatieController) GetConsultatiiByDoctorID(w http.Respon
 	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_TIMEOUT_DURATION*time.Second)
 	defer cancel()
 
-	// Use cController.DbConn to fetch consultatii by Doctor ID from the database
-	consultatii, err := cController.DbConn.FetchConsultatiiByDoctorID(ctx, doctorID, page, limit)
+	// Use cController.DbConn to fetch consultations by Doctor ID from the database
+	consultations, err := cController.DbConn.FetchConsultationsByDoctorID(ctx, doctorID, page, limit)
 	if err != nil {
-		errMsg := fmt.Sprintf("internal server error: %s", err)
-		log.Printf("[CONSULTATION] Failed to fetch consultatii by Doctor ID: %s\n", errMsg)
+		// Handle the case where an internal server error occurs during fetch
+		errMsg := fmt.Sprintf("Internal server error: %s", err)
+		log.Printf("[CONSULTATION] Failed to fetch consultations by Doctor ID: %s\n", errMsg)
+
+		// Respond with an error using the ResponseData struct
 		response := models.ResponseData{
-			Error: errMsg,
+			Error:   errMsg,
+			Message: "Failed to retrieve consultations by Doctor ID. Internal server error.",
 		}
 		utils.RespondWithJSON(w, http.StatusInternalServerError, response)
 		return
 	}
 
-	log.Printf("[CONSULTATION] Successfully fetched consultatii of doctor %d", doctorID)
-	// Serialize the consultatii to JSON and send the response
+	// Log the successful retrieval of consultations
+	log.Printf("[CONSULTATION] Successfully fetched %d consultations of Doctor %d", len(consultations), doctorID)
+
+	// Serialize the consultations to JSON and send the response
 	response := models.ResponseData{
-		Payload: consultatii,
+		Message: fmt.Sprintf("%d Consultations retrieved successfully.", len(consultations)), Payload: consultations,
 	}
 	utils.RespondWithJSON(w, http.StatusOK, response)
 }
 
-// Retrieve consultatii by pacient ID
-func (cController *ConsultatieController) GetConsultatiiByPacientID(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[CONSULTATION] Attempting to retrieve consultatii by Pacient ID.")
+// Retrieve consultations by Patient ID
+func (cController *ConsultationController) GetConsultationsByPatientID(w http.ResponseWriter, r *http.Request) {
+	// Log the attempt to retrieve consultations by Patient ID
+	log.Printf("[CONSULTATION] Attempting to retrieve consultations by Patient ID.")
 
+	// Extract Patient ID from the request URL parameters
 	vars := mux.Vars(r)
-	pacientID, err := strconv.Atoi(vars[utils.FETCH_CONSULTATIE_BY_PACIENT_ID_PARAMETER])
+	patientID, err := strconv.Atoi(vars[utils.FETCH_CONSULTATIE_BY_PATIENT_ID_PARAMETER])
 	if err != nil {
+		// Handle the case where an invalid Patient ID is provided
 		response := models.ResponseData{
-			Error: "Invalid Pacient ID",
+			Error:   "Invalid Patient ID",
+			Message: "Invalid Patient ID. Please provide a valid ID.",
 		}
 		utils.RespondWithJSON(w, http.StatusBadRequest, response)
 		return
 	}
+
+	// Log the Patient ID being read
+	log.Printf("Patient ID: %d", patientID)
 
 	// Extract the limit and page query parameters from the request
 	limit, page := utils.ExtractPaginationParams(r)
@@ -160,29 +195,36 @@ func (cController *ConsultatieController) GetConsultatiiByPacientID(w http.Respo
 	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_TIMEOUT_DURATION*time.Second)
 	defer cancel()
 
-	// Use cController.DbConn to fetch consultatii by Pacient ID from the database
-	consultatii, err := cController.DbConn.FetchConsultatiiByPacientID(ctx, pacientID, page, limit)
+	// Use cController.DbConn to fetch consultations by Patient ID from the database
+	consultations, err := cController.DbConn.FetchConsultationsByPatientID(ctx, patientID, page, limit)
 	if err != nil {
-		errMsg := fmt.Sprintf("internal server error: %s", err)
-		log.Printf("[CONSULTATION] Failed to fetch consultatii by Pacient ID: %s\n", errMsg)
+		// Handle the case where an internal server error occurs during fetch
+		errMsg := fmt.Sprintf("Internal server error: %s", err)
+		log.Printf("[CONSULTATION] Failed to fetch consultations by Patient ID: %s\n", errMsg)
+
+		// Respond with an error using the ResponseData struct
 		response := models.ResponseData{
-			Error: errMsg,
+			Error:   errMsg,
+			Message: "Failed to retrieve consultations by Patient ID. Internal server error.",
 		}
 		utils.RespondWithJSON(w, http.StatusInternalServerError, response)
 		return
 	}
 
-	log.Printf("[CONSULTATION] Successfully fetched consultatii of pacient %d", pacientID)
-	// Serialize the consultatii to JSON and send the response
+	// Log the successful retrieval of consultations
+	log.Printf("[CONSULTATION] Successfully fetched %d consultations of Patient %d", len(consultations), patientID)
+
+	// Serialize the consultations to JSON and send the response
 	response := models.ResponseData{
-		Payload: consultatii,
+		Message: fmt.Sprintf("%d Consultations retrieved successfully.", len(consultations)), Payload: consultations,
 	}
 	utils.RespondWithJSON(w, http.StatusOK, response)
 }
 
-// Retrieve consultatii by date
-func (cController *ConsultatieController) GetConsultatiiByDate(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[CONSULTATION] Attempting to retrieve consultatii by date.")
+// Retrieve consultations by date
+func (cController *ConsultationController) GetConsultationsByDate(w http.ResponseWriter, r *http.Request) {
+	// Log the attempt to retrieve consultations by date
+	log.Printf("[CONSULTATION] Attempting to retrieve consultations by date.")
 
 	// Use mux.Vars to get the date parameter from the route
 	vars := mux.Vars(r)
@@ -191,8 +233,10 @@ func (cController *ConsultatieController) GetConsultatiiByDate(w http.ResponseWr
 	// Parse the date string into a time.Time object
 	date, err := time.Parse(utils.TIME_FORMAT, dateStr)
 	if err != nil {
+		// Handle the case where an invalid date format is provided
 		errResponse := models.ResponseData{
-			Error: "Invalid date format",
+			Error:   "Invalid date format",
+			Message: "Invalid date format. Please provide a date in the format: " + utils.TIME_FORMAT,
 		}
 		log.Printf("[CONSULTATION] Failed to convert date string: %s\n", err)
 		utils.RespondWithJSON(w, http.StatusBadRequest, errResponse)
@@ -206,28 +250,33 @@ func (cController *ConsultatieController) GetConsultatiiByDate(w http.ResponseWr
 	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_TIMEOUT_DURATION*time.Second)
 	defer cancel()
 
-	// Use cController.DbConn to fetch consultatii by date from the database
-	consultatii, err := cController.DbConn.FetchConsultatiiByDate(ctx, date, page, limit)
+	// Use cController.DbConn to fetch consultations by date from the database
+	consultations, err := cController.DbConn.FetchConsultationsByDate(ctx, date, page, limit)
 	if err != nil {
-		errMsg := fmt.Sprintf("internal server error: %s", err)
+		// Handle the case where an internal server error occurs during fetch
+		errMsg := fmt.Sprintf("Internal server error: %s", err)
 		errResponse := models.ResponseData{
-			Error: errMsg,
+			Error:   errMsg,
+			Message: "Failed to retrieve consultations by date. Internal server error.",
 		}
-		log.Printf("[CONSULTATION] Failed to fetch consultatii by date: %s\n", errMsg)
+		log.Printf("[CONSULTATION] Failed to fetch consultations by date: %s\n", errMsg)
 		utils.RespondWithJSON(w, http.StatusInternalServerError, errResponse)
 		return
 	}
 
-	log.Printf("[CONSULTATION] Successfully fetched consultatii from %s", date)
-	// Serialize the consultatii to JSON and send the response
+	// Log the successful retrieval of consultations
+	log.Printf("[CONSULTATION] Successfully fetched %d consultations from %s", len(consultations), date)
+
+	// Serialize the consultations to JSON and send the response
 	response := models.ResponseData{
-		Payload: consultatii,
+		Message: fmt.Sprintf("%d Consultations retrieved successfully.", len(consultations)),
+		Payload: consultations,
 	}
 	utils.RespondWithJSON(w, http.StatusOK, response)
 }
 
-func (cController *ConsultatieController) GetFilteredConsultatii(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[CONSULTATION] Attempting to retrieve filtered consultatii.")
+func (cController *ConsultationController) GetFilteredConsultations(w http.ResponseWriter, r *http.Request) {
+	log.Printf("[CONSULTATION] Attempting to retrieve filtered consultations.")
 
 	// Extract query filter params
 	filter := utils.ExtractQueryParams(r)
@@ -239,20 +288,20 @@ func (cController *ConsultatieController) GetFilteredConsultatii(w http.Response
 	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_TIMEOUT_DURATION*time.Second)
 	defer cancel()
 
-	// Use cController.DbConn to fetch filtered consultatii from the database
-	consultatii, err := cController.DbConn.FetchConsultatiiByFilter(ctx, filter, page, limit)
+	// Use cController.DbConn to fetch filtered consultations from the database
+	consultations, err := cController.DbConn.FetchConsultationsByFilter(ctx, filter, page, limit)
 	if err != nil {
 		errMsg := fmt.Sprintf("internal server error: %s", err)
-		log.Printf("[CONSULTATION] Failed to fetch filtered consultatii: %s\n", errMsg)
+		log.Printf("[CONSULTATION] Failed to fetch filtered consultations: %s\n", errMsg)
 		utils.RespondWithJSON(w, http.StatusInternalServerError, errMsg)
 		return
 	}
 
-	if len(consultatii) != 0 {
-		log.Printf("[CONSULTATION] Successfully fetched filtered consultatii")
+	if len(consultations) != 0 {
+		log.Printf("[CONSULTATION] Successfully fetched filtered consultations")
 	} else {
-		log.Printf("[CONSULTATION] No consultatii found with the filter: %v", filter)
+		log.Printf("[CONSULTATION] No consultations found with the filter: %v", filter)
 	}
-	// Serialize the filtered consultatii to JSON and send the response
-	utils.RespondWithJSON(w, http.StatusOK, consultatii)
+	// Serialize the filtered consultations to JSON and send the response
+	utils.RespondWithJSON(w, http.StatusOK, consultations)
 }

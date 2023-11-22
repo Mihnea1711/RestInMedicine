@@ -8,7 +8,7 @@ CONSULTATIE_ID=000000000000000000000000
 # Specify the JSON payload for updating a Consultatie
 JSON_PAYLOAD='
 {
-  "id_pacient": 1,
+  "id_patient": 1,
   "id_doctor": 2,
   "date": "2023-11-04T14:30:00Z",
   "diagnostic": "Updated diagnostic",
@@ -23,6 +23,6 @@ JSON_PAYLOAD='
 
 # Use curl to update a Consultatie by ID
 curl \
-    -X PUT "http://localhost:$PORT/consultatii/$CONSULTATIE_ID" \
+    -X PUT "http://localhost:$PORT/consultations/$CONSULTATIE_ID" \
     -H "Content-Type: application/json" \
     -d "$JSON_PAYLOAD" 

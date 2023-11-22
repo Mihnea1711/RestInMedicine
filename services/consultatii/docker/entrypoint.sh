@@ -1,19 +1,19 @@
 #!/bin/bash
 
-echo "[CONSULTATION] Starting entry script..."
+echo "[CONSULTATION_ENTRYPOINT] Starting entry script..."
 
 # Function to wait for MongoDB to be ready
 wait_for_mongodb() {
-    echo "[CONSULTATION] Waiting for MongoDB to be ready..."
+    echo "[CONSULTATION_ENTRYPOINT_ENTRYPOINT] Waiting for MongoDB to be ready..."
     while true; do
-        nc -z mongodb 27017 && echo "[CONSULTATION] MongoDB is ready." && break
+        nc -z consultation_mongodb 27017 && echo "[CONSULTATION_ENTRYPOINT] MongoDB is ready." && break
     done
 }
 
 wait_for_redis() {
-    echo "[CONSULTATION] Waiting for redis to be ready..."
+    echo "[CONSULTATION_ENTRYPOINT] Waiting for redis to be ready..."
     while true; do
-        nc -z redis 6379 && echo "[CONSULTATION] Redis is ready." && break
+        nc -z consultation_redis 6379 && echo "[CONSULTATION_ENTRYPOINT] Redis is ready." && break
     done
 }
 
@@ -22,5 +22,5 @@ wait_for_mongodb
 wait_for_redis
 
 # Start your Go application
-echo "[CONSULTATION] Starting the application..."
+echo "[CONSULTATION_ENTRYPOINT] Starting the application..."
 /app_consultatii

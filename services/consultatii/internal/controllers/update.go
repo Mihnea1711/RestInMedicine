@@ -13,53 +13,66 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// Update a consultatie by ID
-func (cController *ConsultatieController) UpdateConsultatieByID(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[CONSULTATION] Attempting to update a consultatie by ID.")
+// UpdateConsultationByID updates a consultation by its ID.
+func (cController *ConsultationController) UpdateConsultationByID(w http.ResponseWriter, r *http.Request) {
+	// Log the attempt to update a consultation by ID
+	log.Printf("[CONSULTATION] Attempting to update a consultation by ID.")
+
+	// Extract the consultation ID from the request URL parameters
 	vars := mux.Vars(r)
-
-	log.Printf("Vars: %v", vars)
-
-	id, err := primitive.ObjectIDFromHex(vars[utils.UPDATE_CONSULTATIE_BY_ID_PARAMETER])
+	consultationID, err := primitive.ObjectIDFromHex(vars[utils.UPDATE_CONSULTATIE_BY_ID_PARAMETER])
 	if err != nil {
+		// Handle the case where an invalid consultation ID is provided
 		response := models.ResponseData{
-			Error: "Invalid consultatie ID",
+			Error:   "Invalid consultation ID",
+			Message: "Failed to update consultation. Invalid consultation ID provided.",
 		}
 		utils.RespondWithJSON(w, http.StatusBadRequest, response)
 		return
 	}
 
-	consultatie := r.Context().Value(utils.DECODED_CONSULTATION).(*models.Consultatie)
-	consultatie.IDConsultatie = id
+	// Retrieve the consultation data from the request context
+	consultation := r.Context().Value(utils.DECODED_CONSULTATION).(*models.Consultation)
+	consultation.IDConsultatie = consultationID
 
 	// Ensure a database operation doesn't take longer than utils.REQUEST_TIMEOUT_DURATION seconds
 	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_TIMEOUT_DURATION*time.Second)
 	defer cancel()
 
-	// Use cController.DbConn to update the consultatie by ID in the database
-	rowsAffected, err := cController.DbConn.UpdateConsultatieByID(ctx, consultatie)
+	// Use cController.DbConn to update the consultation by ID in the database
+	rowsAffected, err := cController.DbConn.UpdateConsultationByID(ctx, consultation)
 	if err != nil {
-		errMsg := fmt.Sprintf("internal server error: %s", err)
-		log.Printf("[CONSULTATION] Failed to update consultatie by ID: %s\n", errMsg)
+		// Handle the case where an internal server error occurs during the update
+		errMsg := fmt.Sprintf("Internal server error: %s", err)
+		log.Printf("[CONSULTATION] Failed to update consultation by ID: %s\n", errMsg)
 		response := models.ResponseData{
-			Error: errMsg,
+			Error:   errMsg,
+			Message: "Failed to update consultation. Internal server error.",
 		}
 		utils.RespondWithJSON(w, http.StatusInternalServerError, response)
 		return
 	}
 
-	// Check if the consultatie exists and was updated
+	// Check if the consultation exists and was updated
 	if rowsAffected == 0 {
+		// Handle the case where the consultation is not found
 		response := models.ResponseData{
-			Error: "Consultatie not found",
+			Error:   "Consultation not found",
+			Message: "Failed to update consultation. Consultation not found.",
 		}
 		utils.RespondWithJSON(w, http.StatusNotFound, response)
 		return
 	}
 
-	log.Printf("[CONSULTATION] Successfully updated consultatie %d", consultatie.IDConsultatie)
+	// Log the successful update of the consultation
+	log.Printf("[CONSULTATION] Successfully updated consultation %s", consultation.IDConsultatie.Hex())
+
+	// Respond with a success message and the number of rows affected
 	response := models.ResponseData{
-		Message: "Consultatie updated",
+		Message: "Consultation updated successfully.",
+		Payload: models.RowsAffected{
+			RowsAffected: rowsAffected,
+		},
 	}
 	utils.RespondWithJSON(w, http.StatusOK, response)
 }

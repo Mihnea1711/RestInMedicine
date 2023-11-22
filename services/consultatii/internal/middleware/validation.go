@@ -15,28 +15,30 @@ import (
 	"github.com/mihnea1711/POS_Project/services/consultatii/pkg/utils"
 )
 
-func ValidateConsultatieInfo(next http.Handler) http.Handler {
+func ValidateConsultationInfo(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var consultatie models.Consultatie
+		var consultation models.Consultation
 
 		dec := json.NewDecoder(r.Body)
 		dec.DisallowUnknownFields()
 
-		err := dec.Decode(&consultatie)
+		err := dec.Decode(&consultation)
 		if checkErrorOnDecode(err, w) {
+			errMsg := "Failed to decode consultation"
+			log.Printf("[CONSULTATION_VALIDATION_MIDDLEWARE] %s in request: %s", errMsg, r.RequestURI)
+			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Consultation validation failed due to decoding."})
 			return
 		}
 
-		// Validate the Consultatie
-		if err := validateConsultatie(&consultatie); err != nil {
-			// Handle the validation error, e.g., return an error response
-			log.Printf("[MIDDLEWARE] Validation error: %s", err)
-			http.Error(w, err.Error(), http.StatusBadRequest)
+		// Validate the Consultation
+		if err := validateConsultation(&consultation); err != nil {
+			log.Printf("[CONSULTATION_VALIDATION_MIDDLEWARE] Validation error: %s", err)
+			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: err.Error()})
 			return
 		}
 
 		// If all validations pass, proceed to the actual controller
-		ctx := context.WithValue(r.Context(), utils.DECODED_CONSULTATION, &consultatie)
+		ctx := context.WithValue(r.Context(), utils.DECODED_CONSULTATION, &consultation)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
@@ -100,41 +102,56 @@ func checkErrorOnDecode(err error, w http.ResponseWriter) bool {
 	return true
 }
 
-func validateConsultatie(consultatie *models.Consultatie) error {
-	if consultatie.IDPacient <= 0 {
-		return errors.New("invalid pacient id")
+func validateConsultation(consultation *models.Consultation) error {
+	// Validate the IDPacient (assuming it should be greater than 0)
+	if consultation.IDPatient <= 0 {
+		log.Println("[CONSULTATION_VALIDATION] Invalid pacient ID")
+		return errors.New("invalid pacient ID")
 	}
 
-	if consultatie.IDDoctor <= 0 {
-		return errors.New("invalid doctor id")
+	// Validate the IDDoctor (assuming it should be greater than 0)
+	if consultation.IDDoctor <= 0 {
+		log.Println("[CONSULTATION_VALIDATION] Invalid doctor ID")
+		return errors.New("invalid doctor ID")
 	}
 
-	if consultatie.Date.IsZero() {
+	// Validate the Date (assuming it should not be zero)
+	if consultation.Date.IsZero() {
+		log.Println("[CONSULTATION_VALIDATION] Invalid date")
 		return errors.New("invalid date")
 	}
 
+	// Validate that the date is not in the past
 	currentMoment := time.Now()
-	if consultatie.Date.Before(currentMoment) {
+	if consultation.Date.Before(currentMoment) {
+		log.Println("[CONSULTATION_VALIDATION] Date should not be in the past")
 		return errors.New("date should not be in the past")
 	}
 
-	if consultatie.Diagnostic == "" {
+	// Validate the Diagnostic field (assuming it should not be empty)
+	if consultation.Diagnostic == "" {
+		log.Println("[CONSULTATION_VALIDATION] Invalid diagnostic")
 		return errors.New("invalid diagnostic")
 	}
 
-	for _, inv := range consultatie.Investigatii {
+	// Validate each investigation in the list
+	for _, inv := range consultation.Investigatii {
 		if inv.Denumire == "" {
-			return errors.New("invalid investigatie denumire")
+			log.Println("[CONSULTATION_VALIDATION] Invalid investigation denumire")
+			return errors.New("invalid investigation denumire")
 		}
 
 		if inv.DurataProcesare <= 0 {
-			return errors.New("invalid investigatie durata de procesare")
+			log.Println("[CONSULTATION_VALIDATION] Invalid investigation durata de procesare")
+			return errors.New("invalid investigation durata de procesare")
 		}
 
 		if inv.Rezultat == "" {
-			return errors.New("invalid investigatie rezultat")
+			log.Println("[CONSULTATION_VALIDATION] Invalid investigation rezultat")
+			return errors.New("invalid investigation rezultat")
 		}
 	}
 
+	// If all validations pass, return nil
 	return nil
 }

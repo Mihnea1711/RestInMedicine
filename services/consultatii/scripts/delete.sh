@@ -6,4 +6,4 @@ PORT=$(yq e '.server.port' configs/config.yaml)
 CONSULTATIE_ID=000000000000000000000000
 
 # Use the extracted port in curl or other commands
-curl -X DELETE http://localhost:"$PORT"/consultatii/"$CONSULTATIE_ID"
+curl -X DELETE http://localhost:"$PORT"/consultations/"$CONSULTATIE_ID"

@@ -11,22 +11,22 @@ import (
 
 type Database interface {
 	// create
-	SaveConsultatie(ctx context.Context, consultatie *models.Consultatie) error
+	SaveConsultation(ctx context.Context, consultatie *models.Consultation) (primitive.ObjectID, error)
 
 	// retrieve
-	FetchAllConsultatii(ctx context.Context, page, limit int) ([]models.Consultatie, error)
-	FetchConsultatieByID(ctx context.Context, id primitive.ObjectID) (*models.Consultatie, error)
-	FetchConsultatiiByPacientID(ctx context.Context, pacientID int, page, limit int) ([]models.Consultatie, error)
-	FetchConsultatiiByDoctorID(ctx context.Context, doctorID int, page, limit int) ([]models.Consultatie, error)
-	FetchConsultatiiByDate(ctx context.Context, date time.Time, page, limit int) ([]models.Consultatie, error)
+	FetchAllConsultations(ctx context.Context, page, limit int) ([]models.Consultation, error)
+	FetchConsultationByID(ctx context.Context, consultationID primitive.ObjectID) (*models.Consultation, error)
+	FetchConsultationsByPatientID(ctx context.Context, patientID int, page, limit int) ([]models.Consultation, error)
+	FetchConsultationsByDoctorID(ctx context.Context, doctorID int, page, limit int) ([]models.Consultation, error)
+	FetchConsultationsByDate(ctx context.Context, date time.Time, page, limit int) ([]models.Consultation, error)
 
-	FetchConsultatiiByFilter(ctx context.Context, filter bson.D, page int, limit int) ([]models.Consultatie, error)
+	FetchConsultationsByFilter(ctx context.Context, filter bson.D, page int, limit int) ([]models.Consultation, error)
 
 	// update
-	UpdateConsultatieByID(ctx context.Context, consultatie *models.Consultatie) (int64, error)
+	UpdateConsultationByID(ctx context.Context, consultatie *models.Consultation) (int, error)
 
 	// delete
-	DeleteConsultatieByID(ctx context.Context, id primitive.ObjectID) (int64, error)
+	DeleteConsultationByID(ctx context.Context, consultationID primitive.ObjectID) (int, error)
 
 	// Add more methods as needed
 

@@ -9,20 +9,31 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-// UpdateConsultatieByID updates a consultatie by its ObjectID and returns the number of rows affected.
-func (db *MongoDB) UpdateConsultatieByID(ctx context.Context, consultatie *models.Consultatie) (int64, error) {
+// UpdateConsultationByID updates a consultation by its ObjectID and returns the number of rows affected.
+func (db *MongoDB) UpdateConsultationByID(ctx context.Context, consultation *models.Consultation) (int, error) {
+	// Get the MongoDB collection for consultations
 	collection := db.db.Collection(utils.CONSULTATIE_TABLE)
 
-	result, err := collection.ReplaceOne(ctx, bson.M{utils.ID_CONSULTATIE: consultatie.IDConsultatie}, consultatie)
+	// Log the attempt to update the consultation with its ID
+	log.Printf("[PATIENT] Attempting to update consultation %s", consultation.IDConsultatie.Hex())
+
+	// Replace the existing consultation document in the collection with the provided one
+	result, err := collection.ReplaceOne(ctx, bson.M{utils.ID_CONSULTATIE: consultation.IDConsultatie}, consultation)
 	if err != nil {
-		log.Printf("[CONSULTATION] Error updating consultatie by ID: %v", err)
+		// Log an error if the update operation fails
+		log.Printf("[CONSULTATION] Error updating consultation by ID: %v", err)
 		return 0, err
 	}
 
+	// Check if any document was modified during the update
 	if result.ModifiedCount != 0 {
-		log.Printf("[CONSULTATION] Consultatie updated successfully.")
+		// Log a success message if the consultation was updated
+		log.Printf("[CONSULTATION] Consultation updated successfully. ID: %v", consultation.IDConsultatie.Hex())
 	} else {
-		log.Printf("[CONSULTATION] No consultatie has been updated.")
+		// Log a message if no consultation was updated (ID not found)
+		log.Printf("[CONSULTATION] No consultation has been updated for ID: %v", consultation.IDConsultatie.Hex())
 	}
-	return result.ModifiedCount, nil
+
+	// Return the number of modified documents (rows) and a potential error
+	return int(result.ModifiedCount), nil
 }
