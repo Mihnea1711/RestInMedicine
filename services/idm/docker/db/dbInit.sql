@@ -21,11 +21,11 @@ INSERT INTO User (Username, Password)
 VALUES
     ('admin', 'admin_password'),
     ('doctor', 'doctor_password'),
-    ('patient', 'pacient_password');
+    ('patient', 'patient_password');
 
 -- Add Roles
 INSERT INTO Role (IDUser, Role)
 VALUES
     (1, 'admin'),
     (2, 'doctor'),
-    (3, 'pacient');
+    (3, 'patient');

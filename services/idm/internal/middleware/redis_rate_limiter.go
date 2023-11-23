@@ -35,7 +35,7 @@ func (r *RedisRateLimiter) Limit(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		ip, _, err := net.SplitHostPort(req.RemoteAddr)
 		if err != nil {
-			log.Printf("[IDM] Error splitting remote addr %s", err) // Logging the error
+			log.Printf("[IDM_LIMITER] Error splitting remote addr %s", err) // Logging the error
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
@@ -43,7 +43,7 @@ func (r *RedisRateLimiter) Limit(next http.Handler) http.Handler {
 
 		val, err := r.rdb.GetClient().Incr(r.context, key).Result()
 		if err != nil {
-			log.Printf("[IDM] Error incrementing rate limit key %s: %v", key, err) // Logging the error
+			log.Printf("[IDM_LIMITER] Error incrementing rate limit key %s: %v", key, err) // Logging the error
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
@@ -51,16 +51,16 @@ func (r *RedisRateLimiter) Limit(next http.Handler) http.Handler {
 			// The key is new, set its TTL
 			expireCmd := r.rdb.GetClient().Expire(r.context, key, r.windowDuration)
 			if expireCmd.Err() != nil {
-				log.Printf("[IDM] Error setting TTL for rate limit key %s: %v", key, expireCmd.Err())
+				log.Printf("[IDM_LIMITER] Error setting TTL for rate limit key %s: %v", key, expireCmd.Err())
 			} else if !expireCmd.Val() {
-				log.Printf("[IDM] Key %s does not exist, could not set TTL.", key)
+				log.Printf("[IDM_LIMITER] Key %s does not exist, could not set TTL.", key)
 			} else {
-				log.Printf("[IDM] New key %s created with TTL of %v", key, r.windowDuration)
+				log.Printf("[IDM_LIMITER] New key %s created with TTL of %v", key, r.windowDuration)
 			}
 		}
 
 		if val > int64(r.rate) {
-			log.Printf("[IDM] Rate limit exceeded for IP %s", req.RemoteAddr)
+			log.Printf("[IDM_LIMITER] Rate limit exceeded for IP %s", req.RemoteAddr)
 			http.Error(w, "Too Many Requests", http.StatusTooManyRequests)
 			return
 		}

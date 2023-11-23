@@ -51,3 +51,13 @@ const (
 const (
 	MySQLDuplicateEntryErrorCode = 1062
 )
+
+// Constants for service and method names
+const (
+	IDMServiceName               = "/IDM/"
+	RegisterMethodName           = "Register"
+	LoginMethodName              = "Login"
+	UpdateUserMethodName         = "UpdateUserByID"
+	UpdateUserRoleMethodName     = "UpdateUserRole"
+	UpdateUserPasswordMethodName = "UpdateUserPassword"
+)

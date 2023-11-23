@@ -1,25 +1,25 @@
 version: '3.7'
 services:
-  app:
+  idm_app:
     build:
       context: .  # Points to the directory containing docker-compose.yml
       dockerfile: docker/api.Dockerfile  # Path to your Dockerfile relative to the build context
     ports:
-      - "8080:8080"
+      - "8081:8081"
     depends_on:
-      - mysql
-      - redis
+      - idm_mysql
+      - idm_redis
     env_file:
       - .env
     environment:
-      DATABASE_HOST: mysql
+      DATABASE_HOST: idm_mysql
       REDIS_PASSWORD: ${REDIS_PASSWORD}
     volumes:
       - .:/workspace/
 
-  mysql:
+  idm_mysql:
     image: mysql:8.2.0
-    container_name: "mysql"
+    container_name: "idm_mysql"
     build: 
       context: .
       dockerfile: docker/mysql.Dockerfile
@@ -35,11 +35,11 @@ services:
       - mysql_data:/var/lib/mysql
     command: --default-authentication-plugin=caching_sha2_password
 
-  redis:
+  idm_redis:
     image: redis:latest
-    container_name: "redis"
+    container_name: "idm_redis"
     ports:
-      - "6379:6379"
+      - "6374:6379"
     volumes:
       - redis_data:/data
     environment:

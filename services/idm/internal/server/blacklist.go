@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -26,15 +27,26 @@ func (s *MyIDMServer) AddUserToBlacklist(ctx context.Context, req *proto_files.B
 	// Call the database method to retrieve the user by ID
 	user, err := s.DbConn.GetUserByID(childCtx, int(blacklistUserModel.IDUser))
 	if err != nil {
+		// Check if the error is due to no rows found
+		if err == sql.ErrNoRows {
+			log.Printf("[IDM] User not found in DB")
+			return &proto_files.InfoResponse{
+				Info: &proto_files.Info{
+					Message: "User not found",
+					Status:  http.StatusNotFound,
+				},
+			}, nil
+		}
 		log.Printf("[IDM] Error getting user by ID: %v", err)
 		return nil, fmt.Errorf("error getting user by ID. %v", err)
 	}
 
 	if user == nil {
 		// User not found
+		log.Printf("[IDM] User ID does not exist. User not added: %v", err)
 		return &proto_files.InfoResponse{
 			Info: &proto_files.Info{
-				Message: "User ID does not exist. User not added",
+				Message: "User ID does not exist. User not added to blacklist",
 				Status:  int64(http.StatusNotFound),
 			},
 		}, nil
@@ -67,15 +79,26 @@ func (s *MyIDMServer) CheckUserInBlacklist(ctx context.Context, req *proto_files
 	// Call the database method to retrieve the user by ID
 	user, err := s.DbConn.GetUserByID(childCtx, int(userID))
 	if err != nil {
+		// Check if the error is due to no rows found
+		if err == sql.ErrNoRows {
+			log.Printf("[IDM] User not found in DB")
+			return &proto_files.InfoResponse{
+				Info: &proto_files.Info{
+					Message: "User not found",
+					Status:  http.StatusNotFound,
+				},
+			}, nil
+		}
 		log.Printf("[IDM] Error getting user by ID: %v", err)
 		return nil, fmt.Errorf("error getting user by ID. %v", err)
 	}
 
 	if user == nil {
 		// User not found
+		log.Printf("[IDM] User ID does not exist or an unexpected error occured.: %v", err)
 		return &proto_files.InfoResponse{
 			Info: &proto_files.Info{
-				Message: "User ID does not exist. User not added",
+				Message: "User ID does not exist or an unexpected error occured.",
 				Status:  int64(http.StatusNotFound),
 			},
 		}, nil
@@ -85,11 +108,13 @@ func (s *MyIDMServer) CheckUserInBlacklist(ctx context.Context, req *proto_files
 	isInBlacklist, err := s.RedisConn.IsUserInBlacklist(ctx, int(userID))
 	if err != nil {
 		// Handle the error and return an error response
+		log.Printf("[IDM] Error checking if user is in blacklist: %v", err)
 		return nil, fmt.Errorf("error checking if user is in blacklist. %v", err)
 	}
 
 	if isInBlacklist {
 		// Handle the case where the user is in the blacklist
+		log.Printf("[IDM] User %d is in the blacklist", int(userID))
 		return &proto_files.InfoResponse{
 			Info: &proto_files.Info{
 				Message: "User is in the blacklist",
@@ -120,6 +145,17 @@ func (s *MyIDMServer) RemoveUserFromBlacklist(ctx context.Context, req *proto_fi
 	// Call the database method to retrieve the user by ID
 	user, err := s.DbConn.GetUserByID(childCtx, int(blacklistUserModel.IDUser))
 	if err != nil {
+		// Check if the error is due to no rows found
+		if err == sql.ErrNoRows {
+			log.Printf("[IDM] User not found in DB")
+			return &proto_files.EnhancedInfoResponse{
+				RowsAffected: 0,
+				Info: &proto_files.Info{
+					Message: "User not found",
+					Status:  http.StatusNotFound,
+				},
+			}, nil
+		}
 		log.Printf("[IDM] Error getting user by ID: %v", err)
 		return nil, fmt.Errorf("error getting user by ID. %v", err)
 	}
@@ -128,7 +164,7 @@ func (s *MyIDMServer) RemoveUserFromBlacklist(ctx context.Context, req *proto_fi
 		// User not found
 		return &proto_files.EnhancedInfoResponse{
 			Info: &proto_files.Info{
-				Message: "User ID does not exist. User not added",
+				Message: "User ID does not exist. User not removed",
 				Status:  int64(http.StatusNotFound),
 			},
 		}, nil

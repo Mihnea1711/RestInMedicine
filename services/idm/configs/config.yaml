@@ -1,8 +1,8 @@
 server:
-  port: 8080
+  port: 8081
 
 mysql_db:
-  host: mysql 
+  host: idm_mysql 
   port: 3306 
   user: ${MYSQL_USER}
   password: ${MYSQL_PASSWORD}
@@ -14,7 +14,7 @@ mysql_db:
   connMaxLifetime: 3600
 
 redis:
-  host: redis
+  host: idm_redis
   port: 6379
   password: ${REDIS_PASSWORD}
   db: 0

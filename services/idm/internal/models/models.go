@@ -28,3 +28,9 @@ type CredentialsRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
+
+type ResponseData struct {
+	Message string      `json:"message"`
+	Error   string      `json:"error"`
+	Payload interface{} `json:"payload"`
+}

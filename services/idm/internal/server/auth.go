@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-sql-driver/mysql"
 	"github.com/mihnea1711/POS_Project/services/idm/idm/proto_files"
 	"github.com/mihnea1711/POS_Project/services/idm/internal/models"
 	"github.com/mihnea1711/POS_Project/services/idm/pkg/utils"
@@ -17,6 +18,7 @@ import (
 // Register implements the Register RPC method
 func (s *MyIDMServer) Register(ctx context.Context, req *proto_files.RegisterRequest) (*proto_files.InfoResponse, error) {
 	if req == nil || req.UserCredentials == nil {
+		log.Println("[IDM] Registration request or user credentials is nil")
 		return nil, errors.New("request or user credentials is nil")
 	}
 
@@ -34,7 +36,6 @@ func (s *MyIDMServer) Register(ctx context.Context, req *proto_files.RegisterReq
 	hashedPassword, err := utils.HashPassword(userCredentials.Password)
 	if err != nil {
 		log.Printf("[IDM] Error hashing password: %v", err)
-		// Handle the error and return a meaningful InfoResponse
 		return nil, fmt.Errorf("error hashing password. %v", err)
 	}
 
@@ -44,22 +45,35 @@ func (s *MyIDMServer) Register(ctx context.Context, req *proto_files.RegisterReq
 	// Call the database method to add the user to the database
 	lastUserID, err := s.DbConn.AddUser(childCtx, userCredentials)
 	if err != nil {
+		// Check if the error is due to a duplicate entry violation
+		mysqlErr, ok := err.(*mysql.MySQLError)
+		if ok && mysqlErr.Number == utils.MySQLDuplicateEntryErrorCode {
+			log.Printf("[IDM] Registration unsuccessful. Conflict occurred for username: %s", userCredentials.Username)
+			// Return a conflict error status
+			return &proto_files.InfoResponse{
+				Info: &proto_files.Info{
+					Message: fmt.Sprintf("Registration unsuccessful. Conflict occurred: %v", err),
+					Status:  http.StatusConflict,
+				},
+			}, nil
+		}
+
 		log.Printf("[IDM] Error adding user to the database: %v", err)
-		// Handle the error and return a meaningful InfoResponse
 		return nil, fmt.Errorf("error adding user to the database. %v", err)
 	}
 
 	if lastUserID == 0 {
-		log.Println("[IDM] User not added to the db. Username already exists.")
+		log.Printf("[IDM] User not added to the db for username: %s", userCredentials.Username)
 		// No rows were affected, which means the user was not added
 		return &proto_files.InfoResponse{
 			Info: &proto_files.Info{
-				Message: "Username already exists",
-				Status:  http.StatusConflict,
+				Message: "Failed to register user",
+				Status:  http.StatusInternalServerError,
 			},
 		}, nil
 	}
 
+	log.Printf("[IDM] Registration successful for username: %s. Proceed to login.", userCredentials.Username)
 	// Return a successful response
 	return &proto_files.InfoResponse{
 		Info: &proto_files.Info{
@@ -182,6 +196,7 @@ func (s *MyIDMServer) Login(ctx context.Context, req *proto_files.LoginRequest) 
 		return nil, fmt.Errorf("error committing database transaction. %v", err)
 	}
 
+	log.Printf("[IDM] Login successful for user: %s", userCredentials.Username)
 	return &proto_files.LoginResponse{
 		Token: token,
 		Info: &proto_files.Info{

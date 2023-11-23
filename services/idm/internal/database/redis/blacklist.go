@@ -21,10 +21,12 @@ func (rc *RedisClient) AddUserToBlacklistInRedis(ctx context.Context, blacklistU
 		if err == redis.Nil {
 			// If the user is not in the blacklist, set the key and value
 			if err := tx.Set(ctx, blacklistKey, blacklistUserModel.Token, 0).Err(); err != nil {
+				log.Printf("[IDM] Failed to set Redis key for user (ID %d): %v", blacklistUserModel.IDUser, err)
 				return err
 			}
 			log.Printf("[IDM] Added user (ID %d) to Redis blacklist", blacklistUserModel.IDUser)
 		} else if err != nil {
+			log.Printf("[IDM] Error checking Redis blacklist for user (ID %d): %v", blacklistUserModel.IDUser, err)
 			return err
 		}
 
@@ -87,7 +89,12 @@ func (rc *RedisClient) RemoveUserFromBlacklistInRedis(ctx context.Context, black
 		return 0, err
 	}
 
-	log.Printf("[IDM] Removed user (ID %d) from Redis blacklist, rows affected: %d", blacklistUserModel.IDUser, rowsAffected)
+	if rowsAffected > 0 {
+		log.Printf("[IDM] Removed user (ID %d) from Redis blacklist, rows affected: %d", blacklistUserModel.IDUser, rowsAffected)
+	} else {
+		log.Printf("[IDM] User (ID %d) not found in Redis blacklist, no rows affected", blacklistUserModel.IDUser)
+	}
+
 	return rowsAffected, nil
 }
 
@@ -103,6 +110,12 @@ func (rc *RedisClient) IsUserInBlacklist(ctx context.Context, userID int) (bool,
 		return false, err
 	}
 
+	if exists == 1 {
+		log.Printf("[IDM] User (ID %d) is in Redis blacklist", userID)
+	} else {
+		log.Printf("[IDM] User (ID %d) is not in Redis blacklist", userID)
+	}
+
 	return exists == 1, nil
 }
 
@@ -113,6 +126,12 @@ func (rc *RedisClient) IsTokenBlacklisted(ctx context.Context, token string) (bo
 	if err != nil {
 		log.Printf("[IDM] Error checking if token is in Redis blacklist: %v", err)
 		return false, err
+	}
+
+	if exists {
+		log.Printf("[IDM] Token is in Redis blacklist")
+	} else {
+		log.Printf("[IDM] Token is not in Redis blacklist")
 	}
 
 	return exists, nil

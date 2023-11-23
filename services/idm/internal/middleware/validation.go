@@ -2,166 +2,205 @@ package middleware
 
 import (
 	"context"
+	"log"
 
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
-	"log"
-	"net/http"
-	"strings"
 
-	"github.com/mihnea1711/POS_Project/services/idm/internal/models"
+	"github.com/mihnea1711/POS_Project/services/idm/idm/proto_files"
 	"github.com/mihnea1711/POS_Project/services/idm/pkg/utils"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
-func ValidateRegisterUserInfo(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var user models.UserRegistration
-		// Set the hashed password and role back to the user registratio
-
-		// parse user info
-		dec := json.NewDecoder(r.Body)
-		dec.DisallowUnknownFields()
-
-		err := dec.Decode(&user)
-		if checkErrorOnDecode(err, w) {
-			return
-		}
-
-		if err := validateUsername(user.Username, w); err != nil {
-			return
-		}
-
-		if err := validatePassword(user.Password, w); err != nil {
-			return
-		}
-
-		if err := validateRole(user.Role, w); err != nil {
-			return
-		}
-
-		// If all validations pass, proceed to the actual controller
-		ctx := context.WithValue(r.Context(), utils.DECODED_IDM, user)
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
+// ValidateRequestInterceptor is a gRPC interceptor for request validation.
+func ValidateRequestInterceptor(
+	ctx context.Context,
+	req interface{},
+	info *grpc.UnaryServerInfo,
+	handler grpc.UnaryHandler,
+) (interface{}, error) {
+	// Perform validation based on the method name
+	switch info.FullMethod {
+	case utils.IDMServiceName + utils.RegisterMethodName:
+		return validateRegisterRequest(ctx, req, info, handler)
+	case utils.IDMServiceName + utils.LoginMethodName:
+		return validateLoginRequest(ctx, req, info, handler)
+	case utils.IDMServiceName + utils.UpdateUserMethodName:
+		return validateUpdateUserRequest(ctx, req, info, handler)
+	case utils.IDMServiceName + utils.UpdateUserRoleMethodName:
+		return validateUpdateUserRoleRequest(ctx, req, info, handler)
+	case utils.IDMServiceName + utils.UpdateUserPasswordMethodName:
+		return validateUpdateUserPasswordRequest(ctx, req, info, handler)
+	default:
+		// For methods without specific validation
+		log.Printf("[IDM_VALIDATION] No validation needed for method: %s", info.FullMethod)
+		return handler(ctx, req)
+	}
 }
 
-func ValidateLoginUserInfo(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var user models.CredentialsRequest
+func validateRegisterRequest(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	// Your validation logic for RegisterRequest...
+	registerReq, ok := req.(*proto_files.RegisterRequest)
+	if !ok {
+		log.Printf("[IDM_VALIDATION] Invalid request type for method %s: expected %T, got %T", info.FullMethod, &proto_files.RegisterRequest{}, req)
+		return nil, status.Error(codes.InvalidArgument, "invalid request type")
+	}
 
-		dec := json.NewDecoder(r.Body)
-		dec.DisallowUnknownFields()
+	// Add your validation logic for UserCredentials, Role, etc.
+	if err := validateUsername(registerReq.UserCredentials.Username); err != nil {
+		log.Printf("[IDM_VALIDATION] Invalid username in %s: %v", info.FullMethod, err)
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("invalid username: %v", err))
+	}
 
-		log.Println(r.Body)
+	if err := validatePassword(registerReq.UserCredentials.Password); err != nil {
+		log.Printf("[IDM_VALIDATION] Invalid password in %s: %v", info.FullMethod, err)
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("invalid password: %v", err))
+	}
 
-		err := dec.Decode(&user)
-		if checkErrorOnDecode(err, w) {
-			return
-		}
+	if err := validateRole(registerReq.Role); err != nil {
+		log.Printf("[IDM_VALIDATION] Invalid role in %s: %v", info.FullMethod, err)
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("invalid role: %v", err))
+	}
 
-		if err := validateUsername(user.Username, w); err != nil {
-			return
-		}
-
-		if err := validatePassword(user.Password, w); err != nil {
-			return
-		}
-
-		// If all validations pass, proceed to the actual controller
-		ctx := context.WithValue(r.Context(), utils.DECODED_IDM, user)
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
+	log.Printf("[IDM_VALIDATION] Validation successful for method: %s", info.FullMethod)
+	// Call the next middleware or the actual RPC method
+	return handler(ctx, req)
 }
 
-func validateUsername(username string, w http.ResponseWriter) error {
+// Add logs and comments to validateLoginRequest
+func validateLoginRequest(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	loginReq, ok := req.(*proto_files.LoginRequest)
+	if !ok {
+		log.Printf("[IDM_VALIDATION] Invalid request type for method %s: expected %T, got %T", info.FullMethod, &proto_files.LoginRequest{}, req)
+		return nil, status.Error(codes.InvalidArgument, "invalid request type")
+	}
+
+	// Add your validation logic for UserCredentials...
+	if err := validateUsername(loginReq.UserCredentials.Username); err != nil {
+		log.Printf("[IDM_VALIDATION] Invalid username in %s: %v", info.FullMethod, err)
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("invalid username: %v", err))
+	}
+
+	if err := validatePassword(loginReq.UserCredentials.Password); err != nil {
+		log.Printf("[IDM_VALIDATION] Invalid password in %s: %v", info.FullMethod, err)
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("invalid password: %v", err))
+	}
+
+	log.Printf("[IDM_VALIDATION] Validation successful for method: %s", info.FullMethod)
+	// Call the next middleware or the actual RPC method
+	return handler(ctx, req)
+}
+
+// Add logs and comments to validateUpdateUserRequest
+func validateUpdateUserRequest(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	updateUserReq, ok := req.(*proto_files.UpdateUserRequest)
+	if !ok {
+		log.Printf("[IDM_VALIDATION] Invalid request type for method %s: expected %T, got %T", info.FullMethod, &proto_files.UpdateUserRequest{}, req)
+		return nil, status.Error(codes.InvalidArgument, "invalid request type")
+	}
+
+	// Add your validation logic for UserData...
+	if err := validateUserID(updateUserReq.UserData.IDUser); err != nil {
+		log.Printf("[IDM_VALIDATION] Invalid UserID in %s: %v", info.FullMethod, err)
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("invalid UserID: %v", err))
+	}
+
+	if err := validateUsername(updateUserReq.UserData.Username); err != nil {
+		log.Printf("[IDM_VALIDATION] Invalid username in %s: %v", info.FullMethod, err)
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("invalid username: %v", err))
+	}
+
+	log.Printf("[IDM_VALIDATION] Validation successful for method: %s", info.FullMethod)
+	// Call the next middleware or the actual RPC method
+	return handler(ctx, req)
+}
+
+// Add logs and comments to validateUpdateUserRoleRequest
+func validateUpdateUserRoleRequest(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	updateRoleReq, ok := req.(*proto_files.UpdateRoleRequest)
+	if !ok {
+		log.Printf("[IDM_VALIDATION] Invalid request type for method %s: expected %T, got %T", info.FullMethod, &proto_files.UpdateRoleRequest{}, req)
+		return nil, status.Error(codes.InvalidArgument, "invalid request type")
+	}
+
+	// Add your validation logic for UserID and Role...
+	if err := validateUserID(updateRoleReq.UserID); err != nil {
+		log.Printf("[IDM_VALIDATION] Invalid UserID in %s: %v", info.FullMethod, err)
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("invalid UserID: %v", err))
+	}
+
+	if err := validateRole(updateRoleReq.Role); err != nil {
+		log.Printf("[IDM_VALIDATION] Invalid role in %s: %v", info.FullMethod, err)
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("invalid role: %v", err))
+	}
+
+	log.Printf("[IDM_VALIDATION] Validation successful for method: %s", info.FullMethod)
+	// Call the next middleware or the actual RPC method
+	return handler(ctx, req)
+}
+
+// Add logs and comments to validateUpdateUserPasswordRequest
+func validateUpdateUserPasswordRequest(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	updatePasswordReq, ok := req.(*proto_files.UpdatePasswordRequest)
+	if !ok {
+		log.Printf("[IDM_VALIDATION] Invalid request type for method %s: expected %T, got %T", info.FullMethod, &proto_files.UpdatePasswordRequest{}, req)
+		return nil, status.Error(codes.InvalidArgument, "invalid request type")
+	}
+
+	// Add your validation logic for UserID and Password...
+	if err := validateUserID(updatePasswordReq.UserID); err != nil {
+		log.Printf("[IDM_VALIDATION] Invalid UserID in %s: %v", info.FullMethod, err)
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("invalid UserID: %v", err))
+	}
+
+	if err := validatePassword(updatePasswordReq.Password); err != nil {
+		log.Printf("[IDM_VALIDATION] Invalid password in %s: %v", info.FullMethod, err)
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("invalid password: %v", err))
+	}
+
+	log.Printf("[IDM_VALIDATION] Validation successful for method: %s", info.FullMethod)
+	// Call the next middleware or the actual RPC method
+	return handler(ctx, req)
+}
+
+func validateUserID(userID *proto_files.UserID) error {
+	if userID == nil {
+		return errors.New("UserID cannot be nil")
+	}
+
+	if userID.ID <= 0 {
+		return errors.New("UserID must be a positive integer")
+	}
+
+	// Add more UserID validation logic if needed
+
+	return nil
+}
+
+func validateUsername(username string) error {
 	if username == "" {
-		log.Println("[IDM] Invalid Username")
-		http.Error(w, "Invalid Username", http.StatusBadRequest)
-		return errors.New("invalid Username")
+		return errors.New("username cannot be empty")
 	}
+	// Add more username validation logic if needed
 	return nil
 }
 
-func validatePassword(password string, w http.ResponseWriter) error {
+func validatePassword(password string) error {
 	if password == "" {
-		log.Println("[IDM] Invalid Password")
-		http.Error(w, "Invalid Password", http.StatusBadRequest)
-		return errors.New("invalid Password")
+		return errors.New("password cannot be empty")
 	}
+	// Add more password validation logic if needed
 	return nil
 }
 
-func validateRole(role string, w http.ResponseWriter) error {
+func validateRole(role string) error {
 	allowedRoles := []string{"admin", "patient", "doctor"}
-
 	for _, r := range allowedRoles {
 		if r == role {
 			return nil
 		}
 	}
-
-	errorMsg := "invalid role. role must be one of: admin, patient, doctor"
-	utils.RespondWithJSON(w, http.StatusBadRequest, map[string]string{"error": errorMsg})
-	return errors.New(errorMsg)
-}
-
-func checkErrorOnDecode(err error, w http.ResponseWriter) bool {
-	if err == nil {
-		return false
-	}
-	var errMsg string
-
-	var syntaxError *json.SyntaxError
-	var unmarshalTypeError *json.UnmarshalTypeError
-	switch {
-	// Catch any syntax errors in the JSON and send an error message
-	// which interpolates the location of the problem to make it
-	// easier for the client to fix.
-	case errors.As(err, &syntaxError):
-		errMsg = fmt.Sprintf("Request body contains badly-formed JSON (at position %d)", syntaxError.Offset)
-
-	// In some circumstances Decode() may also return an
-	// io.ErrUnexpectedEOF error for syntax errors in the JSON. There
-	// is an open issue regarding this at
-	// https://github.com/golang/go/issues/25956.
-	case errors.Is(err, io.ErrUnexpectedEOF):
-		errMsg = "Request body contains badly-formed JSON"
-
-	// Catch any type errors, like trying to assign a string in the
-	// JSON request body to a int field in our Person struct. We can
-	// interpolate the relevant field name and position into the error
-	// message to make it easier for the client to fix.
-	case errors.As(err, &unmarshalTypeError):
-		errMsg = fmt.Sprintf("Request body contains an invalid value for the %q field (at position %d)", unmarshalTypeError.Field, unmarshalTypeError.Offset)
-
-	// Catch the error caused by extra unexpected fields in the request
-	// body. We extract the field name from the error message and
-	// interpolate it in our custom error message. There is an open
-	// issue regarding turning this into a sentinel error.
-	case strings.HasPrefix(err.Error(), "json: unknown field "):
-		fieldName := strings.TrimPrefix(err.Error(), "json: unknown field ")
-		errMsg = fmt.Sprintf("Request body contains unknown field %s", fieldName)
-
-	// An io.EOF error is returned by Decode() if the request body is
-	// empty.
-	case errors.Is(err, io.EOF):
-		errMsg = "Request body must not be empty"
-
-	// Catch the error caused by the request body being too large. Again
-	// there is an open issue regarding turning this into a sentinel
-	// error at https://github.com/golang/go/issues/30715.
-	case err.Error() == "http: request body too large":
-		errMsg = "Request body must not be larger than 1MB"
-
-	// Otherwise default to logging the error and sending a 500 Internal
-	// Server Error response.
-	default:
-		errMsg = err.Error()
-	}
-
-	log.Printf("[MIDDLEWARE] %s", errMsg)
-	http.Error(w, errMsg, http.StatusBadRequest)
-	return true
+	return errors.New("invalid role. role must be one of: admin, patient, doctor")
 }
