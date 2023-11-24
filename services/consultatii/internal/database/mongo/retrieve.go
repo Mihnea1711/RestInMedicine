@@ -9,7 +9,6 @@ import (
 	"github.com/mihnea1711/POS_Project/services/consultatii/pkg/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -75,12 +74,6 @@ func (db *MongoDB) FetchConsultationByID(ctx context.Context, consultationID pri
 	// Attempt to find the consultation by ID
 	err := collection.FindOne(ctx, bson.M{utils.ID_CONSULTATIE: consultationID}).Decode(&consultation)
 	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			// Handle the case where no document is found with the given ID
-			log.Printf("[CONSULTATION] Consultation not found: %v", consultationID)
-			return nil, nil
-		}
-
 		// Handle other errors
 		log.Printf("[CONSULTATION] Error fetching consultation: %v", err)
 		return nil, err

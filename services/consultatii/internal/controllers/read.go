@@ -12,6 +12,7 @@ import (
 	"github.com/mihnea1711/POS_Project/services/consultatii/internal/models"
 	"github.com/mihnea1711/POS_Project/services/consultatii/pkg/utils"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 // Retrieve all consultations
@@ -78,6 +79,18 @@ func (cController *ConsultationController) GetConsultationByID(w http.ResponseWr
 	// Use cController.DbConn to fetch the consultation by ID from the database
 	consultation, err := cController.DbConn.FetchConsultationByID(ctx, objectID)
 	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			// Handle the case where no document is found with the given ID
+			errMsg := fmt.Sprintf("Failed to get consultation by ID. Consultation not found: %s", err)
+			log.Printf("[CONSULTATION] %s: %v", errMsg, consultationID)
+			response := models.ResponseData{
+				Error:   errMsg,
+				Message: "Failed to get consultation by ID. Consultation not found.",
+			}
+			utils.RespondWithJSON(w, http.StatusNotFound, response)
+			return
+		}
+
 		// Handle the case where an internal server error occurs during fetch
 		errMsg := fmt.Sprintf("Internal server error: %s", err)
 		log.Printf("[CONSULTATION] Failed to fetch consultation by ID: %s\n", errMsg)
