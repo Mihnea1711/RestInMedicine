@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -43,6 +44,14 @@ func (dController *DoctorController) UpdateDoctorByID(w http.ResponseWriter, r *
 	// Use dController.DbConn to update the doctor in the database
 	rowsAffected, err := dController.DbConn.UpdateDoctorByID(ctx, doctor)
 	if err != nil {
+		// Check if the error is due to no rows found
+		if err == sql.ErrNoRows {
+			errMsg := fmt.Sprintf("Error updating doctor: %s", err.Error())
+			log.Printf("[DOCTOR] %s", errMsg)
+			// Create a conflict response using ResponseData
+			utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Error: errMsg, Message: "Failed to update doctor. Doctor not found"})
+			return
+		}
 		// Check if the error is a MySQL duplicate entry error
 		if mysqlErr, ok := err.(*mysql.MySQLError); ok && mysqlErr.Number == utils.MySQLDuplicateEntryErrorCode {
 			errMsg := fmt.Sprintf("Conflict error: %s", mysqlErr.Message)

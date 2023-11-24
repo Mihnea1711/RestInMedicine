@@ -2,7 +2,6 @@ package mysql
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log"
 
@@ -80,10 +79,6 @@ func (db *MySQLDatabase) FetchDoctorByID(ctx context.Context, doctorID int) (*mo
 	var doctor models.Doctor
 	err := row.Scan(&doctor.IDDoctor, &doctor.IDUser, &doctor.Nume, &doctor.Prenume, &doctor.Email, &doctor.Telefon, &doctor.Specializare)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			log.Printf("[DOCTOR] Doctor with ID %d not found.", doctorID)
-			return nil, nil
-		}
 		log.Printf("[DOCTOR] Error fetching doctor by ID %d: %v", doctorID, err)
 		return nil, err
 	}
@@ -114,10 +109,6 @@ func (db *MySQLDatabase) FetchDoctorByEmail(ctx context.Context, email string) (
 	var doctor models.Doctor
 	err := row.Scan(&doctor.IDDoctor, &doctor.IDUser, &doctor.Nume, &doctor.Prenume, &doctor.Email, &doctor.Telefon, &doctor.Specializare)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			log.Printf("[DOCTOR] Doctor with email %s not found.", email)
-			return nil, nil
-		}
 		log.Printf("[DOCTOR] Error fetching doctor by email %s: %v", email, err)
 		return nil, err
 	}
@@ -148,11 +139,6 @@ func (db *MySQLDatabase) FetchDoctorByUserID(ctx context.Context, userID int) (*
 	var doctor models.Doctor
 	err := row.Scan(&doctor.IDDoctor, &doctor.IDUser, &doctor.Nume, &doctor.Prenume, &doctor.Email, &doctor.Telefon, &doctor.Specializare)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			// Not found
-			log.Printf("[DOCTOR] Doctor with user ID %d not found.", userID)
-			return nil, nil
-		}
 		log.Printf("[DOCTOR] Error fetching doctor by user ID %d: %v", userID, err)
 		return nil, err
 	}

@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -66,6 +67,15 @@ func (dController *DoctorController) GetDoctorByID(w http.ResponseWriter, r *htt
 
 	doctor, err := dController.DbConn.FetchDoctorByID(ctx, doctorID)
 	if err != nil {
+		// Check if the error is due to no rows found
+		if err == sql.ErrNoRows {
+			errMsg := fmt.Sprintf("Error getting doctor by ID: %s", err.Error())
+			log.Printf("[DOCTOR] %s", errMsg)
+			// Create a conflict response using ResponseData
+			utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Error: errMsg, Message: "Failed to get doctor by ID. Doctor not found"})
+			return
+		}
+
 		errMsg := fmt.Sprintf("Failed to fetch doctor with ID %d: %s", doctorID, err)
 		log.Printf("[DOCTOR] %s", errMsg)
 		utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{Message: "Failed to fetch doctor by id", Error: errMsg})
@@ -99,6 +109,15 @@ func (dController *DoctorController) GetDoctorByEmail(w http.ResponseWriter, r *
 
 	doctor, err := dController.DbConn.FetchDoctorByEmail(ctx, doctorEmail)
 	if err != nil {
+		// Check if the error is due to no rows found
+		if err == sql.ErrNoRows {
+			errMsg := fmt.Sprintf("Error getting doctor by email: %s", err.Error())
+			log.Printf("[DOCTOR] %s", errMsg)
+			// Create a conflict response using ResponseData
+			utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Error: errMsg, Message: "Failed to get doctor by email. Doctor not found"})
+			return
+		}
+
 		errMsg := fmt.Sprintf("Failed to fetch doctor with email %s: %s", doctorEmail, err)
 		log.Printf("[DOCTOR] %s", errMsg)
 		utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{Message: "Failed to fetch doctor by email", Error: errMsg})
@@ -140,6 +159,15 @@ func (dController *DoctorController) GetDoctorByUserID(w http.ResponseWriter, r 
 
 	doctor, err := dController.DbConn.FetchDoctorByUserID(ctx, userID)
 	if err != nil {
+		// Check if the error is due to no rows found
+		if err == sql.ErrNoRows {
+			errMsg := fmt.Sprintf("Error getting doctor by user ID: %s", err.Error())
+			log.Printf("[DOCTOR] %s", errMsg)
+			// Create a conflict response using ResponseData
+			utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Error: errMsg, Message: "Failed to get doctor by user ID. Doctor not found"})
+			return
+		}
+
 		errMsg := fmt.Sprintf("Failed to fetch doctor with user ID %d: %s", userID, err)
 		log.Printf("[DOCTOR] %s", errMsg)
 		utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{Message: "Failed to fetch doctor by userID", Error: errMsg})

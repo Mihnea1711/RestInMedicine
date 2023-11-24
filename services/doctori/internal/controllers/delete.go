@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -35,6 +36,15 @@ func (dController *DoctorController) DeleteDoctorByID(w http.ResponseWriter, r *
 
 	rowsAffected, err := dController.DbConn.DeleteDoctorByID(ctx, doctorID)
 	if err != nil {
+		// Check if the error is due to no rows found
+		if err == sql.ErrNoRows {
+			errMsg := fmt.Sprintf("Error deleting doctor: %s", err.Error())
+			log.Printf("[DOCTOR] %s", errMsg)
+			// Create a conflict response using ResponseData
+			utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Error: errMsg, Message: "Failed to delete doctor. Doctor not found"})
+			return
+		}
+
 		errMsg := fmt.Sprintf("Failed to delete doctor with ID %d: %s", doctorID, err)
 		log.Println("[DOCTOR] " + errMsg)
 
