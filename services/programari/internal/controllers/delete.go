@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -34,6 +35,15 @@ func (aController *AppointmentController) DeleteAppointmentByID(w http.ResponseW
 	// Use aController.DbConn to delete the appointment by ID from the database
 	rowsAffected, err := aController.DbConn.DeleteAppointmentByID(ctx, appointmentID)
 	if err != nil {
+		// Check if the error is due to no rows found
+		if err == sql.ErrNoRows {
+			errMsg := fmt.Sprintf("Error deleting appointment: %s", err.Error())
+			log.Printf("[APPOINTMENT] %s", errMsg)
+			// Create a conflict response using ResponseData
+			utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Error: errMsg, Message: "Failed to delete appointment. Appointment not found"})
+			return
+		}
+
 		errMsg := fmt.Sprintf("internal server error: %s", err)
 		log.Printf("[APPOINTMENT] Failed to delete appointment by ID: %s\n", errMsg)
 		response := models.ResponseData{Error: errMsg}

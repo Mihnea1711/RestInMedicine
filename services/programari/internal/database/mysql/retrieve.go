@@ -2,7 +2,6 @@ package mysql
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log"
 	"time"
@@ -72,10 +71,6 @@ func (db *MySQLDatabase) FetchAppointmentByID(ctx context.Context, appointmentID
 		&appointment.Date,
 		&appointment.Status,
 	); err != nil {
-		if err == sql.ErrNoRows {
-			log.Printf("[APPOINTMENT] Appointment with ID %d not found.", appointmentID)
-			return nil, nil
-		}
 		log.Printf("[APPOINTMENT] Error fetching appointment by ID: %v", err)
 		return nil, err
 	}

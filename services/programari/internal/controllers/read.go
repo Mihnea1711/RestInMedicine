@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -78,6 +79,15 @@ func (aController *AppointmentController) GetAppointmentByID(w http.ResponseWrit
 	// Use aController.DbConn to fetch the appointment by ID from the database
 	appointment, err := aController.DbConn.FetchAppointmentByID(ctx, appointmentID)
 	if err != nil {
+		// Check if the error is due to no rows found
+		if err == sql.ErrNoRows {
+			errMsg := fmt.Sprintf("Error getting appointment by ID: %s", err.Error())
+			log.Printf("[APPOINTMENT] %s", errMsg)
+			// Create a conflict response using ResponseData
+			utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Error: errMsg, Message: "Failed to get appointment by ID. Appointment not found"})
+			return
+		}
+
 		errMsg := fmt.Sprintf("Internal server error: %s", err)
 		log.Printf("[APPOINTMENT] Failed to fetch appointment by ID: %s\n", errMsg)
 

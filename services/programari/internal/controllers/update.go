@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -42,6 +43,14 @@ func (aController *AppointmentController) UpdateAppointmentByID(w http.ResponseW
 	// Use aController.DbConn to update the appointment by ID in the database
 	rowsAffected, err := aController.DbConn.UpdateAppointmentByID(ctx, appointment)
 	if err != nil {
+		// Check if the error is due to no rows found
+		if err == sql.ErrNoRows {
+			errMsg := fmt.Sprintf("Error updating appointment: %s", err.Error())
+			log.Printf("[APPOINTMENT] %s", errMsg)
+			// Create a conflict response using ResponseData
+			utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Error: errMsg, Message: "Failed to update appointment. Appointment not found"})
+			return
+		}
 		// Check if the error is a MySQL duplicate entry error
 		if mysqlErr, ok := err.(*mysql.MySQLError); ok && mysqlErr.Number == utils.MySQLDuplicateEntryErrorCode {
 			errMsg := fmt.Sprintf("Conflict error: %s", mysqlErr.Message)
