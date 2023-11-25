@@ -52,6 +52,25 @@ func (s *MyIDMServer) AddUserToBlacklist(ctx context.Context, req *proto_files.B
 		}, nil
 	}
 
+	// Check if the user is in the Redis blacklist
+	isInBlacklist, err := s.RedisConn.IsUserInBlacklist(ctx, int(user.IDUser))
+	if err != nil {
+		// Handle the error and return an error response
+		log.Printf("[IDM] Error checking if user is in blacklist: %v", err)
+		return nil, fmt.Errorf("error checking if user is in blacklist. %v", err)
+	}
+
+	if isInBlacklist {
+		// Handle the case where the user is in the blacklist
+		log.Printf("[IDM] User %d is already in the blacklist", int(user.IDUser))
+		return &proto_files.InfoResponse{
+			Info: &proto_files.Info{
+				Message: "User is already in the blacklist",
+				Status:  http.StatusConflict,
+			},
+		}, nil
+	}
+
 	// Use the Redis client to add the user to the blacklist.
 	err = s.RedisConn.AddUserToBlacklistInRedis(ctx, blacklistUserModel)
 	if err != nil {
@@ -118,7 +137,7 @@ func (s *MyIDMServer) CheckUserInBlacklist(ctx context.Context, req *proto_files
 		return &proto_files.InfoResponse{
 			Info: &proto_files.Info{
 				Message: "User is in the blacklist",
-				Status:  http.StatusForbidden,
+				Status:  http.StatusOK,
 			},
 		}, nil
 	}
