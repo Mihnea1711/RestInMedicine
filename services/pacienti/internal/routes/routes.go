@@ -22,14 +22,14 @@ func SetupRoutes(parentCtx context.Context, dbConn database.Database, rdb *redis
 	log.Println("[PATIENT] Setting up routes...")
 	router := mux.NewRouter()
 
-	log.Println("[PATIENT] Rate limiter middleware set up successfully.")
 	router.Use(rateLimiter.Limit)
+	log.Println("[PATIENT] Rate limiter middleware set up successfully.")
 
-	log.Println("[PATIENT] Route logger middleware set up successfully.")
 	router.Use(middleware.RouteLogger)
+	log.Println("[PATIENT] Route logger middleware set up successfully.")
 
-	log.Println("[PATIENT] Input sanitizer middleware set up successfully.")
 	router.Use(middleware.SanitizeInputMiddleware) // comment this out if you want to see pretty JSON :)
+	log.Println("[PATIENT] Input sanitizer middleware set up successfully.")
 
 	pacientController := &controllers.PatientController{
 		DbConn: dbConn,

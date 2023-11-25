@@ -5,7 +5,7 @@ import (
 )
 
 type Pacient struct {
-	IDPacient    int       `db:"id_patient" json:"idPacient" sql:"type:int primary key"`
+	IDPacient    int       `db:"id_patient" json:"idPatient" sql:"type:int primary key"`
 	IDUser       int       `db:"id_user" json:"id_user" sql:"type:int"`
 	Nume         string    `db:"nume" json:"nume" sql:"type:varchar(50)"`
 	Prenume      string    `db:"prenume" json:"prenume" sql:"type:varchar(50)"`
@@ -20,4 +20,12 @@ type ResponseData struct {
 	Message string      `json:"message"`
 	Error   string      `json:"error"`
 	Payload interface{} `json:"payload"`
+}
+
+type RowsAffected struct {
+	RowsAffected int `json:"rows_affected"`
+}
+
+type LastInsertedID struct {
+	LastInsertedID int `json:"last_inserted_id"`
 }

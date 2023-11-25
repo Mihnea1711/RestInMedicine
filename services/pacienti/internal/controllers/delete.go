@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -35,6 +36,16 @@ func (pController *PatientController) DeletePatientByID(w http.ResponseWriter, r
 
 	rowsAffected, err := pController.DbConn.DeletePatientByID(ctx, patientID)
 	if err != nil {
+		// Check if the error is due to no rows found
+		if err == sql.ErrNoRows {
+			errMsg := fmt.Sprintf("Failed to delete patient with ID %d: %s", patientID, err)
+			log.Printf("[PATIENT] %s", errMsg)
+
+			// Use utils.RespondWithJSON for error response
+			utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Error: errMsg, Message: "Failed to delete patient. Patient not found"})
+			return
+		}
+
 		errMsg := fmt.Sprintf("Failed to delete patient with ID %d: %s", patientID, err)
 		log.Printf("[PATIENT] %s", errMsg)
 
@@ -43,6 +54,7 @@ func (pController *PatientController) DeletePatientByID(w http.ResponseWriter, r
 		return
 	}
 
+	// Check if the patient exists and was deleted
 	if rowsAffected == 0 {
 		errMsg := fmt.Sprintf("No patient found with ID: %d", patientID)
 		log.Printf("[PATIENT] %s", errMsg)
@@ -54,5 +66,10 @@ func (pController *PatientController) DeletePatientByID(w http.ResponseWriter, r
 
 	log.Printf("[PATIENT] Successfully deleted patient with ID %d", patientID)
 	// Use utils.RespondWithJSON for success response
-	utils.RespondWithJSON(w, http.StatusOK, models.ResponseData{Message: fmt.Sprintf("Patient with ID: %d deleted successfully", patientID)})
+	utils.RespondWithJSON(w, http.StatusOK, models.ResponseData{
+		Message: fmt.Sprintf("Patient with ID: %d deleted successfully", patientID),
+		Payload: models.RowsAffected{
+			RowsAffected: rowsAffected,
+		},
+	})
 }

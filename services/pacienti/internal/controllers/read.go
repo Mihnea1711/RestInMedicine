@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -23,6 +24,8 @@ func (pController *PatientController) GetPatients(w http.ResponseWriter, r *http
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
+	log.Printf("[PATIENT] Fetching patients with limit: %d, page: %d", limit, page)
+
 	patients, err := pController.DbConn.FetchPatients(ctx, page, limit)
 	if err != nil {
 		errMsg := fmt.Sprintf("Internal server error: %s", err)
@@ -35,7 +38,7 @@ func (pController *PatientController) GetPatients(w http.ResponseWriter, r *http
 
 	log.Printf("[PATIENT] Successfully fetched %d patients", len(patients))
 	// Use utils.RespondWithJSON for success response
-	utils.RespondWithJSON(w, http.StatusOK, models.ResponseData{Payload: patients, Message: "Patients fetched successfully"})
+	utils.RespondWithJSON(w, http.StatusOK, models.ResponseData{Payload: patients, Message: fmt.Sprintf("Successfully fetched %d patients", len(patients))})
 }
 
 func (pController *PatientController) GetPatientByID(w http.ResponseWriter, r *http.Request) {
@@ -48,7 +51,7 @@ func (pController *PatientController) GetPatientByID(w http.ResponseWriter, r *h
 		log.Printf("[PATIENT] %s", errMsg)
 
 		// Use utils.RespondWithJSON for error response
-		utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Invalid request"})
+		utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Bad request"})
 		return
 	}
 
@@ -60,6 +63,16 @@ func (pController *PatientController) GetPatientByID(w http.ResponseWriter, r *h
 
 	patient, err := pController.DbConn.FetchPatientByID(ctx, patientID)
 	if err != nil {
+		// Check if the error is due to no rows found
+		if err == sql.ErrNoRows {
+			errMsg := fmt.Sprintf("Failed to fetch patient with ID %d: %s", patientID, err)
+			log.Printf("[PATIENT] %s", errMsg)
+
+			// Use utils.RespondWithJSON for error response
+			utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Error: errMsg, Message: "Failed to fetch patient by ID. Patient not found"})
+			return
+		}
+
 		errMsg := fmt.Sprintf("Failed to fetch patient with ID %d: %s", patientID, err)
 		log.Printf("[PATIENT] %s", errMsg)
 
@@ -79,7 +92,7 @@ func (pController *PatientController) GetPatientByID(w http.ResponseWriter, r *h
 
 	log.Printf("[PATIENT] Successfully fetched patient with ID %d", patientID)
 	// Use utils.RespondWithJSON for success response
-	utils.RespondWithJSON(w, http.StatusOK, models.ResponseData{Payload: patient, Message: "Patient fetched successfully"})
+	utils.RespondWithJSON(w, http.StatusOK, models.ResponseData{Payload: patient, Message: fmt.Sprintf("Successfully fetched patient with ID: %d", patientID)})
 }
 
 func (pController *PatientController) GetPatientByEmail(w http.ResponseWriter, r *http.Request) {
@@ -88,15 +101,22 @@ func (pController *PatientController) GetPatientByEmail(w http.ResponseWriter, r
 
 	log.Printf("[PATIENT] Fetching patient with email: %s...", patientEmail)
 
-	// Extract the limit and page query parameters from the request
-	limit, page := utils.ExtractPaginationParams(r)
-
 	// Ensure a database operation doesn't take longer than 5 seconds
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
-	patient, err := pController.DbConn.FetchPatientByEmail(ctx, patientEmail, page, limit)
+	patient, err := pController.DbConn.FetchPatientByEmail(ctx, patientEmail)
 	if err != nil {
+		// Check if the error is due to no rows found
+		if err == sql.ErrNoRows {
+			errMsg := fmt.Sprintf("Failed to fetch patient with email %s: %s", patientEmail, err)
+			log.Printf("[PATIENT] %s", errMsg)
+
+			// Use utils.RespondWithJSON for error response
+			utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Error: errMsg, Message: "Failed to fetch patient by email. Patient not found"})
+			return
+		}
+
 		errMsg := fmt.Sprintf("Failed to fetch patient with email %s: %s", patientEmail, err)
 		log.Printf("[PATIENT] %s", errMsg)
 
@@ -116,7 +136,7 @@ func (pController *PatientController) GetPatientByEmail(w http.ResponseWriter, r
 
 	log.Printf("[PATIENT] Successfully fetched patient with email %s", patientEmail)
 	// Use utils.RespondWithJSON for success response
-	utils.RespondWithJSON(w, http.StatusOK, models.ResponseData{Payload: patient, Message: "Patient fetched successfully"})
+	utils.RespondWithJSON(w, http.StatusOK, models.ResponseData{Payload: patient, Message: fmt.Sprintf("Successfully fetched patient with email: %s", patientEmail)})
 }
 
 func (pController *PatientController) GetPatientByUserID(w http.ResponseWriter, r *http.Request) {
@@ -129,7 +149,7 @@ func (pController *PatientController) GetPatientByUserID(w http.ResponseWriter, 
 		log.Printf("[PATIENT] %s", errMsg)
 
 		// Use utils.RespondWithJSON for error response
-		utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Invalid request"})
+		utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Bad request"})
 		return
 	}
 
@@ -141,6 +161,16 @@ func (pController *PatientController) GetPatientByUserID(w http.ResponseWriter, 
 
 	patient, err := pController.DbConn.FetchPatientByUserID(ctx, userID)
 	if err != nil {
+		// Check if the error is due to no rows found
+		if err == sql.ErrNoRows {
+			errMsg := fmt.Sprintf("Failed to fetch patient with user ID %s: %s", userIDString, err)
+			log.Printf("[PATIENT] %s", errMsg)
+
+			// Use utils.RespondWithJSON for error response
+			utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Error: errMsg, Message: "Failed to fetch patient by user ID. Patient not found"})
+			return
+		}
+
 		errMsg := fmt.Sprintf("Failed to fetch patient with user ID %d: %s", userID, err)
 		log.Printf("[PATIENT] %s", errMsg)
 
@@ -160,5 +190,5 @@ func (pController *PatientController) GetPatientByUserID(w http.ResponseWriter, 
 
 	log.Printf("[PATIENT] Successfully fetched patient with user ID %d", userID)
 	// Use utils.RespondWithJSON for success response
-	utils.RespondWithJSON(w, http.StatusOK, models.ResponseData{Payload: patient, Message: "Patient fetched successfully"})
+	utils.RespondWithJSON(w, http.StatusOK, models.ResponseData{Payload: patient, Message: fmt.Sprintf("Successfully fetched patient with user ID: %d", userID)})
 }

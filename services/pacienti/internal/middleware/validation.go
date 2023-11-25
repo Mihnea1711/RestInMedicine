@@ -192,6 +192,7 @@ func ValidateEmail(next http.Handler) http.Handler {
 			return
 		}
 
+		log.Printf("[PATIENT_VALIDATION] Email validated successfully: %s", email)
 		next.ServeHTTP(w, r)
 	})
 }

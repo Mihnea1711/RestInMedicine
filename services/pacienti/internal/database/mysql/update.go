@@ -23,7 +23,7 @@ func (db *MySQLDatabase) UpdatePatientByID(ctx context.Context, patient *models.
 		utils.ColumnIDPacient,
 	)
 
-	log.Printf("[PATIENT] Attempting to update patient with ID %d: %+v", patient.IDPacient, patient)
+	log.Printf("[PATIENT] Attempting to update patient with ID %d", patient.IDPacient)
 
 	// Execute the SQL statement
 	result, err := db.ExecContext(ctx, query, patient.Nume, patient.Prenume, patient.Email, patient.Telefon, patient.CNP, patient.DataNasterii, patient.IsActive, patient.IDPacient)
@@ -40,9 +40,9 @@ func (db *MySQLDatabase) UpdatePatientByID(ctx context.Context, patient *models.
 	}
 
 	if rowsAffected == 0 {
-		log.Printf("[PATIENT] No pacient found with ID %d to update.", patient.IDPacient)
+		log.Printf("[PATIENT] No patient found with ID %d to update.", patient.IDPacient)
 	} else {
-		log.Printf("[PATIENT] Successfully updated pacient with ID %d. Rows affected: %d", patient.IDPacient, rowsAffected)
+		log.Printf("[PATIENT] Successfully updated patient with ID %d. Rows affected: %d", patient.IDPacient, rowsAffected)
 	}
 
 	return int(rowsAffected), nil

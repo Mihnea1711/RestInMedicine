@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/go-sql-driver/mysql"
 	"github.com/mihnea1711/POS_Project/services/pacienti/internal/models"
 	"github.com/mihnea1711/POS_Project/services/pacienti/pkg/utils"
 )
@@ -24,18 +23,11 @@ func (db *MySQLDatabase) SavePatient(ctx context.Context, pacient *models.Pacien
 		utils.ColumnIsActive,
 	)
 
-	log.Printf("[PATIENT] Attempting to save patient: %v", pacient)
+	log.Println("[PATIENT] Attempting to save patient")
 
 	// Execute the SQL statement
 	result, err := db.ExecContext(ctx, query, pacient.IDUser, pacient.Nume, pacient.Prenume, pacient.Email, pacient.Telefon, pacient.CNP, pacient.DataNasterii, pacient.IsActive)
 	if err != nil {
-		// Check if the error is due to a duplicate entry violation
-		mysqlErr, ok := err.(*mysql.MySQLError)
-		if ok && mysqlErr.Number == utils.MySQLDuplicateEntryErrorCode {
-			log.Printf("[PATIENT] Duplicate entry violation. Pacient with IDUser %d already exists.", pacient.IDUser)
-			return 0, nil
-		}
-
 		log.Printf("[PATIENT] Error executing query to save patient: %v", err)
 		return 0, err
 	}
@@ -46,6 +38,11 @@ func (db *MySQLDatabase) SavePatient(ctx context.Context, pacient *models.Pacien
 		return 0, err
 	}
 
-	log.Printf("[PATIENT] Patient saved successfully. ID: %d", lastInsertID)
+	if lastInsertID == 0 {
+		log.Printf("[PATIENT] Something unexpected happened and the patient could not be saved.")
+	} else {
+		log.Printf("[PATIENT] Patient saved successfully. ID: %d", lastInsertID)
+	}
+
 	return int(lastInsertID), nil
 }
