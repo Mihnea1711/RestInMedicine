@@ -9,25 +9,27 @@ import (
 	"net/http"
 
 	"github.com/mihnea1711/POS_Project/services/gateway/idm"
+	"github.com/mihnea1711/POS_Project/services/gateway/internal/models"
+	"github.com/mihnea1711/POS_Project/services/gateway/pkg/utils"
 )
 
 type GatewayController struct {
 	IDMClient idm.IDMClient
 }
 
-func (c *GatewayController) redirectRequestBody(ctx context.Context, methodType string, endpoint string, port int, data interface{}) (*http.Response, error) {
+func (gc *GatewayController) redirectRequestBody(ctx context.Context, methodType string, endpoint string, port int, data interface{}) (*models.ResponseData, int, error) {
 	// Convert data to JSON
 	jsonData, err := json.Marshal(data)
 	if err != nil {
 		log.Printf("[GATEWAY] Error marshaling JSON data: %v", err)
-		return nil, err
+		return nil, http.StatusInternalServerError, err
 	}
 
 	// Create a new request
 	request, err := http.NewRequestWithContext(ctx, methodType, fmt.Sprintf("http://localhost:%v%v", port, endpoint), bytes.NewBuffer(jsonData))
 	if err != nil {
 		log.Printf("[GATEWAY] Error creating HTTP request: %v", err)
-		return nil, err
+		return nil, http.StatusInternalServerError, err
 	}
 
 	// Set the Content-Type header
@@ -38,9 +40,21 @@ func (c *GatewayController) redirectRequestBody(ctx context.Context, methodType 
 	response, err := client.Do(request)
 	if err != nil {
 		log.Printf("[GATEWAY] Error making HTTP request: %v", err)
-		return nil, err
+		return nil, http.StatusInternalServerError, err
 	}
 
-	log.Printf("[GATEWAY] Request successful")
-	return response, nil
+	// Close the response body explicitly after decoding
+	defer func() {
+		if cerr := response.Body.Close(); cerr != nil {
+			log.Printf("[GATEWAY] Error closing response body: %v", cerr)
+		}
+	}()
+
+	decodedResponse, err := utils.DecodeSanitizedResponse(response)
+	if err != nil {
+		log.Printf("[GATEWAY] Error decoding HTML encoded request: %v", err)
+		return nil, http.StatusInternalServerError, err
+	}
+
+	return decodedResponse, response.StatusCode, nil
 }

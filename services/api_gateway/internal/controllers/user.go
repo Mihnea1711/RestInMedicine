@@ -31,10 +31,10 @@ func (gc *GatewayController) GetAllUsers(w http.ResponseWriter, r *http.Request)
 	}
 
 	// Check response for nils
-	userResponse := &wrappers.UsersResponse{Response: response}
-	utils.CheckNilResponse(w, http.StatusInternalServerError, "Get All Users response is nil", userResponse.IsResponseNil, "Get All Users response is nil")
-	utils.CheckNilResponse(w, http.StatusInternalServerError, "Internal Server Error", userResponse.IsInfoNil, "Get Users response.Info is nil")
-	utils.CheckNilResponse(w, http.StatusInternalServerError, response.Info.Message, userResponse.IsUsersNil, "Users object is nil")
+	usersResponse := &wrappers.UsersResponse{Response: response}
+	utils.CheckNilResponse(w, http.StatusInternalServerError, "Get All Users response is nil", usersResponse.IsResponseNil, "Get All Users response is nil")
+	utils.CheckNilResponse(w, http.StatusInternalServerError, "Internal Server Error", usersResponse.IsInfoNil, "Get Users response.Info is nil")
+	utils.CheckNilResponse(w, http.StatusInternalServerError, response.Info.Message, usersResponse.IsUsersNil, "Users object is nil")
 
 	// Check the gRPC response status and handle accordingly
 	switch response.Info.Status {

@@ -3,6 +3,7 @@ package utils
 import (
 	"encoding/json"
 	"html"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -94,15 +95,33 @@ func ExtractPaginationParams(r *http.Request) (int, int) {
 	return limit, page
 }
 
+func CheckNilResponse(w http.ResponseWriter, status int, errorMessage string, nilCheckFunc func() bool, nilCheckMessage string) {
+	if nilCheckFunc() {
+		log.Printf("[GATEWAY] %s", nilCheckMessage)
+		SendErrorResponse(w, status, errorMessage, nilCheckMessage)
+	}
+}
+
 // DecodeHTML decodes HTML-encoded JSON to a struct
 func DecodeHTML(s string, v interface{}) error {
 	decoded := html.UnescapeString(s)
 	return json.Unmarshal([]byte(decoded), v)
 }
 
-func CheckNilResponse(w http.ResponseWriter, status int, errorMessage string, nilCheckFunc func() bool, nilCheckMessage string) {
-	if nilCheckFunc() {
-		log.Printf("[GATEWAY] %s", nilCheckMessage)
-		SendErrorResponse(w, status, errorMessage, nilCheckMessage)
+func DecodeSanitizedResponse(response *http.Response) (*models.ResponseData, error) {
+	// Read the HTML-encoded JSON string from the response body
+	htmlEncodedJSON, err := io.ReadAll(response.Body)
+	if err != nil {
+		log.Printf("[GATEWAY] Error reading response body: %v", err)
+		return nil, err
 	}
+
+	// Decode HTML-encoded JSON string to ResponseData
+	var decodedResponse models.ResponseData
+	if err := DecodeHTML(string(htmlEncodedJSON), &decodedResponse); err != nil {
+		log.Printf("[GATEWAY] Error decoding HTML-encoded JSON: %v", err)
+		return nil, err
+	}
+
+	return &decodedResponse, nil
 }
