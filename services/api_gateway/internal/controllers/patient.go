@@ -70,6 +70,7 @@ func (gc *GatewayController) CreatePatient(w http.ResponseWriter, r *http.Reques
 	// 	return
 	// }
 
+	// Check the gRPC response status and handle accordingly
 	switch status {
 	case http.StatusOK:
 		log.Printf("[GATEWAY] CreatePatient: Request successful with status %d", status)
@@ -97,7 +98,6 @@ func (gc *GatewayController) GetPatients(w http.ResponseWriter, r *http.Request)
 	// Redirect the request to another module
 	decodedResponse, status, err := gc.redirectRequestBody(ctx, utils.GET, utils.PATIENT_FETCH_ALL_PATIENTS_ENDPOINT, utils.PATIENT_PORT, nil)
 	if err != nil {
-		// Handle the error (e.g., return a response with an error message)
 		log.Printf("[GATEWAY] Error redirecting request: %v", err)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", "Failed to redirect request: "+err.Error())
 		return
@@ -142,7 +142,7 @@ func (gc *GatewayController) GetPatients(w http.ResponseWriter, r *http.Request)
 
 // GetPatientByID handles fetching a patient by ID.
 func (gc *GatewayController) GetPatientByID(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[GATEWAY] Attempting to get all patients.")
+	log.Printf("[GATEWAY] Attempting to get patient by ID.")
 
 	// Get PatientID from request params
 	patientIDString := mux.Vars(r)[utils.GET_PATIENT_ID_PARAMETER]
@@ -269,7 +269,7 @@ func (gc *GatewayController) GetPatientByEmail(w http.ResponseWriter, r *http.Re
 
 // GetPatientByUserID handles fetching a patient by user ID.
 func (gc *GatewayController) GetPatientByUserID(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[GATEWAY] Attempting to patient by UserID.")
+	log.Printf("[GATEWAY] Attempting to get patient by UserID.")
 
 	// Get UserID from request params
 	userIDString := mux.Vars(r)[utils.GET_PATIENT_USER_ID_PARAMETER]
@@ -338,7 +338,7 @@ func (gc *GatewayController) GetPatientByUserID(w http.ResponseWriter, r *http.R
 
 // UpdatePatientByID handles updating a patient by ID.
 func (gc *GatewayController) UpdatePatientByID(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[GATEWAY] Attempting to patient by UserID.")
+	log.Printf("[GATEWAY] Attempting to update patient by ID.")
 
 	// Get PatientID from request params
 	patientIDString := mux.Vars(r)[utils.UPDATE_PATIENT_ID_PARAMETER]
@@ -391,6 +391,7 @@ func (gc *GatewayController) UpdatePatientByID(w http.ResponseWriter, r *http.Re
 	// 	return
 	// }
 
+	// Check the gRPC response status and handle accordingly
 	switch status {
 	case http.StatusOK:
 		log.Printf("[GATEWAY] UpdatePatientByID: Request successful with status %d", status)
@@ -413,7 +414,7 @@ func (gc *GatewayController) UpdatePatientByID(w http.ResponseWriter, r *http.Re
 
 // DeletePatientByID handles deleting a patient by ID.
 func (gc *GatewayController) DeletePatientByID(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[GATEWAY] Attempting to patient by UserID.")
+	log.Printf("[GATEWAY] Attempting to delete patient by ID.")
 
 	// Get PatientID from request params
 	patientIDString := mux.Vars(r)[utils.DELETE_PATIENT_ID_PARAMETER]
@@ -463,6 +464,7 @@ func (gc *GatewayController) DeletePatientByID(w http.ResponseWriter, r *http.Re
 	// 	return
 	// }
 
+	// Check the gRPC response status and handle accordingly
 	switch status {
 	case http.StatusOK:
 		log.Printf("[GATEWAY] DeletePatientByID: Request successful with status %d", status)
