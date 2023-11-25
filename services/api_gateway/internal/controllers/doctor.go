@@ -3,8 +3,8 @@ package controllers
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -56,10 +56,19 @@ func (gc *GatewayController) CreateDoctor(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	var responseBody *models.ResponseData
-	if err := json.NewDecoder(response.Body).Decode(&responseBody); err != nil {
-		log.Printf("[GATEWAY] Error decoding response body: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Error decoding response body", err.Error())
+	// Read the HTML-encoded JSON string from the response body
+	htmlEncodedJSON, err := io.ReadAll(response.Body)
+	if err != nil {
+		log.Printf("[GATEWAY] Error reading response body: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to read response body", "Failed to read response body: "+err.Error())
+		return
+	}
+
+	// Decode HTML-encoded JSON string to ResponseData
+	var decodedResponse models.ResponseData
+	if err := utils.DecodeHTML(string(htmlEncodedJSON), &decodedResponse); err != nil {
+		log.Printf("[GATEWAY] Error decoding HTML-encoded JSON: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to decode HTML-encoded JSON", "Failed to decode HTML-encoded JSON: "+err.Error())
 		return
 	}
 
@@ -67,18 +76,18 @@ func (gc *GatewayController) CreateDoctor(w http.ResponseWriter, r *http.Request
 	case http.StatusOK:
 		{
 			// Respond with the response from the other module
-			utils.SendMessageResponse(w, http.StatusOK, responseBody.Message, responseBody.Payload)
+			utils.SendMessageResponse(w, http.StatusOK, decodedResponse.Message, decodedResponse.Payload)
 			return
 		}
 	case http.StatusConflict:
 		{
 			// Handle conflict case
-			utils.SendErrorResponse(w, http.StatusConflict, responseBody.Message, responseBody.Error)
+			utils.SendErrorResponse(w, http.StatusConflict, decodedResponse.Message, "Doctor Conflict: "+decodedResponse.Error)
 			return
 		}
 	default:
 		// Handle default case - internal server error
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", "Something unexpected happened")
+		utils.SendErrorResponse(w, http.StatusInternalServerError, decodedResponse.Message, "Unexpected status code: "+strconv.Itoa(response.StatusCode)+". Error: "+decodedResponse.Error)
 		return
 	}
 }
@@ -104,10 +113,19 @@ func (gc *GatewayController) GetDoctors(w http.ResponseWriter, r *http.Request) 
 		}
 	}()
 
-	var responseBody *models.ResponseData
-	if err := json.NewDecoder(response.Body).Decode(&responseBody); err != nil {
-		log.Printf("[GATEWAY] Error decoding response body: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", err.Error())
+	// Read the HTML-encoded JSON string from the response body
+	htmlEncodedJSON, err := io.ReadAll(response.Body)
+	if err != nil {
+		log.Printf("[GATEWAY] Error reading response body: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to read response body", "Failed to read response body: "+err.Error())
+		return
+	}
+
+	// Decode HTML-encoded JSON string to ResponseData
+	var decodedResponse models.ResponseData
+	if err := utils.DecodeHTML(string(htmlEncodedJSON), &decodedResponse); err != nil {
+		log.Printf("[GATEWAY] Error decoding HTML-encoded JSON: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to decode HTML-encoded JSON", "Failed to decode HTML-encoded JSON: "+err.Error())
 		return
 	}
 
@@ -115,12 +133,12 @@ func (gc *GatewayController) GetDoctors(w http.ResponseWriter, r *http.Request) 
 	case http.StatusOK:
 		{
 			log.Println("[GATEWAY] Doctors fetched successfully")
-			utils.SendMessageResponse(w, http.StatusOK, responseBody.Message, responseBody.Payload)
+			utils.SendMessageResponse(w, http.StatusOK, decodedResponse.Message, decodedResponse.Payload)
 			return
 		}
 	default:
 		// Handle default case - internal server error
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", errors.New("unexpected status").Error())
+		utils.SendErrorResponse(w, http.StatusInternalServerError, decodedResponse.Message, "Unexpected status code: "+strconv.Itoa(response.StatusCode)+". Error: "+decodedResponse.Error)
 		return
 	}
 }
@@ -154,10 +172,19 @@ func (gc *GatewayController) GetDoctorByID(w http.ResponseWriter, r *http.Reques
 		}
 	}()
 
-	var responseBody *models.ResponseData
-	if err := json.NewDecoder(response.Body).Decode(&responseBody); err != nil {
-		log.Printf("[GATEWAY] Error decoding response body: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", err.Error())
+	// Read the HTML-encoded JSON string from the response body
+	htmlEncodedJSON, err := io.ReadAll(response.Body)
+	if err != nil {
+		log.Printf("[GATEWAY] Error reading response body: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to read response body", "Failed to read response body: "+err.Error())
+		return
+	}
+
+	// Decode HTML-encoded JSON string to ResponseData
+	var decodedResponse models.ResponseData
+	if err := utils.DecodeHTML(string(htmlEncodedJSON), &decodedResponse); err != nil {
+		log.Printf("[GATEWAY] Error decoding HTML-encoded JSON: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to decode HTML-encoded JSON", "Failed to decode HTML-encoded JSON: "+err.Error())
 		return
 	}
 
@@ -165,18 +192,18 @@ func (gc *GatewayController) GetDoctorByID(w http.ResponseWriter, r *http.Reques
 	case http.StatusOK:
 		{
 			log.Println("[GATEWAY] Doctor fetched successfully")
-			utils.SendMessageResponse(w, http.StatusOK, responseBody.Message, responseBody.Payload)
+			utils.SendMessageResponse(w, http.StatusOK, decodedResponse.Message, decodedResponse.Payload)
 			return
 		}
 	case http.StatusNotFound:
 		{
 			// Handle conflict case
-			utils.SendErrorResponse(w, http.StatusConflict, "Doctor Not Found.", responseBody.Error)
+			utils.SendErrorResponse(w, http.StatusNotFound, decodedResponse.Message, "Doctor not found: "+decodedResponse.Error)
 			return
 		}
 	default:
 		// Handle default case - internal server error
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", errors.New("unexpected status").Error())
+		utils.SendErrorResponse(w, http.StatusInternalServerError, decodedResponse.Message, "Unexpected status code: "+strconv.Itoa(response.StatusCode)+". Error: "+decodedResponse.Error)
 		return
 	}
 }
@@ -205,10 +232,19 @@ func (gc *GatewayController) GetDoctorByEmail(w http.ResponseWriter, r *http.Req
 		}
 	}()
 
-	var responseBody *models.ResponseData
-	if err := json.NewDecoder(response.Body).Decode(&responseBody); err != nil {
-		log.Printf("[GATEWAY] Error decoding response body: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", err.Error())
+	// Read the HTML-encoded JSON string from the response body
+	htmlEncodedJSON, err := io.ReadAll(response.Body)
+	if err != nil {
+		log.Printf("[GATEWAY] Error reading response body: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to read response body", "Failed to read response body: "+err.Error())
+		return
+	}
+
+	// Decode HTML-encoded JSON string to ResponseData
+	var decodedResponse models.ResponseData
+	if err := utils.DecodeHTML(string(htmlEncodedJSON), &decodedResponse); err != nil {
+		log.Printf("[GATEWAY] Error decoding HTML-encoded JSON: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to decode HTML-encoded JSON", "Failed to decode HTML-encoded JSON: "+err.Error())
 		return
 	}
 
@@ -216,18 +252,18 @@ func (gc *GatewayController) GetDoctorByEmail(w http.ResponseWriter, r *http.Req
 	case http.StatusOK:
 		{
 			log.Println("[GATEWAY] Doctor fetched successfully")
-			utils.SendMessageResponse(w, http.StatusOK, responseBody.Message, responseBody.Payload)
+			utils.SendMessageResponse(w, http.StatusOK, decodedResponse.Message, decodedResponse.Payload)
 			return
 		}
 	case http.StatusNotFound:
 		{
 			// Handle conflict case
-			utils.SendErrorResponse(w, http.StatusConflict, "Doctor Not Found.", responseBody.Error)
+			utils.SendErrorResponse(w, http.StatusNotFound, decodedResponse.Message, "Doctor not found: "+decodedResponse.Error)
 			return
 		}
 	default:
 		// Handle default case - internal server error
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", errors.New("unexpected status").Error())
+		utils.SendErrorResponse(w, http.StatusConflict, decodedResponse.Message, "Patient Conflict: "+decodedResponse.Error)
 		return
 	}
 }
@@ -265,10 +301,19 @@ func (gc *GatewayController) GetDoctorByUserID(w http.ResponseWriter, r *http.Re
 		}
 	}()
 
-	var responseBody *models.ResponseData
-	if err := json.NewDecoder(response.Body).Decode(&responseBody); err != nil {
-		log.Printf("[GATEWAY] Error decoding response body: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", err.Error())
+	// Read the HTML-encoded JSON string from the response body
+	htmlEncodedJSON, err := io.ReadAll(response.Body)
+	if err != nil {
+		log.Printf("[GATEWAY] Error reading response body: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to read response body", "Failed to read response body: "+err.Error())
+		return
+	}
+
+	// Decode HTML-encoded JSON string to ResponseData
+	var decodedResponse models.ResponseData
+	if err := utils.DecodeHTML(string(htmlEncodedJSON), &decodedResponse); err != nil {
+		log.Printf("[GATEWAY] Error decoding HTML-encoded JSON: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to decode HTML-encoded JSON", "Failed to decode HTML-encoded JSON: "+err.Error())
 		return
 	}
 
@@ -276,18 +321,18 @@ func (gc *GatewayController) GetDoctorByUserID(w http.ResponseWriter, r *http.Re
 	case http.StatusOK:
 		{
 			log.Println("[GATEWAY] Doctor fetched successfully")
-			utils.SendMessageResponse(w, http.StatusOK, responseBody.Message, responseBody.Payload)
+			utils.SendMessageResponse(w, http.StatusOK, decodedResponse.Message, decodedResponse.Payload)
 			return
 		}
 	case http.StatusNotFound:
 		{
 			// Handle conflict case
-			utils.SendErrorResponse(w, http.StatusConflict, "Doctor Not Found.", responseBody.Error)
+			utils.SendErrorResponse(w, http.StatusNotFound, decodedResponse.Message, "Doctor not found: "+decodedResponse.Error)
 			return
 		}
 	default:
 		// Handle default case - internal server error
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", errors.New("unexpected status").Error())
+		utils.SendErrorResponse(w, http.StatusInternalServerError, decodedResponse.Message, "Unexpected status code: "+strconv.Itoa(response.StatusCode)+". Error: "+decodedResponse.Error)
 		return
 	}
 }
@@ -331,10 +376,19 @@ func (gc *GatewayController) UpdateDoctorByID(w http.ResponseWriter, r *http.Req
 		}
 	}()
 
-	var responseBody *models.ResponseData
-	if err := json.NewDecoder(response.Body).Decode(&responseBody); err != nil {
-		log.Printf("[GATEWAY] Error decoding response body: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", err.Error())
+	// Read the HTML-encoded JSON string from the response body
+	htmlEncodedJSON, err := io.ReadAll(response.Body)
+	if err != nil {
+		log.Printf("[GATEWAY] Error reading response body: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to read response body", "Failed to read response body: "+err.Error())
+		return
+	}
+
+	// Decode HTML-encoded JSON string to ResponseData
+	var decodedResponse models.ResponseData
+	if err := utils.DecodeHTML(string(htmlEncodedJSON), &decodedResponse); err != nil {
+		log.Printf("[GATEWAY] Error decoding HTML-encoded JSON: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to decode HTML-encoded JSON", "Failed to decode HTML-encoded JSON: "+err.Error())
 		return
 	}
 
@@ -342,24 +396,24 @@ func (gc *GatewayController) UpdateDoctorByID(w http.ResponseWriter, r *http.Req
 	case http.StatusOK:
 		{
 			log.Println("[GATEWAY] Doctor updated successfully")
-			utils.SendMessageResponse(w, http.StatusOK, responseBody.Message, responseBody.Payload)
+			utils.SendMessageResponse(w, http.StatusOK, decodedResponse.Message, decodedResponse.Payload)
 			return
 		}
 	case http.StatusNotFound:
 		{
 			// Handle not found case
-			utils.SendErrorResponse(w, http.StatusConflict, "Doctor Not Found.", responseBody.Error)
+			utils.SendErrorResponse(w, http.StatusNotFound, decodedResponse.Message, "Doctor not found: "+decodedResponse.Error)
 			return
 		}
 	case http.StatusConflict:
 		{
 			// Handle conflict case
-			utils.SendErrorResponse(w, http.StatusConflict, "Doctor Data Conflict.", responseBody.Error)
+			utils.SendErrorResponse(w, http.StatusConflict, decodedResponse.Message, "Doctor Conflict: "+decodedResponse.Error)
 			return
 		}
 	default:
 		// Handle default case - internal server error
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", errors.New("unexpected status").Error())
+		utils.SendErrorResponse(w, http.StatusInternalServerError, decodedResponse.Message, "Unexpected status code: "+strconv.Itoa(response.StatusCode)+". Error: "+decodedResponse.Error)
 		return
 	}
 }
@@ -396,10 +450,19 @@ func (gc *GatewayController) DeleteDoctorByID(w http.ResponseWriter, r *http.Req
 		}
 	}()
 
-	var responseBody *models.ResponseData
-	if err := json.NewDecoder(response.Body).Decode(&responseBody); err != nil {
-		log.Printf("[GATEWAY] Error decoding response body: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", err.Error())
+	// Read the HTML-encoded JSON string from the response body
+	htmlEncodedJSON, err := io.ReadAll(response.Body)
+	if err != nil {
+		log.Printf("[GATEWAY] Error reading response body: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to read response body", "Failed to read response body: "+err.Error())
+		return
+	}
+
+	// Decode HTML-encoded JSON string to ResponseData
+	var decodedResponse models.ResponseData
+	if err := utils.DecodeHTML(string(htmlEncodedJSON), &decodedResponse); err != nil {
+		log.Printf("[GATEWAY] Error decoding HTML-encoded JSON: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to decode HTML-encoded JSON", "Failed to decode HTML-encoded JSON: "+err.Error())
 		return
 	}
 
@@ -407,18 +470,18 @@ func (gc *GatewayController) DeleteDoctorByID(w http.ResponseWriter, r *http.Req
 	case http.StatusOK:
 		{
 			log.Println("[GATEWAY] Doctor deleted successfully")
-			utils.SendMessageResponse(w, http.StatusOK, responseBody.Message, responseBody.Payload)
+			utils.SendMessageResponse(w, http.StatusOK, decodedResponse.Message, decodedResponse.Payload)
 			return
 		}
 	case http.StatusNotFound:
 		{
 			// Handle not found case
-			utils.SendErrorResponse(w, http.StatusConflict, "Doctor Not Found.", responseBody.Error)
+			utils.SendErrorResponse(w, http.StatusNotFound, decodedResponse.Message, "Doctor not found: "+decodedResponse.Error)
 			return
 		}
 	default:
 		// Handle default case - internal server error
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", errors.New("unexpected status").Error())
+		utils.SendErrorResponse(w, http.StatusInternalServerError, decodedResponse.Message, "Unexpected status code: "+strconv.Itoa(response.StatusCode)+". Error: "+decodedResponse.Error)
 		return
 	}
 }

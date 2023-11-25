@@ -12,10 +12,15 @@ import (
 
 type AppConfig struct {
 	Server ServerConfig `yaml:"server"`
+	JWT    JWTConfig    `yaml:"jwt"`
 }
 
 type ServerConfig struct {
 	Port int `yaml:"port"`
+}
+
+type JWTConfig struct {
+	Secret string `yaml:"secret"`
 }
 
 // LoadConfig loads the configuration from the given file path
@@ -65,8 +70,12 @@ func ReplacePlaceholdersInStruct(s interface{}) {
 				updatedValue := ReplaceWithEnvVars(field.String())
 				field.SetString(updatedValue)
 			}
-		case reflect.Struct, reflect.Ptr:
+		case reflect.Struct:
 			ReplacePlaceholdersInStruct(field.Addr().Interface())
+		case reflect.Ptr:
+			if !field.IsNil() {
+				ReplacePlaceholdersInStruct(field.Interface())
+			}
 		}
 	}
 }

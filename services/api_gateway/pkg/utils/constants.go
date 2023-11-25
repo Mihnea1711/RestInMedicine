@@ -12,7 +12,7 @@ const (
 
 const (
 	IDM_HOST          = "localhost"
-	IDM_PORT          = 8080
+	IDM_PORT          = 8081
 	PATIENT_PORT      = 8082
 	DOCTOR_PORT       = 8083
 	APPOINTMENT_PORT  = 8084
@@ -35,6 +35,14 @@ const (
 const (
 	DECODED_USER_REGISTRATION_DATA contextKey = "register_data"
 	DECODED_USER_LOGIN_DATA        contextKey = "login_data"
+	DECODED_DOCTOR_DATA            contextKey = "doctor_data"
+	DECODED_PATIENT_DATA           contextKey = "patient_data"
+	DECODED_APPOINTMENT_DATA       contextKey = "appointment_data"
+	DECODED_CONSULTATION_DATA      contextKey = "consultation_data"
+	DECODED_USER_DATA              contextKey = "user_data"
+	DECODED_PASSWORD_DATA          contextKey = "password_data"
+	DECODED_ROLE_DATA              contextKey = "role_data"
+	DECODED_BLACKLIST_DATA         contextKey = "blacklist_data"
 )
 
 const (
@@ -169,6 +177,16 @@ const (
 	GET_CONSULTATION_BY_ID_PARAMETER         = "consultationID"
 	UPDATE_CONSULTATION_BY_ID_PARAMETER      = "consultationID"
 	DELETE_CONSULTATION_BY_ID_PARAMETER      = "consultationID"
+
+	CONSULTATION_CREATE_CONSULTATIE_ENDPOINT              = "/consultations"
+	CONSULTATION_FETCH_ALL_CONSULTATII_ENDPOINT           = "/consultations"
+	CONSULTATION_FILTER_CONSULTATII_ENDPOINT              = "/consultations/filter"
+	CONSULTATION_FETCH_CONSULTATIE_BY_DOCTOR_ID_ENDPOINT  = "/consultations/doctors"
+	CONSULTATION_FETCH_CONSULTATIE_BY_PACIENT_ID_ENDPOINT = "/consultations/patients"
+	CONSULTATION_FETCH_CONSULTATIE_BY_DATE_ENDPOINT       = "/consultations/date"
+	CONSULTATION_FETCH_CONSULTATIE_BY_ID_ENDPOINT         = "/consultations"
+	CONSULTATION_UPDATE_CONSULTATIE_BY_ID_ENDPOINT        = "/consultations"
+	CONSULTATION_DELETE_CONSULTATIE_BY_ID_ENDPOINT        = "/consultations"
 )
 
 const (

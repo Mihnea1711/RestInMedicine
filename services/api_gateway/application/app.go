@@ -38,7 +38,7 @@ func New(config *config.AppConfig, parentCtx context.Context) (*App, error) {
 	app.idmClient = idm.NewIDMClient(conn)
 
 	// setup router for the app
-	router := routes.SetupRoutes(app.idmClient)
+	router := routes.SetupRoutes(app.idmClient, config.JWT)
 	app.router = router
 
 	log.Println("[GATEWAY] Application successfully initialized.")

@@ -1,2 +1,6 @@
 server:
-  port: 8081
+  port: 8080
+
+jwt:
+  secret: ${JWT_SECRET}
+

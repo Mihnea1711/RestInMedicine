@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 
+	"github.com/joho/godotenv"
 	"github.com/mihnea1711/POS_Project/services/gateway/application"
 	"github.com/mihnea1711/POS_Project/services/gateway/pkg/config"
 	"github.com/mihnea1711/POS_Project/services/gateway/pkg/utils"
@@ -17,6 +18,11 @@ func main() {
 	log.SetOutput(os.Stdout) // Set log output to the stdout
 
 	log.Println("[GATEWAY] Application starting...")
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("Error loading .env file: %v", err)
+	}
 
 	// load config file
 	conf, err := config.LoadConfig(utils.CONFIG_PATH)

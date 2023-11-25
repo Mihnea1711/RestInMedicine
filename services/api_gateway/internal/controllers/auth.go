@@ -14,6 +14,7 @@ import (
 // RegisterUser handles user registration.
 func (gc *GatewayController) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	log.Printf("[GATEWAY] Attempting to register a new user.")
+	// Take user registration data from the context after validation
 	registerRequest := r.Context().Value(utils.DECODED_USER_REGISTRATION_DATA).(*models.UserRegistrationData)
 
 	// Create a context with a timeout (adjust the timeout as needed)
@@ -56,6 +57,7 @@ func (gc *GatewayController) RegisterUser(w http.ResponseWriter, r *http.Request
 // LoginUser handles user login.
 func (gc *GatewayController) LoginUser(w http.ResponseWriter, r *http.Request) {
 	log.Printf("[GATEWAY] Attempting to login a user.")
+	// Take credentials data from the context after validation
 	loginUserRequest := r.Context().Value(utils.DECODED_USER_LOGIN_DATA).(*models.UserLoginData)
 
 	// Create a context with a timeout (adjust the timeout as needed)
@@ -98,10 +100,6 @@ func (gc *GatewayController) LoginUser(w http.ResponseWriter, r *http.Request) {
 		// User not found
 		log.Printf("[GATEWAY] User not found: %s", response.Info.Message)
 		utils.SendMessageResponse(w, http.StatusNotFound, response.Info.Message, nil)
-	case http.StatusUnauthorized:
-		// Invalid credentials
-		log.Printf("[GATEWAY] Invalid credentials: %s", response.Info.Message)
-		utils.SendMessageResponse(w, http.StatusUnauthorized, response.Info.Message, nil)
 	default:
 		// Other status codes
 		log.Printf("[GATEWAY] Unexpected status code: %d", response.Info.Status)

@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/json"
+	"html"
 	"log"
 	"net/http"
 
@@ -11,13 +12,14 @@ import (
 // RespondWithJSON handles responding to HTTP requests with JSON.
 func RespondWithJSON(w http.ResponseWriter, status int, payload interface{}) {
 	if payload == nil {
+		log.Println("[GATEWAY] RespondWithJSON: Empty response body")
 		respondWithError(w, http.StatusInternalServerError, "Empty response body")
 		return
 	}
 
 	response, err := json.Marshal(payload)
 	if err != nil {
-		log.Printf("[GATEWAY] Error marshaling JSON: %s", err)
+		log.Printf("[GATEWAY] RespondWithJSON: Error marshaling JSON: %s", err)
 		respondWithError(w, http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
@@ -29,7 +31,7 @@ func respondWithError(w http.ResponseWriter, status int, message string) {
 	errorResponse := map[string]string{"error": message}
 	response, err := json.Marshal(errorResponse)
 	if err != nil {
-		log.Printf("[GATEWAY] Error marshaling error response JSON: %s", err)
+		log.Printf("[GATEWAY] RespondWithError: Error marshaling error response JSON: %s", err)
 		writeJSONResponse(w, http.StatusInternalServerError, []byte(`{"error":"Internal Server Error"}`))
 		return
 	}
@@ -58,4 +60,10 @@ func SendErrorResponse(w http.ResponseWriter, status int, message string, errStr
 		Error:   errString,
 	}
 	RespondWithJSON(w, status, responseData)
+}
+
+// DecodeHTML decodes HTML-encoded JSON to a struct
+func DecodeHTML(s string, v interface{}) error {
+	decoded := html.UnescapeString(s)
+	return json.Unmarshal([]byte(decoded), v)
 }

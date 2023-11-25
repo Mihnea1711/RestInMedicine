@@ -2,9 +2,8 @@ package controllers
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -16,74 +15,85 @@ import (
 	"github.com/mihnea1711/POS_Project/services/gateway/pkg/utils"
 )
 
-// CreatePacient handles the creation of a new pacient.
-func (gc *GatewayController) CreatePacient(w http.ResponseWriter, r *http.Request) {
-	var pacientRequest models.PacientData
-
-	// Parse the request body into the PacientData struct
-	if err := json.NewDecoder(r.Body).Decode(&pacientRequest); err != nil {
-		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid request payload", err.Error())
-		return
-	}
+// CreatePatient handles the creation of a new patient.
+func (gc *GatewayController) CreatePatient(w http.ResponseWriter, r *http.Request) {
+	log.Printf("[GATEWAY] Attempting to create a patient.")
+	// Take credentials data from the context after validation
+	patientRequest := r.Context().Value(utils.DECODED_PATIENT_DATA).(*models.PatientData)
 
 	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_CONTEXT_TIMEOUT*time.Second)
 	defer cancel()
 
-	// check IDUser exists
-	userResponse, err := gc.IDMClient.GetUserByID(ctx, &proto_files.UserIDRequest{UserID: &proto_files.UserID{ID: int64(pacientRequest.IDUser)}})
+	// Check if IDUser exists
+	userResponse, err := gc.IDMClient.GetUserByID(ctx, &proto_files.UserIDRequest{UserID: &proto_files.UserID{ID: int64(patientRequest.IDUser)}})
 	if err != nil {
 		log.Printf("[GATEWAY] Error fetching user by ID: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", err.Error())
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", "Failed to fetch user by ID: "+err.Error())
 		return
 	}
 
 	if userResponse == nil {
 		log.Println("[GATEWAY] Get User By ID response is nil")
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Get User By ID response is nil", "")
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", "Received nil response while fetching user by ID.")
 		return
 	}
 
 	if userResponse.User == nil {
 		log.Println("[GATEWAY] User does not exist")
-		utils.SendErrorResponse(w, http.StatusConflict, "User does not exist", "")
+		utils.SendErrorResponse(w, http.StatusNotFound, "User does not exist", "The specified user does not exist.")
 		return
 	}
 
 	// Redirect the request body to another module
-	response, err := gc.redirectRequestBody(ctx, utils.POST, utils.PATIENT_CREATE_PATIENT_ENDPOINT, utils.PATIENT_PORT, pacientRequest)
+	response, err := gc.redirectRequestBody(ctx, utils.POST, utils.PATIENT_CREATE_PATIENT_ENDPOINT, utils.PATIENT_PORT, patientRequest)
 	if err != nil {
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
+		log.Printf("[GATEWAY] Error redirecting request: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", "Failed to redirect request: "+err.Error())
+		return
+	}
+
+	// Close the response body explicitly after decoding
+	defer func() {
+		if cerr := response.Body.Close(); cerr != nil {
+			log.Printf("[GATEWAY] Error closing response body: %v", cerr)
+			utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", "Error closing response body: "+cerr.Error())
+		}
+	}()
+
+	// Read the HTML-encoded JSON string from the response body
+	htmlEncodedJSON, err := io.ReadAll(response.Body)
+	if err != nil {
+		log.Printf("[GATEWAY] Error reading response body: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to read response body", "Failed to read response body: "+err.Error())
+		return
+	}
+
+	// Decode HTML-encoded JSON string to ResponseData
+	var decodedResponse models.ResponseData
+	if err := utils.DecodeHTML(string(htmlEncodedJSON), &decodedResponse); err != nil {
+		log.Printf("[GATEWAY] Error decoding HTML-encoded JSON: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to decode HTML-encoded JSON", "Failed to decode HTML-encoded JSON: "+err.Error())
 		return
 	}
 
 	switch response.StatusCode {
 	case http.StatusOK:
-		{
-			var responseBody *models.ResponseData
-			if err := json.NewDecoder(response.Body).Decode(&responseBody); err != nil {
-				log.Printf("[GATEWAY] Error decoding response body: %v", err)
-				utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
-				return
-			}
-			// Respond with the response from the other module
-			utils.SendMessageResponse(w, http.StatusOK, responseBody.Message, responseBody.Payload)
-			return
-		}
+		// Respond with the response from the other module
+		utils.SendMessageResponse(w, http.StatusOK, decodedResponse.Message, decodedResponse.Payload)
+		return
 	case http.StatusConflict:
-		{
-			// Handle conflict case
-			utils.SendErrorResponse(w, http.StatusConflict, "Conflict in the request.", "")
-			return
-		}
+		// Handle conflict case
+		utils.SendErrorResponse(w, http.StatusConflict, decodedResponse.Message, decodedResponse.Error)
+		return
 	default:
 		// Handle default case - internal server error
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", "Something unexpected happened")
+		utils.SendErrorResponse(w, http.StatusInternalServerError, decodedResponse.Message, decodedResponse.Error)
 		return
 	}
 }
 
-// GetPacienti handles fetching all pacients.
-func (gc *GatewayController) GetPacienti(w http.ResponseWriter, r *http.Request) {
+// GetPatients handles fetching all patients.
+func (gc *GatewayController) GetPatients(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_CONTEXT_TIMEOUT*time.Second)
 	defer cancel()
 
@@ -91,47 +101,55 @@ func (gc *GatewayController) GetPacienti(w http.ResponseWriter, r *http.Request)
 	response, err := gc.redirectRequestBody(ctx, utils.GET, utils.PATIENT_FETCH_ALL_PATIENTS_ENDPOINT, utils.PATIENT_PORT, nil)
 	if err != nil {
 		// Handle the error (e.g., return a response with an error message)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
+		log.Printf("[GATEWAY] Error redirecting request: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", "Failed to redirect request: "+err.Error())
 		return
 	}
 
 	// Close the response body explicitly after decoding
 	defer func() {
-		if err := response.Body.Close(); err != nil {
-			log.Printf("[GATEWAY] Error closing response body: %v", err)
-			utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", err.Error())
+		if cerr := response.Body.Close(); cerr != nil {
+			log.Printf("[GATEWAY] Error closing response body: %v", cerr)
+			utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", "Error closing response body: "+cerr.Error())
 		}
 	}()
 
-	var responseBody *models.ResponseData
-	if err := json.NewDecoder(response.Body).Decode(&responseBody); err != nil {
-		log.Printf("[GATEWAY] Error decoding response body: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", err.Error())
+	// Read the HTML-encoded JSON string from the response body
+	htmlEncodedJSON, err := io.ReadAll(response.Body)
+	if err != nil {
+		log.Printf("[GATEWAY] Error reading response body: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to read response body", "Failed to read response body: "+err.Error())
+		return
+	}
+
+	// Decode HTML-encoded JSON string to ResponseData
+	var decodedResponse models.ResponseData
+	if err := utils.DecodeHTML(string(htmlEncodedJSON), &decodedResponse); err != nil {
+		log.Printf("[GATEWAY] Error decoding HTML-encoded JSON: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to decode HTML-encoded JSON", "Failed to decode HTML-encoded JSON: "+err.Error())
 		return
 	}
 
 	switch response.StatusCode {
 	case http.StatusOK:
-		{
-			log.Println("[GATEWAY] Patients fetched successfully")
-			utils.SendMessageResponse(w, http.StatusOK, responseBody.Message, responseBody.Payload)
-			return
-		}
+		log.Println("[GATEWAY] Patients fetched successfully")
+		utils.SendMessageResponse(w, http.StatusOK, decodedResponse.Message, decodedResponse.Payload)
+		return
 	default:
 		// Handle default case - internal server error
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", errors.New("unexpected status").Error())
+		utils.SendErrorResponse(w, http.StatusInternalServerError, decodedResponse.Message, "Unexpected status code: "+strconv.Itoa(response.StatusCode)+". Error: "+decodedResponse.Error)
 		return
 	}
 }
 
-// GetPacientByID handles fetching a pacient by ID.
-func (gc *GatewayController) GetPacientByID(w http.ResponseWriter, r *http.Request) {
-	pacientIDString := mux.Vars(r)[utils.GET_PATIENT_ID_PARAMETER]
+// GetPatientByID handles fetching a patient by ID.
+func (gc *GatewayController) GetPatientByID(w http.ResponseWriter, r *http.Request) {
+	patientIDString := mux.Vars(r)[utils.GET_PATIENT_ID_PARAMETER]
 
-	// Convert pacientIDString to int64
-	pacientID, err := strconv.ParseInt(pacientIDString, 10, 64)
+	// Convert patientIDString to int64
+	patientID, err := strconv.ParseInt(patientIDString, 10, 64)
 	if err != nil {
-		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid pacient ID", err.Error())
+		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid patient ID", err.Error())
 		return
 	}
 
@@ -139,99 +157,112 @@ func (gc *GatewayController) GetPacientByID(w http.ResponseWriter, r *http.Reque
 	defer cancel()
 
 	// Redirect the request body to another module
-	response, err := gc.redirectRequestBody(ctx, http.MethodGet, fmt.Sprintf("%s/%d", utils.PATIENT_FETCH_PATIENT_BY_ID_ENDPOINT, pacientID), utils.PATIENT_PORT, nil)
+	response, err := gc.redirectRequestBody(ctx, http.MethodGet, fmt.Sprintf("%s/%d", utils.PATIENT_FETCH_PATIENT_BY_ID_ENDPOINT, patientID), utils.PATIENT_PORT, nil)
 	if err != nil {
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
+		log.Printf("[GATEWAY] Error redirecting request: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", "Failed to redirect request: "+err.Error())
 		return
 	}
 
 	// Close the response body explicitly after decoding
 	defer func() {
-		if err := response.Body.Close(); err != nil {
-			log.Printf("[GATEWAY] Error closing response body: %v", err)
-			utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", err.Error())
+		if cerr := response.Body.Close(); cerr != nil {
+			log.Printf("[GATEWAY] Error closing response body: %v", cerr)
+			utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", "Error closing response body: "+cerr.Error())
 		}
 	}()
 
-	var responseBody *models.ResponseData
-	if err := json.NewDecoder(response.Body).Decode(&responseBody); err != nil {
-		log.Printf("[GATEWAY] Error decoding response body: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", err.Error())
+	// Read the HTML-encoded JSON string from the response body
+	htmlEncodedJSON, err := io.ReadAll(response.Body)
+	if err != nil {
+		log.Printf("[GATEWAY] Error reading response body: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to read response body", "Failed to read response body: "+err.Error())
+		return
+	}
+
+	// Decode HTML-encoded JSON string to ResponseData
+	var decodedResponse models.ResponseData
+	if err := utils.DecodeHTML(string(htmlEncodedJSON), &decodedResponse); err != nil {
+		log.Printf("[GATEWAY] Error decoding HTML-encoded JSON: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to decode HTML-encoded JSON", "Failed to decode HTML-encoded JSON: "+err.Error())
 		return
 	}
 
 	switch response.StatusCode {
 	case http.StatusOK:
-		{
-			log.Println("[GATEWAY] Patient fetched successfully")
-			utils.SendMessageResponse(w, http.StatusOK, responseBody.Message, responseBody.Payload)
-			return
-		}
+		log.Println("[GATEWAY] Patient fetched successfully")
+		utils.SendMessageResponse(w, http.StatusOK, decodedResponse.Message, decodedResponse.Payload)
+		return
 	case http.StatusNotFound:
-		{
-			// Handle conflict case
-			utils.SendErrorResponse(w, http.StatusConflict, "Patient Not Found.", responseBody.Error)
-			return
-		}
+		// Handle not found case
+		log.Println("[GATEWAY] Patient not found")
+		utils.SendErrorResponse(w, http.StatusNotFound, decodedResponse.Message, "Patient not found: "+decodedResponse.Error)
+		return
 	default:
 		// Handle default case - internal server error
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", errors.New("unexpected status").Error())
+		utils.SendErrorResponse(w, http.StatusInternalServerError, decodedResponse.Message, "Unexpected status code: "+strconv.Itoa(response.StatusCode)+". Error: "+decodedResponse.Error)
 		return
 	}
 }
 
-// GetPacientByEmail handles fetching a pacient by email.
-func (gc *GatewayController) GetPacientByEmail(w http.ResponseWriter, r *http.Request) {
-	pacientEmail := mux.Vars(r)[utils.GET_PATIENT_EMAIL_PARAMETER]
+// GetPatientByEmail handles fetching a patient by email.
+func (gc *GatewayController) GetPatientByEmail(w http.ResponseWriter, r *http.Request) {
+	patientEmail := mux.Vars(r)[utils.GET_PATIENT_EMAIL_PARAMETER]
 
 	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_CONTEXT_TIMEOUT*time.Second)
 	defer cancel()
 
 	// Redirect the request body to another module
-	response, err := gc.redirectRequestBody(ctx, http.MethodGet, fmt.Sprintf("%s/%s", utils.PATIENT_FETCH_PATIENT_BY_EMAIL_ENDPOINT, pacientEmail), utils.PATIENT_PORT, nil)
+	response, err := gc.redirectRequestBody(ctx, http.MethodGet, fmt.Sprintf("%s/%s", utils.PATIENT_FETCH_PATIENT_BY_EMAIL_ENDPOINT, patientEmail), utils.PATIENT_PORT, nil)
 	if err != nil {
 		log.Printf("[GATEWAY] Failed to redirect request: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", "Failed to redirect request: "+err.Error())
 		return
 	}
 
 	// Close the response body explicitly after decoding
 	defer func() {
-		if err := response.Body.Close(); err != nil {
-			log.Printf("[GATEWAY] Error closing response body: %v", err)
-			utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", err.Error())
+		if cerr := response.Body.Close(); cerr != nil {
+			log.Printf("[GATEWAY] Error closing response body: %v", cerr)
+			utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", "Error closing response body: "+cerr.Error())
 		}
 	}()
 
-	var responseBody *models.ResponseData
-	if err := json.NewDecoder(response.Body).Decode(&responseBody); err != nil {
-		log.Printf("[GATEWAY] Error decoding response body: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", err.Error())
+	// Read the HTML-encoded JSON string from the response body
+	htmlEncodedJSON, err := io.ReadAll(response.Body)
+	if err != nil {
+		log.Printf("[GATEWAY] Error reading response body: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to read response body", "Failed to read response body: "+err.Error())
+		return
+	}
+
+	// Decode HTML-encoded JSON string to ResponseData
+	var decodedResponse models.ResponseData
+	if err := utils.DecodeHTML(string(htmlEncodedJSON), &decodedResponse); err != nil {
+		log.Printf("[GATEWAY] Error decoding HTML-encoded JSON: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to decode HTML-encoded JSON", "Failed to decode HTML-encoded JSON: "+err.Error())
 		return
 	}
 
 	switch response.StatusCode {
 	case http.StatusOK:
-		{
-			log.Println("[GATEWAY] Patient fetched successfully")
-			utils.SendMessageResponse(w, http.StatusOK, responseBody.Message, responseBody.Payload)
-			return
-		}
+		log.Println("[GATEWAY] Patient fetched successfully")
+		utils.SendMessageResponse(w, http.StatusOK, decodedResponse.Message, decodedResponse.Payload)
+		return
 	case http.StatusNotFound:
-		{
-			// Handle conflict case
-			utils.SendErrorResponse(w, http.StatusConflict, "Patient Not Found.", responseBody.Error)
-			return
-		}
+		// Handle not found case
+		log.Println("[GATEWAY] Patient not found")
+		utils.SendErrorResponse(w, http.StatusNotFound, decodedResponse.Message, "Patient not found: "+decodedResponse.Error)
+		return
 	default:
 		// Handle default case - internal server error
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", errors.New("unexpected status").Error())
+		utils.SendErrorResponse(w, http.StatusInternalServerError, decodedResponse.Message, "Unexpected status code: "+strconv.Itoa(response.StatusCode)+". Error: "+decodedResponse.Error)
 		return
 	}
 }
 
-// GetPacientByUserID handles fetching a pacient by user ID.
-func (gc *GatewayController) GetPacientByUserID(w http.ResponseWriter, r *http.Request) {
+// GetPatientByUserID handles fetching a patient by user ID.
+func (gc *GatewayController) GetPatientByUserID(w http.ResponseWriter, r *http.Request) {
 	userIDString := mux.Vars(r)[utils.GET_PATIENT_USER_ID_PARAMETER]
 
 	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_CONTEXT_TIMEOUT*time.Second)
@@ -259,61 +290,61 @@ func (gc *GatewayController) GetPacientByUserID(w http.ResponseWriter, r *http.R
 		if err := response.Body.Close(); err != nil {
 			log.Printf("[GATEWAY] Error closing response body: %v", err)
 			utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", err.Error())
-			return
 		}
 	}()
 
-	var responseBody *models.ResponseData
-	if err := json.NewDecoder(response.Body).Decode(&responseBody); err != nil {
-		log.Printf("[GATEWAY] Error decoding response body: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", err.Error())
+	// Read the HTML-encoded JSON string from the response body
+	htmlEncodedJSON, err := io.ReadAll(response.Body)
+	if err != nil {
+		log.Printf("[GATEWAY] Error reading response body: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to read response body", "Failed to read response body: "+err.Error())
+		return
+	}
+
+	// Decode HTML-encoded JSON string to ResponseData
+	var decodedResponse models.ResponseData
+	if err := utils.DecodeHTML(string(htmlEncodedJSON), &decodedResponse); err != nil {
+		log.Printf("[GATEWAY] Error decoding HTML-encoded JSON: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to decode HTML-encoded JSON", "Failed to decode HTML-encoded JSON: "+err.Error())
 		return
 	}
 
 	switch response.StatusCode {
 	case http.StatusOK:
-		{
-			log.Println("[GATEWAY] Patient fetched successfully")
-			utils.SendMessageResponse(w, http.StatusOK, responseBody.Message, responseBody.Payload)
-			return
-		}
+		log.Println("[GATEWAY] Patient fetched successfully")
+		utils.SendMessageResponse(w, http.StatusOK, decodedResponse.Message, decodedResponse.Payload)
+		return
 	case http.StatusNotFound:
-		{
-			// Handle conflict case
-			utils.SendErrorResponse(w, http.StatusConflict, "Patient Not Found.", responseBody.Error)
-			return
-		}
+		// Handle conflict case
+		utils.SendErrorResponse(w, http.StatusNotFound, decodedResponse.Message, "Patient not found: "+decodedResponse.Error)
+		return
 	default:
 		// Handle default case - internal server error
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", errors.New("unexpected status").Error())
+		utils.SendErrorResponse(w, http.StatusInternalServerError, decodedResponse.Message, "Unexpected status code: "+strconv.Itoa(response.StatusCode)+". Error: "+decodedResponse.Error)
 		return
 	}
 }
 
-// UpdatePacientByID handles updating a pacient by ID.
-func (gc *GatewayController) UpdatePacientByID(w http.ResponseWriter, r *http.Request) {
-	pacientIDString := mux.Vars(r)[utils.UPDATE_PATIENT_ID_PARAMETER]
+// UpdatePatientByID handles updating a patient by ID.
+func (gc *GatewayController) UpdatePatientByID(w http.ResponseWriter, r *http.Request) {
+	patientIDString := mux.Vars(r)[utils.UPDATE_PATIENT_ID_PARAMETER]
 
-	// Convert pacientIDString to int64
-	pacientID, err := strconv.ParseInt(pacientIDString, 10, 64)
+	// Convert patientIDString to int64
+	patientID, err := strconv.ParseInt(patientIDString, 10, 64)
 	if err != nil {
 		log.Printf("[GATEWAY] Error closing response body: %v", err)
-		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid pacient ID", err.Error())
+		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid patient ID", err.Error())
 		return
 	}
 
-	var pacientData models.PacientData
-	if err := json.NewDecoder(r.Body).Decode(&pacientData); err != nil {
-		log.Printf("[GATEWAY] Error closing response body: %v", err)
-		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid request", err.Error())
-		return
-	}
+	// Take patient data from context
+	patientData := r.Context().Value(utils.DECODED_PATIENT_DATA).(*models.PatientData)
 
 	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_CONTEXT_TIMEOUT*time.Second)
 	defer cancel()
 
 	// Redirect the request body to another module
-	response, err := gc.redirectRequestBody(ctx, http.MethodPut, fmt.Sprintf("%s/%d", utils.PATIENT_UPDATE_PATIENT_BY_ID_ENDPOINT, pacientID), utils.PATIENT_PORT, pacientData)
+	response, err := gc.redirectRequestBody(ctx, http.MethodPut, fmt.Sprintf("%s/%d", utils.PATIENT_UPDATE_PATIENT_BY_ID_ENDPOINT, patientID), utils.PATIENT_PORT, patientData)
 	if err != nil {
 		log.Printf("[GATEWAY] Failed to redirect request: %v", err)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
@@ -329,10 +360,19 @@ func (gc *GatewayController) UpdatePacientByID(w http.ResponseWriter, r *http.Re
 		}
 	}()
 
-	var responseBody *models.ResponseData
-	if err := json.NewDecoder(response.Body).Decode(&responseBody); err != nil {
-		log.Printf("[GATEWAY] Error decoding response body: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", err.Error())
+	// Read the HTML-encoded JSON string from the response body
+	htmlEncodedJSON, err := io.ReadAll(response.Body)
+	if err != nil {
+		log.Printf("[GATEWAY] Error reading response body: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to read response body", "Failed to read response body: "+err.Error())
+		return
+	}
+
+	// Decode HTML-encoded JSON string to ResponseData
+	var decodedResponse models.ResponseData
+	if err := utils.DecodeHTML(string(htmlEncodedJSON), &decodedResponse); err != nil {
+		log.Printf("[GATEWAY] Error decoding HTML-encoded JSON: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to decode HTML-encoded JSON", "Failed to decode HTML-encoded JSON: "+err.Error())
 		return
 	}
 
@@ -340,37 +380,37 @@ func (gc *GatewayController) UpdatePacientByID(w http.ResponseWriter, r *http.Re
 	case http.StatusOK:
 		{
 			log.Println("[GATEWAY] Patient updated successfully")
-			utils.SendMessageResponse(w, http.StatusOK, responseBody.Message, responseBody.Payload)
+			utils.SendMessageResponse(w, http.StatusOK, decodedResponse.Message, decodedResponse.Payload)
 			return
 		}
 	case http.StatusNotFound:
 		{
 			// Handle not found case
-			utils.SendErrorResponse(w, http.StatusConflict, "Patient Not Found.", responseBody.Error)
+			utils.SendErrorResponse(w, http.StatusNotFound, decodedResponse.Message, "Patient not found: "+decodedResponse.Error)
 			return
 		}
 	case http.StatusConflict:
 		{
 			// Handle conflict case
-			utils.SendErrorResponse(w, http.StatusConflict, "Patient Data Conflict.", responseBody.Error)
+			utils.SendErrorResponse(w, http.StatusConflict, decodedResponse.Message, "Patient Conflict: "+decodedResponse.Error)
 			return
 		}
 	default:
 		// Handle default case - internal server error
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", errors.New("unexpected status").Error())
+		utils.SendErrorResponse(w, http.StatusInternalServerError, decodedResponse.Message, "Unexpected status code: "+strconv.Itoa(response.StatusCode)+". Error: "+decodedResponse.Error)
 		return
 	}
 }
 
-// DeletePacientByID handles deleting a pacient by ID.
-func (gc *GatewayController) DeletePacientByID(w http.ResponseWriter, r *http.Request) {
-	pacientIDString := mux.Vars(r)[utils.DELETE_PATIENT_ID_PARAMETER]
+// DeletePatientByID handles deleting a patient by ID.
+func (gc *GatewayController) DeletePatientByID(w http.ResponseWriter, r *http.Request) {
+	patientIDString := mux.Vars(r)[utils.DELETE_PATIENT_ID_PARAMETER]
 
-	// Convert pacientIDString to int64
-	pacientID, err := strconv.ParseInt(pacientIDString, 10, 64)
+	// Convert patientIDString to int64
+	patientID, err := strconv.ParseInt(patientIDString, 10, 64)
 	if err != nil {
-		log.Printf("[GATEWAY] Invalid pacient ID: %v", err)
-		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid pacient ID", err.Error())
+		log.Printf("[GATEWAY] Invalid patient ID: %v", err)
+		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid patient ID", err.Error())
 		return
 	}
 
@@ -378,7 +418,7 @@ func (gc *GatewayController) DeletePacientByID(w http.ResponseWriter, r *http.Re
 	defer cancel()
 
 	// Redirect the request body to another module
-	response, err := gc.redirectRequestBody(ctx, http.MethodDelete, fmt.Sprintf("%s/%d", utils.PATIENT_DELETE_PATIENT_BY_ID_ENDPOINT, pacientID), utils.PATIENT_PORT, nil)
+	response, err := gc.redirectRequestBody(ctx, http.MethodDelete, fmt.Sprintf("%s/%d", utils.PATIENT_DELETE_PATIENT_BY_ID_ENDPOINT, patientID), utils.PATIENT_PORT, nil)
 	if err != nil {
 		log.Printf("[GATEWAY] Failed to redirect request: %v", err)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
@@ -394,10 +434,19 @@ func (gc *GatewayController) DeletePacientByID(w http.ResponseWriter, r *http.Re
 		}
 	}()
 
-	var responseBody *models.ResponseData
-	if err := json.NewDecoder(response.Body).Decode(&responseBody); err != nil {
-		log.Printf("[GATEWAY] Error decoding response body: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", err.Error())
+	// Read the HTML-encoded JSON string from the response body
+	htmlEncodedJSON, err := io.ReadAll(response.Body)
+	if err != nil {
+		log.Printf("[GATEWAY] Error reading response body: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to read response body", "Failed to read response body: "+err.Error())
+		return
+	}
+
+	// Decode HTML-encoded JSON string to ResponseData
+	var decodedResponse models.ResponseData
+	if err := utils.DecodeHTML(string(htmlEncodedJSON), &decodedResponse); err != nil {
+		log.Printf("[GATEWAY] Error decoding HTML-encoded JSON: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to decode HTML-encoded JSON", "Failed to decode HTML-encoded JSON: "+err.Error())
 		return
 	}
 
@@ -405,18 +454,18 @@ func (gc *GatewayController) DeletePacientByID(w http.ResponseWriter, r *http.Re
 	case http.StatusOK:
 		{
 			log.Println("[GATEWAY] Patient deleted successfully")
-			utils.SendMessageResponse(w, http.StatusOK, responseBody.Message, responseBody.Payload)
+			utils.SendMessageResponse(w, http.StatusOK, decodedResponse.Message, decodedResponse.Payload)
 			return
 		}
 	case http.StatusNotFound:
 		{
 			// Handle not found case
-			utils.SendErrorResponse(w, http.StatusConflict, "Patient Not Found.", responseBody.Error)
+			utils.SendErrorResponse(w, http.StatusNotFound, decodedResponse.Message, "Patient not found: "+decodedResponse.Error)
 			return
 		}
 	default:
 		// Handle default case - internal server error
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", errors.New("unexpected status").Error())
+		utils.SendErrorResponse(w, http.StatusInternalServerError, decodedResponse.Message, "Unexpected status code: "+strconv.Itoa(response.StatusCode)+". Error: "+decodedResponse.Error)
 		return
 	}
 }

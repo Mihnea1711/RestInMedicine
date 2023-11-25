@@ -3,8 +3,8 @@ package controllers
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -28,16 +28,12 @@ func (gc *GatewayController) CreateAppointment(w http.ResponseWriter, r *http.Re
 	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_CONTEXT_TIMEOUT*time.Second)
 	defer cancel()
 
-	log.Println(appointmentRequest.IDDoctor)
-
 	// Check if appointmentRequest.IDDoctor exists
 	responseDoctor, errDoctor := gc.redirectRequestBody(ctx, http.MethodGet, fmt.Sprintf("%s/%d", utils.DOCTOR_FETCH_DOCTOR_BY_ID_ENDPOINT, appointmentRequest.IDDoctor), utils.DOCTOR_PORT, nil)
 	if errDoctor != nil {
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to validate doctor ID", errDoctor.Error())
 		return
 	}
-
-	log.Println(responseDoctor)
 
 	defer func() {
 		if err := responseDoctor.Body.Close(); err != nil {
@@ -47,14 +43,23 @@ func (gc *GatewayController) CreateAppointment(w http.ResponseWriter, r *http.Re
 	}()
 
 	if responseDoctor.StatusCode != http.StatusOK {
-		var responseBody *models.ResponseData
-		if err := json.NewDecoder(responseDoctor.Body).Decode(&responseBody); err != nil {
-			log.Printf("[GATEWAY] Error decoding doctor response body: %v", err)
-			utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", err.Error())
+		// Read the HTML-encoded JSON string from the response body
+		htmlEncodedJSON, err := io.ReadAll(responseDoctor.Body)
+		if err != nil {
+			log.Printf("[GATEWAY] Error reading response body: %v", err)
+			utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to read response body", "Failed to read response body: "+err.Error())
 			return
 		}
 
-		utils.SendErrorResponse(w, responseDoctor.StatusCode, "Doctor validation failed", responseBody.Error)
+		// Decode HTML-encoded JSON string to ResponseData
+		var decodedResponse models.ResponseData
+		if err := utils.DecodeHTML(string(htmlEncodedJSON), &decodedResponse); err != nil {
+			log.Printf("[GATEWAY] Error decoding HTML-encoded JSON: %v", err)
+			utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to decode HTML-encoded JSON", "Failed to decode HTML-encoded JSON: "+err.Error())
+			return
+		}
+
+		utils.SendErrorResponse(w, responseDoctor.StatusCode, decodedResponse.Message, decodedResponse.Error)
 		return
 	}
 
@@ -73,14 +78,23 @@ func (gc *GatewayController) CreateAppointment(w http.ResponseWriter, r *http.Re
 	}()
 
 	if responsePatient.StatusCode != http.StatusOK {
-		var responseBody *models.ResponseData
-		if err := json.NewDecoder(responsePatient.Body).Decode(&responseBody); err != nil {
-			log.Printf("[GATEWAY] Error decoding patient response body: %v", err)
-			utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", err.Error())
+		// Read the HTML-encoded JSON string from the response body
+		htmlEncodedJSON, err := io.ReadAll(responsePatient.Body)
+		if err != nil {
+			log.Printf("[GATEWAY] Error reading response body: %v", err)
+			utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to read response body", "Failed to read response body: "+err.Error())
 			return
 		}
 
-		utils.SendErrorResponse(w, responsePatient.StatusCode, "Patient validation failed", responseBody.Error)
+		// Decode HTML-encoded JSON string to ResponseData
+		var decodedResponse models.ResponseData
+		if err := utils.DecodeHTML(string(htmlEncodedJSON), &decodedResponse); err != nil {
+			log.Printf("[GATEWAY] Error decoding HTML-encoded JSON: %v", err)
+			utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to decode HTML-encoded JSON", "Failed to decode HTML-encoded JSON: "+err.Error())
+			return
+		}
+
+		utils.SendErrorResponse(w, responsePatient.StatusCode, decodedResponse.Message, decodedResponse.Error)
 		return
 	}
 
@@ -99,10 +113,19 @@ func (gc *GatewayController) CreateAppointment(w http.ResponseWriter, r *http.Re
 		}
 	}()
 
-	var responseBody *models.ResponseData
-	if err := json.NewDecoder(response.Body).Decode(&responseBody); err != nil {
-		log.Printf("[GATEWAY] Error decoding appointment response body: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", err.Error())
+	// Read the HTML-encoded JSON string from the response body
+	htmlEncodedJSON, err := io.ReadAll(responsePatient.Body)
+	if err != nil {
+		log.Printf("[GATEWAY] Error reading response body: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to read response body", "Failed to read response body: "+err.Error())
+		return
+	}
+
+	// Decode HTML-encoded JSON string to ResponseData
+	var decodedResponse models.ResponseData
+	if err := utils.DecodeHTML(string(htmlEncodedJSON), &decodedResponse); err != nil {
+		log.Printf("[GATEWAY] Error decoding HTML-encoded JSON: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to decode HTML-encoded JSON", "Failed to decode HTML-encoded JSON: "+err.Error())
 		return
 	}
 
@@ -110,18 +133,18 @@ func (gc *GatewayController) CreateAppointment(w http.ResponseWriter, r *http.Re
 	case http.StatusOK:
 		{
 			// Respond with the response from the other module
-			utils.SendMessageResponse(w, http.StatusOK, responseBody.Message, responseBody.Payload)
+			utils.SendMessageResponse(w, http.StatusOK, decodedResponse.Message, decodedResponse.Payload)
 			return
 		}
 	case http.StatusConflict:
 		{
 			// Handle conflict case
-			utils.SendErrorResponse(w, http.StatusConflict, responseBody.Message, responseBody.Error)
+			utils.SendErrorResponse(w, http.StatusConflict, decodedResponse.Message, "Appointment Conflict: "+decodedResponse.Error)
 			return
 		}
 	default:
 		// Handle default case - internal server error
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", "Something unexpected happened")
+		utils.SendErrorResponse(w, http.StatusInternalServerError, decodedResponse.Message, "Unexpected status code: "+strconv.Itoa(response.StatusCode)+". Error: "+decodedResponse.Error)
 		return
 	}
 }
@@ -147,23 +170,31 @@ func (gc *GatewayController) GetAppointments(w http.ResponseWriter, r *http.Requ
 		}
 	}()
 
-	var responseBody *models.ResponseData
-	if err := json.NewDecoder(response.Body).Decode(&responseBody); err != nil {
-		log.Printf("[GATEWAY] Error decoding response body: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", err.Error())
+	// Read the HTML-encoded JSON string from the response body
+	htmlEncodedJSON, err := io.ReadAll(response.Body)
+	if err != nil {
+		log.Printf("[GATEWAY] Error reading response body: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to read response body", "Failed to read response body: "+err.Error())
 		return
 	}
 
+	// Decode HTML-encoded JSON string to ResponseData
+	var decodedResponse models.ResponseData
+	if err := utils.DecodeHTML(string(htmlEncodedJSON), &decodedResponse); err != nil {
+		log.Printf("[GATEWAY] Error decoding HTML-encoded JSON: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to decode HTML-encoded JSON", "Failed to decode HTML-encoded JSON: "+err.Error())
+		return
+	}
 	switch response.StatusCode {
 	case http.StatusOK:
 		{
 			log.Println("[GATEWAY] Appointments fetched successfully")
-			utils.SendMessageResponse(w, http.StatusOK, responseBody.Message, responseBody.Payload)
+			utils.SendMessageResponse(w, http.StatusOK, decodedResponse.Message, decodedResponse.Payload)
 			return
 		}
 	default:
 		// Handle default case - internal server error
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", errors.New("unexpected status").Error())
+		utils.SendErrorResponse(w, http.StatusInternalServerError, decodedResponse.Message, "Unexpected status code: "+strconv.Itoa(response.StatusCode)+". Error: "+decodedResponse.Error)
 		return
 	}
 }
@@ -195,29 +226,38 @@ func (gc *GatewayController) GetAppointmentByID(w http.ResponseWriter, r *http.R
 		}
 	}()
 
-	var responseBody *models.ResponseData
-	if err := json.NewDecoder(response.Body).Decode(&responseBody); err != nil {
-		log.Printf("[GATEWAY] Error decoding response body: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", err.Error())
+	// Read the HTML-encoded JSON string from the response body
+	htmlEncodedJSON, err := io.ReadAll(response.Body)
+	if err != nil {
+		log.Printf("[GATEWAY] Error reading response body: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to read response body", "Failed to read response body: "+err.Error())
+		return
+	}
+
+	// Decode HTML-encoded JSON string to ResponseData
+	var decodedResponse models.ResponseData
+	if err := utils.DecodeHTML(string(htmlEncodedJSON), &decodedResponse); err != nil {
+		log.Printf("[GATEWAY] Error decoding HTML-encoded JSON: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to decode HTML-encoded JSON", "Failed to decode HTML-encoded JSON: "+err.Error())
 		return
 	}
 
 	switch response.StatusCode {
 	case http.StatusOK:
 		{
-			log.Println("[GATEWAY] Doctor fetched successfully")
-			utils.SendMessageResponse(w, http.StatusOK, responseBody.Message, responseBody.Payload)
+			log.Println("[GATEWAY] Appointment fetched successfully")
+			utils.SendMessageResponse(w, http.StatusOK, decodedResponse.Message, decodedResponse.Payload)
 			return
 		}
 	case http.StatusNotFound:
 		{
 			// Handle conflict case
-			utils.SendErrorResponse(w, http.StatusConflict, responseBody.Message, responseBody.Error)
+			utils.SendErrorResponse(w, http.StatusNotFound, decodedResponse.Message, "Appointment not found: "+decodedResponse.Error)
 			return
 		}
 	default:
 		// Handle default case - internal server error
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", errors.New("unexpected status").Error())
+		utils.SendErrorResponse(w, http.StatusInternalServerError, decodedResponse.Message, "Unexpected status code: "+strconv.Itoa(response.StatusCode)+". Error: "+decodedResponse.Error)
 		return
 	}
 }
@@ -275,28 +315,37 @@ func (gc *GatewayController) GetAppointmentsByDoctorID(w http.ResponseWriter, r 
 		}
 	}()
 
-	var responseBody *models.ResponseData
-	if err := json.NewDecoder(response.Body).Decode(&responseBody); err != nil {
-		log.Printf("[GATEWAY] Error decoding response body: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", err.Error())
+	// Read the HTML-encoded JSON string from the response body
+	htmlEncodedJSON, err := io.ReadAll(response.Body)
+	if err != nil {
+		log.Printf("[GATEWAY] Error reading response body: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to read response body", "Failed to read response body: "+err.Error())
+		return
+	}
+
+	// Decode HTML-encoded JSON string to ResponseData
+	var decodedResponse models.ResponseData
+	if err := utils.DecodeHTML(string(htmlEncodedJSON), &decodedResponse); err != nil {
+		log.Printf("[GATEWAY] Error decoding HTML-encoded JSON: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to decode HTML-encoded JSON", "Failed to decode HTML-encoded JSON: "+err.Error())
 		return
 	}
 
 	switch response.StatusCode {
 	case http.StatusOK:
 		{
-			log.Println("[GATEWAY] Doctor fetched successfully")
-			utils.SendMessageResponse(w, http.StatusOK, responseBody.Message, responseBody.Payload)
+			log.Println("[GATEWAY] Consultation fetched successfully")
+			utils.SendMessageResponse(w, http.StatusOK, decodedResponse.Message, decodedResponse.Payload)
 			return
 		}
 	case http.StatusNotFound:
 		{
-			utils.SendErrorResponse(w, http.StatusConflict, responseBody.Message, responseBody.Error)
+			utils.SendErrorResponse(w, http.StatusNotFound, decodedResponse.Message, "Appointment not found: "+decodedResponse.Error)
 			return
 		}
 	default:
 		// Handle default case - internal server error
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", errors.New("unexpected status").Error())
+		utils.SendErrorResponse(w, http.StatusInternalServerError, decodedResponse.Message, "Unexpected status code: "+strconv.Itoa(response.StatusCode)+". Error: "+decodedResponse.Error)
 		return
 	}
 }
@@ -354,28 +403,37 @@ func (gc *GatewayController) GetAppointmentsByPacientID(w http.ResponseWriter, r
 		}
 	}()
 
-	var responseBody *models.ResponseData
-	if err := json.NewDecoder(response.Body).Decode(&responseBody); err != nil {
-		log.Printf("[GATEWAY] Error decoding response body: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", err.Error())
+	// Read the HTML-encoded JSON string from the response body
+	htmlEncodedJSON, err := io.ReadAll(response.Body)
+	if err != nil {
+		log.Printf("[GATEWAY] Error reading response body: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to read response body", "Failed to read response body: "+err.Error())
+		return
+	}
+
+	// Decode HTML-encoded JSON string to ResponseData
+	var decodedResponse models.ResponseData
+	if err := utils.DecodeHTML(string(htmlEncodedJSON), &decodedResponse); err != nil {
+		log.Printf("[GATEWAY] Error decoding HTML-encoded JSON: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to decode HTML-encoded JSON", "Failed to decode HTML-encoded JSON: "+err.Error())
 		return
 	}
 
 	switch response.StatusCode {
 	case http.StatusOK:
 		{
-			log.Println("[GATEWAY] Patient fetched successfully")
-			utils.SendMessageResponse(w, http.StatusOK, responseBody.Message, responseBody.Payload)
+			log.Println("[GATEWAY] Appointment fetched successfully")
+			utils.SendMessageResponse(w, http.StatusOK, decodedResponse.Message, decodedResponse.Payload)
 			return
 		}
 	case http.StatusNotFound:
 		{
-			utils.SendErrorResponse(w, http.StatusConflict, responseBody.Message, responseBody.Error)
+			utils.SendErrorResponse(w, http.StatusNotFound, decodedResponse.Message, "Appointment not found: "+decodedResponse.Error)
 			return
 		}
 	default:
 		// Handle default case - internal server error
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", errors.New("unexpected status").Error())
+		utils.SendErrorResponse(w, http.StatusInternalServerError, decodedResponse.Message, "Unexpected status code: "+strconv.Itoa(response.StatusCode)+". Error: "+decodedResponse.Error)
 		return
 	}
 }
@@ -402,10 +460,19 @@ func (gc *GatewayController) GetAppointmentsByDate(w http.ResponseWriter, r *htt
 		}
 	}()
 
-	var responseBody *models.ResponseData
-	if err := json.NewDecoder(response.Body).Decode(&responseBody); err != nil {
-		log.Printf("[GATEWAY] Error decoding response body: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", err.Error())
+	// Read the HTML-encoded JSON string from the response body
+	htmlEncodedJSON, err := io.ReadAll(response.Body)
+	if err != nil {
+		log.Printf("[GATEWAY] Error reading response body: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to read response body", "Failed to read response body: "+err.Error())
+		return
+	}
+
+	// Decode HTML-encoded JSON string to ResponseData
+	var decodedResponse models.ResponseData
+	if err := utils.DecodeHTML(string(htmlEncodedJSON), &decodedResponse); err != nil {
+		log.Printf("[GATEWAY] Error decoding HTML-encoded JSON: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to decode HTML-encoded JSON", "Failed to decode HTML-encoded JSON: "+err.Error())
 		return
 	}
 
@@ -413,17 +480,17 @@ func (gc *GatewayController) GetAppointmentsByDate(w http.ResponseWriter, r *htt
 	case http.StatusOK:
 		{
 			log.Println("[GATEWAY] Appointments fetched successfully")
-			utils.SendMessageResponse(w, http.StatusOK, responseBody.Message, responseBody.Payload)
+			utils.SendMessageResponse(w, http.StatusOK, decodedResponse.Message, decodedResponse.Payload)
 			return
 		}
 	case http.StatusNotFound:
 		{
-			utils.SendErrorResponse(w, http.StatusConflict, responseBody.Message, responseBody.Error)
+			utils.SendErrorResponse(w, http.StatusNotFound, decodedResponse.Message, "Appointment not found: "+decodedResponse.Error)
 			return
 		}
 	default:
 		// Handle default case - internal server error
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", errors.New("unexpected status").Error())
+		utils.SendErrorResponse(w, http.StatusInternalServerError, decodedResponse.Message, "Unexpected status code: "+strconv.Itoa(response.StatusCode)+". Error: "+decodedResponse.Error)
 		return
 	}
 }
@@ -450,10 +517,19 @@ func (gc *GatewayController) GetAppointmentsByStatus(w http.ResponseWriter, r *h
 		}
 	}()
 
-	var responseBody *models.ResponseData
-	if err := json.NewDecoder(response.Body).Decode(&responseBody); err != nil {
-		log.Printf("[GATEWAY] Error decoding response body: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", err.Error())
+	// Read the HTML-encoded JSON string from the response body
+	htmlEncodedJSON, err := io.ReadAll(response.Body)
+	if err != nil {
+		log.Printf("[GATEWAY] Error reading response body: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to read response body", "Failed to read response body: "+err.Error())
+		return
+	}
+
+	// Decode HTML-encoded JSON string to ResponseData
+	var decodedResponse models.ResponseData
+	if err := utils.DecodeHTML(string(htmlEncodedJSON), &decodedResponse); err != nil {
+		log.Printf("[GATEWAY] Error decoding HTML-encoded JSON: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to decode HTML-encoded JSON", "Failed to decode HTML-encoded JSON: "+err.Error())
 		return
 	}
 
@@ -461,17 +537,17 @@ func (gc *GatewayController) GetAppointmentsByStatus(w http.ResponseWriter, r *h
 	case http.StatusOK:
 		{
 			log.Println("[GATEWAY] Appointments fetched successfully")
-			utils.SendMessageResponse(w, http.StatusOK, responseBody.Message, responseBody.Payload)
+			utils.SendMessageResponse(w, http.StatusOK, decodedResponse.Message, decodedResponse.Payload)
 			return
 		}
 	case http.StatusNotFound:
 		{
-			utils.SendErrorResponse(w, http.StatusConflict, responseBody.Message, responseBody.Error)
+			utils.SendErrorResponse(w, http.StatusNotFound, decodedResponse.Message, "Appointment not found: "+decodedResponse.Error)
 			return
 		}
 	default:
 		// Handle default case - internal server error
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", errors.New("unexpected status").Error())
+		utils.SendErrorResponse(w, http.StatusInternalServerError, decodedResponse.Message, "Unexpected status code: "+strconv.Itoa(response.StatusCode)+". Error: "+decodedResponse.Error)
 		return
 	}
 }
@@ -510,10 +586,19 @@ func (gc *GatewayController) UpdateAppointmentByID(w http.ResponseWriter, r *htt
 		}
 	}()
 
-	var responseBody *models.ResponseData
-	if err := json.NewDecoder(response.Body).Decode(&responseBody); err != nil {
-		log.Printf("[GATEWAY] Error decoding response body: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", err.Error())
+	// Read the HTML-encoded JSON string from the response body
+	htmlEncodedJSON, err := io.ReadAll(response.Body)
+	if err != nil {
+		log.Printf("[GATEWAY] Error reading response body: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to read response body", "Failed to read response body: "+err.Error())
+		return
+	}
+
+	// Decode HTML-encoded JSON string to ResponseData
+	var decodedResponse models.ResponseData
+	if err := utils.DecodeHTML(string(htmlEncodedJSON), &decodedResponse); err != nil {
+		log.Printf("[GATEWAY] Error decoding HTML-encoded JSON: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to decode HTML-encoded JSON", "Failed to decode HTML-encoded JSON: "+err.Error())
 		return
 	}
 
@@ -521,18 +606,18 @@ func (gc *GatewayController) UpdateAppointmentByID(w http.ResponseWriter, r *htt
 	case http.StatusOK:
 		{
 			// Respond with the response from the other module
-			utils.SendMessageResponse(w, http.StatusOK, responseBody.Message, responseBody.Payload)
+			utils.SendMessageResponse(w, http.StatusOK, decodedResponse.Message, decodedResponse.Payload)
 			return
 		}
 	case http.StatusConflict:
 		{
 			// Handle conflict case
-			utils.SendErrorResponse(w, http.StatusConflict, responseBody.Message, responseBody.Error)
+			utils.SendErrorResponse(w, http.StatusNotFound, decodedResponse.Message, "Appointment not found: "+decodedResponse.Error)
 			return
 		}
 	default:
 		// Handle default case - internal server error
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", "Something unexpected happened")
+		utils.SendErrorResponse(w, http.StatusInternalServerError, decodedResponse.Message, "Unexpected status code: "+strconv.Itoa(response.StatusCode)+". Error: "+decodedResponse.Error)
 		return
 	}
 }
@@ -564,28 +649,36 @@ func (gc *GatewayController) DeleteAppointmentByID(w http.ResponseWriter, r *htt
 		}
 	}()
 
-	var responseBody *models.ResponseData
-	if err := json.NewDecoder(response.Body).Decode(&responseBody); err != nil {
-		log.Printf("[GATEWAY] Error decoding response body: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", err.Error())
+	// Read the HTML-encoded JSON string from the response body
+	htmlEncodedJSON, err := io.ReadAll(response.Body)
+	if err != nil {
+		log.Printf("[GATEWAY] Error reading response body: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to read response body", "Failed to read response body: "+err.Error())
 		return
 	}
 
+	// Decode HTML-encoded JSON string to ResponseData
+	var decodedResponse models.ResponseData
+	if err := utils.DecodeHTML(string(htmlEncodedJSON), &decodedResponse); err != nil {
+		log.Printf("[GATEWAY] Error decoding HTML-encoded JSON: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to decode HTML-encoded JSON", "Failed to decode HTML-encoded JSON: "+err.Error())
+		return
+	}
 	switch response.StatusCode {
 	case http.StatusOK:
 		{
 			log.Println("[GATEWAY] Appointment deleted successfully")
-			utils.SendMessageResponse(w, http.StatusOK, responseBody.Message, responseBody.Payload)
+			utils.SendMessageResponse(w, http.StatusOK, decodedResponse.Message, decodedResponse.Payload)
 			return
 		}
 	case http.StatusNotFound:
 		{
-			utils.SendErrorResponse(w, http.StatusConflict, responseBody.Message, responseBody.Error)
+			utils.SendErrorResponse(w, http.StatusNotFound, decodedResponse.Message, "Appointment not found: "+decodedResponse.Error)
 			return
 		}
 	default:
 		// Handle default case - internal server error
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", errors.New("unexpected status").Error())
+		utils.SendErrorResponse(w, http.StatusInternalServerError, decodedResponse.Message, "Unexpected status code: "+strconv.Itoa(response.StatusCode)+". Error: "+decodedResponse.Error)
 		return
 	}
 }
