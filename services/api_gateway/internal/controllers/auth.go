@@ -31,7 +31,6 @@ func (gc *GatewayController) RegisterUser(w http.ResponseWriter, r *http.Request
 			Password: registerRequest.Password,
 		},
 	})
-
 	if err != nil {
 		// Handle gRPC error (e.g., return a response with an error message)
 		log.Printf("[GATEWAY] Error calling IDM gRPC service: %v", err)
@@ -78,7 +77,6 @@ func (gc *GatewayController) LoginUser(w http.ResponseWriter, r *http.Request) {
 			Password: loginUserRequest.Password,
 		},
 	})
-
 	if err != nil {
 		// Handle gRPC error (e.g., return a response with an error message)
 		log.Printf("[GATEWAY] Error calling IDM gRPC service: %v", err)

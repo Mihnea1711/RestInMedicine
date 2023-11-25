@@ -38,7 +38,7 @@ func (gc *GatewayController) CreateConsultation(w http.ResponseWriter, r *http.R
 	}
 
 	// Check if appointmentRequest.IDPatient exists
-	decodedResponsePatient, statusPatient, errPatient := gc.redirectRequestBody(ctx, http.MethodGet, fmt.Sprintf("%s/%d", utils.PATIENT_FETCH_PATIENT_BY_ID_ENDPOINT, consultationRequest.IDPacient), utils.PATIENT_PORT, nil)
+	decodedResponsePatient, statusPatient, errPatient := gc.redirectRequestBody(ctx, http.MethodGet, fmt.Sprintf("%s/%d", utils.PATIENT_FETCH_PATIENT_BY_ID_ENDPOINT, consultationRequest.IDPatient), utils.PATIENT_PORT, nil)
 	if errPatient != nil {
 		log.Printf("[GATEWAY] Error redirecting patient ID request: %v", errPatient)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to validate patient ID", errPatient.Error())
@@ -86,7 +86,7 @@ func (gc *GatewayController) GetConsultations(w http.ResponseWriter, r *http.Req
 	// Redirect the request to another module
 	decodedResponse, status, err := gc.redirectRequestBody(ctx, utils.GET, utils.CONSULTATION_FETCH_ALL_CONSULTATII_ENDPOINT, utils.CONSULTATION_PORT, nil)
 	if err != nil {
-		// Handle the error (e.g., return a response with an error message)
+		log.Printf("[GATEWAY] Error redirecting consultation request: %v", err)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
 		return
 	}
@@ -113,8 +113,8 @@ func (gc *GatewayController) GetConsultationsByDoctorID(w http.ResponseWriter, r
 	// Convert doctorIDString to int64
 	doctorID, err := strconv.ParseInt(doctorIDString, 10, 64)
 	if err != nil {
-		log.Printf("[GATEWAY] Invalid doctor ID: %v", err)
-		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid doctor ID", err.Error())
+		log.Printf("[GATEWAY] Invalid consultation doctor ID: %v", err)
+		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid consultation doctor ID", err.Error())
 		return
 	}
 
@@ -138,6 +138,7 @@ func (gc *GatewayController) GetConsultationsByDoctorID(w http.ResponseWriter, r
 	// Redirect the request body to appointment module
 	decodedResponse, status, err := gc.redirectRequestBody(ctx, http.MethodGet, fmt.Sprintf("%s/%d", utils.CONSULTATION_FETCH_CONSULTATIE_BY_DOCTOR_ID_ENDPOINT, doctorID), utils.CONSULTATION_PORT, nil)
 	if err != nil {
+		log.Printf("[GATEWAY] Error redirecting consultation request: %v", err)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
 		return
 	}
@@ -159,8 +160,8 @@ func (gc *GatewayController) GetConsultationsByDoctorID(w http.ResponseWriter, r
 	}
 }
 
-// GetConsultationsByPacientID handles the retrieval of consultations by pacient ID.
-func (gc *GatewayController) GetConsultationsByPacientID(w http.ResponseWriter, r *http.Request) {
+// GetConsultationsByPatientID handles the retrieval of consultations by patient ID.
+func (gc *GatewayController) GetConsultationsByPatientID(w http.ResponseWriter, r *http.Request) {
 	log.Printf("[GATEWAY] Attempting to get consultations by patientID.")
 
 	// Get PatientID from request params
@@ -168,7 +169,8 @@ func (gc *GatewayController) GetConsultationsByPacientID(w http.ResponseWriter, 
 	// Convert patientIDString to int64
 	patientID, err := strconv.ParseInt(patientIDString, 10, 64)
 	if err != nil {
-		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid pacient ID", err.Error())
+		log.Printf("[GATEWAY] Invalid consultation patient ID: %v", err)
+		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid consultation patient ID", err.Error())
 		return
 	}
 
@@ -192,6 +194,7 @@ func (gc *GatewayController) GetConsultationsByPacientID(w http.ResponseWriter, 
 	// Redirect the request body to appointment module
 	decodedResponse, status, err := gc.redirectRequestBody(ctx, http.MethodGet, fmt.Sprintf("%s/%d", utils.CONSULTATION_FETCH_CONSULTATIE_BY_PATIENT_ID_ENDPOINT, patientID), utils.CONSULTATION_PORT, nil)
 	if err != nil {
+		log.Printf("[GATEWAY] Error redirecting consultation request: %v", err)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
 		return
 	}
@@ -199,15 +202,15 @@ func (gc *GatewayController) GetConsultationsByPacientID(w http.ResponseWriter, 
 	// Check the gRPC response status and handle accordingly
 	switch status {
 	case http.StatusOK:
-		log.Printf("[GATEWAY] GetConsultationsByPacientID: Request successful with status %d", status)
+		log.Printf("[GATEWAY] GetConsultationsByPatientID: Request successful with status %d", status)
 		utils.SendMessageResponse(w, http.StatusOK, decodedResponse.Message, decodedResponse.Payload)
 		return
 	case http.StatusNotFound:
-		log.Printf("[GATEWAY] GetConsultationsByPacientID: Request failed with not found status %d", status)
+		log.Printf("[GATEWAY] GetConsultationsByPatientID: Request failed with not found status %d", status)
 		utils.SendErrorResponse(w, http.StatusNotFound, decodedResponse.Message, "Consultation PatientID not found: "+decodedResponse.Error)
 		return
 	default:
-		log.Printf("[GATEWAY] GetConsultationsByPacientID: Request failed with unexpected status %d", status)
+		log.Printf("[GATEWAY] GetConsultationsByPatientID: Request failed with unexpected status %d", status)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, decodedResponse.Message, "Unexpected status code: "+strconv.Itoa(status)+". Error: "+decodedResponse.Error)
 		return
 	}
@@ -227,7 +230,7 @@ func (gc *GatewayController) GetConsultationsByDate(w http.ResponseWriter, r *ht
 	// Redirect the request body to appointment module
 	decodedResponse, status, err := gc.redirectRequestBody(ctx, http.MethodGet, fmt.Sprintf("%s/%s", utils.CONSULTATION_FETCH_CONSULTATIE_BY_DATE_ENDPOINT, dateStr), utils.CONSULTATION_PORT, nil)
 	if err != nil {
-		log.Printf("[GATEWAY] Failed to redirect consultation request: %v", err)
+		log.Printf("[GATEWAY]Error redirecting consultation request: %v", err)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
 		return
 	}
@@ -258,6 +261,7 @@ func (gc *GatewayController) GetConsultationByID(w http.ResponseWriter, r *http.
 	// Convert patientIDString to int64
 	consultationID, err := strconv.ParseInt(consultationIDString, 10, 64)
 	if err != nil {
+		log.Printf("[GATEWAY] Invalid consultation ID: %v", err)
 		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid consultation ID", err.Error())
 		return
 	}
@@ -269,6 +273,7 @@ func (gc *GatewayController) GetConsultationByID(w http.ResponseWriter, r *http.
 	// Redirect the request body to another module
 	decodedResponse, status, err := gc.redirectRequestBody(ctx, http.MethodGet, fmt.Sprintf("%s/%d", utils.CONSULTATION_FETCH_CONSULTATIE_BY_ID_ENDPOINT, consultationID), utils.CONSULTATION_PORT, nil)
 	if err != nil {
+		log.Printf("[GATEWAY] Error redirecting consultation request: %v", err)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
 		return
 	}
@@ -299,6 +304,7 @@ func (gc *GatewayController) UpdateConsultationByID(w http.ResponseWriter, r *ht
 	// Convert consultationIDString to int64
 	consultationID, err := strconv.ParseInt(consultationIDString, 10, 64)
 	if err != nil {
+		log.Printf("[GATEWAY] Invalid consultation ID: %v", err)
 		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid consultation ID", err.Error())
 		return
 	}
@@ -324,7 +330,7 @@ func (gc *GatewayController) UpdateConsultationByID(w http.ResponseWriter, r *ht
 	}
 
 	// Check if appointmentRequest.IDPatient exists
-	decodedResponsePatient, statusPatient, errPatient := gc.redirectRequestBody(ctx, http.MethodGet, fmt.Sprintf("%s/%d", utils.PATIENT_FETCH_PATIENT_BY_ID_ENDPOINT, consultationData.IDPacient), utils.PATIENT_PORT, nil)
+	decodedResponsePatient, statusPatient, errPatient := gc.redirectRequestBody(ctx, http.MethodGet, fmt.Sprintf("%s/%d", utils.PATIENT_FETCH_PATIENT_BY_ID_ENDPOINT, consultationData.IDPatient), utils.PATIENT_PORT, nil)
 	if errPatient != nil {
 		log.Printf("[GATEWAY] Error redirecting patient ID request: %v", errPatient)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to validate patient ID", errPatient.Error())
@@ -339,7 +345,7 @@ func (gc *GatewayController) UpdateConsultationByID(w http.ResponseWriter, r *ht
 	// Redirect the request body to programare module to create the consultation
 	decodedResponse, status, err := gc.redirectRequestBody(ctx, utils.PUT, fmt.Sprintf("%s/%d", utils.CONSULTATION_UPDATE_CONSULTATIE_BY_ID_ENDPOINT, consultationID), utils.CONSULTATION_PORT, consultationData)
 	if err != nil {
-		log.Printf("[GATEWAY] Failed to redirect request: %v", err)
+		log.Printf("[GATEWAY] Error redirecting consultation request: %v", err)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
 		return
 	}
@@ -374,6 +380,7 @@ func (gc *GatewayController) DeleteConsultationByID(w http.ResponseWriter, r *ht
 	// Convert consultationIDString to int64
 	consultationID, err := strconv.ParseInt(consultationIDString, 10, 64)
 	if err != nil {
+		log.Printf("[GATEWAY] Invalid consultation ID: %v", err)
 		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid consultation ID", err.Error())
 		return
 	}
@@ -385,6 +392,7 @@ func (gc *GatewayController) DeleteConsultationByID(w http.ResponseWriter, r *ht
 	// Redirect the request body to another module
 	decodedResponse, status, err := gc.redirectRequestBody(ctx, utils.DELETE, fmt.Sprintf("%s/%d", utils.CONSULTATION_DELETE_CONSULTATIE_BY_ID_ENDPOINT, consultationID), utils.CONSULTATION_PORT, nil)
 	if err != nil {
+		log.Printf("[GATEWAY] Error redirecting consultation request: %v", err)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
 		return
 	}

@@ -28,7 +28,7 @@ func loadConsultationRoutes(router *mux.Router, gatewayController *controllers.G
 	router.HandleFunc(utils.GET_CONSULTATION_BY_DOCTOR_ID_ENDPOINT, authorization.AllRolesMiddleware(jwtConfig, consultatieFetchByDoctorIDHandler)).Methods("GET")
 	log.Printf("[CONSULTATION] Route GET %s registered.", utils.GET_CONSULTATION_BY_DOCTOR_ID_ENDPOINT)
 
-	consultatieFetchByPacientIDHandler := http.HandlerFunc(gatewayController.GetConsultationsByPacientID)
+	consultatieFetchByPacientIDHandler := http.HandlerFunc(gatewayController.GetConsultationsByPatientID)
 	router.HandleFunc(utils.GET_CONSULTATION_BY_PATIENT_ID_ENDPOINT, authorization.AllRolesMiddleware(jwtConfig, consultatieFetchByPacientIDHandler)).Methods("GET")
 	log.Printf("[CONSULTATION] Route GET %s registered.", utils.GET_CONSULTATION_BY_PATIENT_ID_ENDPOINT)
 

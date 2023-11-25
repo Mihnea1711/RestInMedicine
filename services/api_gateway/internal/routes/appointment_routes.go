@@ -32,7 +32,7 @@ func loadAppointmentRoutes(router *mux.Router, gatewayController *controllers.Ga
 	router.HandleFunc(utils.GET_APPOINTMENTS_BY_DOCTOR_ID_ENDPOINT, authorization.AllRolesMiddleware(jwtConfig, appointmentFetchByDoctorIDHandler)).Methods("GET")
 	log.Println("[APPOINTMENT] Route GET", utils.GET_APPOINTMENTS_BY_DOCTOR_ID_ENDPOINT, "registered.")
 
-	appointmentFetchByPacientIDHandler := http.HandlerFunc(gatewayController.GetAppointmentsByPacientID)
+	appointmentFetchByPacientIDHandler := http.HandlerFunc(gatewayController.GetAppointmentsByPatientID)
 	router.HandleFunc(utils.GET_APPOINTMENTS_BY_PATIENT_ID_ENDPOINT, authorization.AllRolesMiddleware(jwtConfig, appointmentFetchByPacientIDHandler)).Methods("GET")
 	log.Println("[APPOINTMENT] Route GET", utils.GET_APPOINTMENTS_BY_PATIENT_ID_ENDPOINT, "registered.")
 

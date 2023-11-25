@@ -121,7 +121,6 @@ func (gc *GatewayController) UpdateUser(w http.ResponseWriter, r *http.Request) 
 
 	// Get UserID from request params
 	userIDString := mux.Vars(r)[utils.UPDATE_USER_ID_PARAMETER]
-
 	// Convert userIDString to int64
 	userID, err := strconv.ParseInt(userIDString, 10, 64)
 	if err != nil {
@@ -181,7 +180,6 @@ func (gc *GatewayController) DeleteUser(w http.ResponseWriter, r *http.Request) 
 
 	// Get UserID from request params
 	userIDString := mux.Vars(r)[utils.DELETE_USER_ID_PARAMETER]
-
 	// Convert userIDString to int64
 	userID, err := strconv.ParseInt(userIDString, 10, 64)
 	if err != nil {
@@ -233,7 +231,6 @@ func (gc *GatewayController) UpdatePassword(w http.ResponseWriter, r *http.Reque
 
 	// Get UserID from request params
 	userIDString := mux.Vars(r)[utils.UPDATE_USER_PASSWORD_ID_PARAMETER]
-
 	// Convert userIDString to int64
 	userID, err := strconv.ParseInt(userIDString, 10, 64)
 	if err != nil {
@@ -291,7 +288,6 @@ func (gc *GatewayController) UpdateRole(w http.ResponseWriter, r *http.Request) 
 
 	// Get UserID from request params
 	userIDString := mux.Vars(r)[utils.UPDATE_USER_ROLE_ID_PARAMETER]
-
 	// Convert userIDString to int64
 	userID, err := strconv.ParseInt(userIDString, 10, 64)
 	if err != nil {

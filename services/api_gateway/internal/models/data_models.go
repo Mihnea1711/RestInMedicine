@@ -62,7 +62,7 @@ type DoctorData struct {
 type StatusProgramare string
 type AppointmentData struct {
 	IDProgramare int              `db:"id_programare" json:"idProgramare" sql:"type:int primary key"`
-	IDPacient    int              `db:"id_pacient" json:"idPacient" validate:"required"`
+	IDPatient    int              `db:"id_patient" json:"idPatient" validate:"required"`
 	IDDoctor     int              `db:"id_doctor" json:"idDoctor" validate:"required"`
 	Date         time.Time        `db:"date" json:"date" validate:"required"`
 	Status       StatusProgramare `db:"status" json:"status" validate:"required"`
@@ -70,7 +70,7 @@ type AppointmentData struct {
 
 type ConsultationData struct {
 	IDConsultatie primitive.ObjectID `json:"id_consultation" bson:"id_consultation"`
-	IDPacient     int                `json:"id_patient" bson:"id_patient" validate:"required"`
+	IDPatient     int                `json:"id_patient" bson:"id_patient" validate:"required"`
 	IDDoctor      int                `json:"id_doctor" bson:"id_doctor" validate:"required"`
 	Date          time.Time          `json:"date" bson:"date" validate:"required"`
 	Diagnostic    string             `json:"diagnostic" bson:"diagnostic" validate:"required"`
