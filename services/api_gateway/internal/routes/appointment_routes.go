@@ -12,6 +12,7 @@ import (
 	"github.com/mihnea1711/POS_Project/services/gateway/pkg/utils"
 )
 
+// loadAppointmentRoutes loads all the CRUD routes for the Appointment entity
 func loadAppointmentRoutes(router *mux.Router, gatewayController *controllers.GatewayController, jwtConfig config.JWTConfig) {
 	// ---------------------------------------------------------- Create --------------------------------------------------------------
 	appointmentCreationHandler := http.HandlerFunc(gatewayController.CreateAppointment)

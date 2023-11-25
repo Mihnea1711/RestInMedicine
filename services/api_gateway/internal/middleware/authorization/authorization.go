@@ -23,6 +23,7 @@ func RoleMiddleware(allowedRoles []string, jwtConfig config.JWTConfig, next http
 			})
 			return
 		}
+
 		claims, err := ParseJWT(tokenString, jwtConfig)
 		if err != nil {
 			log.Printf("[GATEWAY_AUTH] An unexpected error occurred while trying to parse the token: %v", err)
@@ -53,6 +54,13 @@ func RoleMiddleware(allowedRoles []string, jwtConfig config.JWTConfig, next http
 			return
 		}
 
+		log.Printf("[GATEWAY_AUTH] Successful access for user on: %s://%s%s?%s#%s",
+			r.URL.Scheme,
+			r.URL.Host,
+			r.URL.Path,
+			r.URL.RawQuery,
+			r.URL.Fragment,
+		)
 		next.ServeHTTP(w, r)
 	}
 }

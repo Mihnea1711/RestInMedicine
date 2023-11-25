@@ -27,6 +27,12 @@ const (
 )
 
 const (
+	DEFAULT_PAGINATION_LIMIT = 20
+	MAX_PAGINATION_LIMIT     = 50
+	DEFAULT_PAGINATION_PAGE  = 1
+)
+
+const (
 	ADMIN_ROLE   = "admin"
 	PATIENT_ROLE = "patient"
 	DOCTOR_ROLE  = "doctor"

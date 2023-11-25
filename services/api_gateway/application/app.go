@@ -33,7 +33,6 @@ func New(config *config.AppConfig, parentCtx context.Context) (*App, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to IDM gRPC server: %v", err)
 	}
-
 	// Create IDM client
 	app.idmClient = idm.NewIDMClient(conn)
 
@@ -46,12 +45,11 @@ func New(config *config.AppConfig, parentCtx context.Context) (*App, error) {
 }
 
 func (a *App) Start(ctx context.Context) error {
+	log.Println("[GATEWAY] Starting server...")
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%d", a.config.Server.Port),
 		Handler: a.router,
 	}
-
-	log.Println("[GATEWAY] Starting server...") // Logging the server start
 
 	// Log the message just before starting the server in the goroutine
 	fmt.Printf("[GATEWAY] Server started and listening on port %d\n", a.config.Server.Port)

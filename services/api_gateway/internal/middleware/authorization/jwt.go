@@ -53,14 +53,22 @@ func ParseJWT(tokenString string, jwtConfig config.JWTConfig) (*MyCustomClaims, 
 func ExtractJWTFromHeader(r *http.Request) string {
 	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" {
+		log.Println("[GATEWAY_AUTH] Authorization header is missing.")
 		return ""
 	}
 
 	// The token is expected to be in the format "Bearer <token>"
 	authParts := strings.Split(authHeader, " ")
 	if len(authParts) != 2 || strings.ToLower(authParts[0]) != "bearer" {
+		log.Printf("[GATEWAY_AUTH] Invalid Authorization header format: %s", authHeader)
 		return ""
 	}
 
-	return authParts[1]
+	token := authParts[1]
+	if token == "" {
+		log.Println("[GATEWAY_AUTH] Empty token in Authorization header.")
+		return ""
+	}
+
+	return token
 }

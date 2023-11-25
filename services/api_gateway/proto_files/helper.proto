@@ -7,7 +7,10 @@ message Info {
     int64 Status = 2;
 }
 
-message EmptyRequest {}
+message EmptyRequest {
+    int64 Page = 1;
+    int64 Limit = 2;
+}
 
 message InfoResponse {
     Info Info = 1;

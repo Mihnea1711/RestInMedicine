@@ -12,6 +12,7 @@ import (
 	"github.com/mihnea1711/POS_Project/services/gateway/pkg/utils"
 )
 
+// loadPatientRoutes loads all the CRUD routes for the Patient entity
 func loadPatientRoutes(router *mux.Router, gatewayController *controllers.GatewayController, jwtConfig config.JWTConfig) {
 	// ---------------------------------------------------------- Create --------------------------------------------------------------
 	patientCreationHandler := http.HandlerFunc(gatewayController.CreatePatient)

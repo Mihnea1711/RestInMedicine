@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -9,11 +10,12 @@ import (
 	"github.com/mihnea1711/POS_Project/services/gateway/idm/proto_files"
 	"github.com/mihnea1711/POS_Project/services/gateway/internal/models"
 	"github.com/mihnea1711/POS_Project/services/gateway/pkg/utils"
+	"github.com/mihnea1711/POS_Project/services/gateway/pkg/utils/wrappers"
 )
 
 // RegisterUser handles user registration.
 func (gc *GatewayController) RegisterUser(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[GATEWAY] Attempting to register a new user.")
+	log.Println("[GATEWAY] Handling RegisterUser request...")
 	// Take user registration data from the context after validation
 	registerRequest := r.Context().Value(utils.DECODED_USER_REGISTRATION_DATA).(*models.UserRegistrationData)
 
@@ -37,6 +39,11 @@ func (gc *GatewayController) RegisterUser(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	// Wrap the gRPC response in InfoResponse for nil checks
+	infoResponse := &wrappers.InfoResponse{Response: response}
+	utils.CheckNilResponse(w, http.StatusInternalServerError, "Register response is nil", infoResponse.IsResponseNil, "Register response is nil")
+	utils.CheckNilResponse(w, http.StatusInternalServerError, "Register response info is nil", infoResponse.IsInfoNil, "Register response.Info is nil")
+
 	// Check the gRPC response status and handle accordingly
 	switch response.Info.Status {
 	case http.StatusOK:
@@ -46,17 +53,17 @@ func (gc *GatewayController) RegisterUser(w http.ResponseWriter, r *http.Request
 	case http.StatusConflict:
 		// User not added
 		log.Printf("[GATEWAY] Registration failed: %s", response.Info.Message)
-		utils.SendMessageResponse(w, http.StatusConflict, response.Info.Message, nil)
+		utils.SendMessageResponse(w, http.StatusConflict, response.Info.Message, fmt.Sprintf("Registration failed with status %d: %s", http.StatusConflict, response.Info.Message))
 	default:
 		// Other status codes
 		log.Printf("[GATEWAY] Registration failed: %s", response.Info.Message)
-		utils.SendMessageResponse(w, int(response.Info.Status), response.Info.Message, nil)
+		utils.SendMessageResponse(w, int(response.Info.Status), response.Info.Message, fmt.Sprintf("Registration failed with status %d: %s", response.Info.Status, response.Info.Message))
 	}
 }
 
 // LoginUser handles user login.
 func (gc *GatewayController) LoginUser(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[GATEWAY] Attempting to login a user.")
+	log.Println("[GATEWAY] Handling LoginUser request...")
 	// Take credentials data from the context after validation
 	loginUserRequest := r.Context().Value(utils.DECODED_USER_LOGIN_DATA).(*models.UserLoginData)
 
@@ -79,6 +86,12 @@ func (gc *GatewayController) LoginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Wrap the gRPC response in LoginResponse for nil checks
+	loginResponse := &wrappers.LoginResponse{Response: response}
+	utils.CheckNilResponse(w, http.StatusInternalServerError, "Internal Server Error. Login response is nil", loginResponse.IsResponseNil, "Login response is nil")
+	utils.CheckNilResponse(w, http.StatusInternalServerError, "Internal Server Error. Login response info is nil", loginResponse.IsInfoNil, "Login response.Info is nil")
+	utils.CheckNilResponse(w, http.StatusBadRequest, "Bad Request. Login response token is empty", loginResponse.IsTokenEmpty, "Login response.Token is empty")
+
 	// Check the gRPC response status and handle accordingly
 	switch response.Info.Status {
 	case http.StatusOK:
@@ -99,10 +112,11 @@ func (gc *GatewayController) LoginUser(w http.ResponseWriter, r *http.Request) {
 	case http.StatusNotFound:
 		// User not found
 		log.Printf("[GATEWAY] User not found: %s", response.Info.Message)
-		utils.SendMessageResponse(w, http.StatusNotFound, response.Info.Message, nil)
+		utils.SendErrorResponse(w, http.StatusNotFound, response.Info.Message, fmt.Sprintf("Login failed with status %d: %s", http.StatusNotFound, response.Info.Message))
+
 	default:
 		// Other status codes
 		log.Printf("[GATEWAY] Unexpected status code: %d", response.Info.Status)
-		utils.SendMessageResponse(w, http.StatusUnauthorized, response.Info.Message, nil)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, response.Info.Message, fmt.Sprintf("Login failed with status %d: %s", http.StatusInternalServerError, response.Info.Message))
 	}
 }

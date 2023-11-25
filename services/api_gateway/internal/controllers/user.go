@@ -11,6 +11,7 @@ import (
 	"github.com/mihnea1711/POS_Project/services/gateway/idm/proto_files"
 	"github.com/mihnea1711/POS_Project/services/gateway/internal/models"
 	"github.com/mihnea1711/POS_Project/services/gateway/pkg/utils"
+	"github.com/mihnea1711/POS_Project/services/gateway/pkg/utils/wrappers"
 )
 
 // GetAllUsers handles fetching all users.
@@ -21,6 +22,7 @@ func (gc *GatewayController) GetAllUsers(w http.ResponseWriter, r *http.Request)
 	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_CONTEXT_TIMEOUT*time.Second)
 	defer cancel()
 
+	// Call IDM server for RegisterUser
 	response, err := gc.IDMClient.GetUsers(ctx, &proto_files.EmptyRequest{})
 	if err != nil {
 		log.Println("[GATEWAY] Error fetching all users:", err)
@@ -28,23 +30,11 @@ func (gc *GatewayController) GetAllUsers(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if response == nil {
-		log.Println("[GATEWAY] Get All Users response is nil")
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Get All Users response is nil", "Received nil response while getting all users.")
-		return
-	}
-
-	if response.Info == nil {
-		log.Println("[GATEWAY] Get Users response.Info is nil")
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", "Received nil response.Info while getting users.")
-		return
-	}
-
-	if response.Users == nil {
-		log.Println("[GATEWAY] Users object is nil")
-		utils.SendErrorResponse(w, http.StatusNotFound, response.Info.Message, "Received nil response.Users while getting users.")
-		return
-	}
+	// Check response for nils
+	userResponse := &wrappers.UsersResponse{Response: response}
+	utils.CheckNilResponse(w, http.StatusInternalServerError, "Get All Users response is nil", userResponse.IsResponseNil, "Get All Users response is nil")
+	utils.CheckNilResponse(w, http.StatusInternalServerError, "Internal Server Error", userResponse.IsInfoNil, "Get Users response.Info is nil")
+	utils.CheckNilResponse(w, http.StatusInternalServerError, response.Info.Message, userResponse.IsUsersNil, "Users object is nil")
 
 	// Check the gRPC response status and handle accordingly
 	switch response.Info.Status {
@@ -58,7 +48,6 @@ func (gc *GatewayController) GetAllUsers(w http.ResponseWriter, r *http.Request)
 			}
 			users = append(users, user)
 		}
-
 		log.Println("[GATEWAY] GetAllUsers request handled successfully.")
 		utils.SendMessageResponse(w, http.StatusOK, response.Info.Message, users)
 		return
@@ -74,8 +63,8 @@ func (gc *GatewayController) GetAllUsers(w http.ResponseWriter, r *http.Request)
 func (gc *GatewayController) GetUserByID(w http.ResponseWriter, r *http.Request) {
 	log.Println("[GATEWAY] Handling GetUserByID request...")
 
+	// Get UserID from request params
 	userIDString := mux.Vars(r)[utils.GET_USER_ID_PARAMETER]
-
 	// Convert userIDString to int64
 	userID, err := strconv.ParseInt(userIDString, 10, 64)
 	if err != nil {
@@ -96,23 +85,11 @@ func (gc *GatewayController) GetUserByID(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if response == nil {
-		log.Println("[GATEWAY] Get User By ID response is nil")
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Get User By ID response is nil", "Received nil response while getting the user.")
-		return
-	}
-
-	if response.Info == nil {
-		log.Println("[GATEWAY] Get User By ID response.Info is nil")
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", "Received nil response.Info while getting user by id.")
-		return
-	}
-
-	if response.User == nil {
-		log.Println("[GATEWAY] User not found")
-		utils.SendErrorResponse(w, http.StatusNotFound, response.Info.Message, "Received nil response.User while getting the user.")
-		return
-	}
+	// Check response for nils
+	userResponse := &wrappers.UserResponse{Response: response}
+	utils.CheckNilResponse(w, http.StatusInternalServerError, "Get User By ID response is nil", userResponse.IsResponseNil, "Received nil response while getting the user.")
+	utils.CheckNilResponse(w, http.StatusInternalServerError, "Get User By ID response info is nil", userResponse.IsInfoNil, "Received nil response.Info while getting user by id.")
+	utils.CheckNilResponse(w, http.StatusInternalServerError, response.Info.Message, userResponse.IsUserNil, "Received nil response.User while getting the user.")
 
 	// Check the gRPC response status and handle accordingly
 	switch response.Info.Status {
@@ -122,7 +99,6 @@ func (gc *GatewayController) GetUserByID(w http.ResponseWriter, r *http.Request)
 			Username: response.User.Username,
 			// Add other fields if needed
 		}
-
 		log.Println("[GATEWAY] GetUserByID request handled successfully.")
 		utils.SendMessageResponse(w, http.StatusOK, response.Info.Message, user)
 		return
@@ -141,9 +117,9 @@ func (gc *GatewayController) GetUserByID(w http.ResponseWriter, r *http.Request)
 
 // UpdateUser handles updating a user.
 func (gc *GatewayController) UpdateUser(w http.ResponseWriter, r *http.Request) {
-	// Implementation for updating a user.
 	log.Println("[GATEWAY] Handling UpdateUser request...")
 
+	// Get UserID from request params
 	userIDString := mux.Vars(r)[utils.UPDATE_USER_ID_PARAMETER]
 
 	// Convert userIDString to int64
@@ -154,13 +130,7 @@ func (gc *GatewayController) UpdateUser(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// var userData models.UserData
-	// if err := json.NewDecoder(r.Body).Decode(&userData); err != nil {
-	// 	log.Println("[GATEWAY] Invalid request:", err)
-	// 	utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid request", err.Error())
-	// 	return
-	// }
-	// Take user data from the context after validation
+	// Get UserData from request context after validation
 	userData := r.Context().Value(utils.DECODED_USER_DATA).(*models.UserData)
 
 	// Create a context with a timeout (adjust the timeout as needed)
@@ -180,18 +150,12 @@ func (gc *GatewayController) UpdateUser(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	if response == nil {
-		log.Println("[GATEWAY] UpdateUser response is nil")
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", "Received nil response while updating user.")
-		return
-	}
+	// Check response for nils
+	enhancedInfoResponse := &wrappers.EnhancedInfoResponse{Response: response}
+	utils.CheckNilResponse(w, http.StatusInternalServerError, "Update User By ID response is nil", enhancedInfoResponse.IsResponseNil, "Received nil response while updating the user.")
+	utils.CheckNilResponse(w, http.StatusInternalServerError, "Update User By ID response info is nil", enhancedInfoResponse.IsInfoNil, "Received nil response.Info while updating user by id.")
 
-	if response.Info == nil {
-		log.Println("[GATEWAY] UpdateUser response.Info is nil")
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", "Received nil response.Info while updating user.")
-		return
-	}
-
+	// Check the gRPC response status and handle accordingly
 	switch response.Info.Status {
 	case http.StatusOK:
 		log.Println("[GATEWAY] User updated successfully.")
@@ -213,9 +177,9 @@ func (gc *GatewayController) UpdateUser(w http.ResponseWriter, r *http.Request) 
 
 // DeleteUser handles deleting a user.
 func (gc *GatewayController) DeleteUser(w http.ResponseWriter, r *http.Request) {
-	// Implementation for deleting a user.
 	log.Println("[GATEWAY] Handling DeleteUser request...")
 
+	// Get UserID from request params
 	userIDString := mux.Vars(r)[utils.DELETE_USER_ID_PARAMETER]
 
 	// Convert userIDString to int64
@@ -238,18 +202,12 @@ func (gc *GatewayController) DeleteUser(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	if response == nil {
-		log.Println("[GATEWAY] DeleteUser response is nil")
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", "Received nil response while deleting user.")
-		return
-	}
+	// Check response for nils
+	enhancedInfoResponse := &wrappers.EnhancedInfoResponse{Response: response}
+	utils.CheckNilResponse(w, http.StatusInternalServerError, "Delete User By ID response is nil", enhancedInfoResponse.IsResponseNil, "Received nil response while deleting the user.")
+	utils.CheckNilResponse(w, http.StatusInternalServerError, "Delete User By ID response info is nil", enhancedInfoResponse.IsInfoNil, "Received nil response.Info while deleting user by id.")
 
-	if response.Info == nil {
-		log.Println("[GATEWAY] DeleteUser response.Info is nil")
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", "Received nil response.Info while deleting user.")
-		return
-	}
-
+	// Check the gRPC response status and handle accordingly
 	switch response.Info.Status {
 	case http.StatusOK:
 		log.Println("[GATEWAY] User deleted successfully.")
@@ -271,9 +229,9 @@ func (gc *GatewayController) DeleteUser(w http.ResponseWriter, r *http.Request) 
 
 // UpdatePassword handles updating a user's password.
 func (gc *GatewayController) UpdatePassword(w http.ResponseWriter, r *http.Request) {
-	// Implementation for updating a user's password.
 	log.Println("[GATEWAY] Handling UpdatePassword request...")
 
+	// Get UserID from request params
 	userIDString := mux.Vars(r)[utils.UPDATE_USER_PASSWORD_ID_PARAMETER]
 
 	// Convert userIDString to int64
@@ -284,13 +242,6 @@ func (gc *GatewayController) UpdatePassword(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	// // Implement gRPC call to update a user's password in the IDM server.
-	// var passwordData models.PasswordData
-	// if err := json.NewDecoder(r.Body).Decode(&passwordData); err != nil {
-	// 	log.Println("[GATEWAY] Invalid request payload for changing password:", err)
-	// 	utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid request payload for changing password", err.Error())
-	// 	return
-	// }
 	// Take password data from the context after validation
 	passwordData := r.Context().Value(utils.DECODED_PASSWORD_DATA).(*models.PasswordData)
 
@@ -298,6 +249,7 @@ func (gc *GatewayController) UpdatePassword(w http.ResponseWriter, r *http.Reque
 	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_CONTEXT_TIMEOUT*time.Second)
 	defer cancel()
 
+	// Implement gRPC call to update a user's password in the IDM server.
 	response, err := gc.IDMClient.UpdateUserPassword(ctx, &proto_files.UpdatePasswordRequest{
 		UserID:   &proto_files.UserID{ID: userID},
 		Password: passwordData.Password,
@@ -308,18 +260,12 @@ func (gc *GatewayController) UpdatePassword(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	if response == nil {
-		log.Println("[GATEWAY] UpdateUserPassword response is nil")
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", "Received nil response while updating user password.")
-		return
-	}
+	// Check response for nils
+	enhancedInfoResponse := &wrappers.EnhancedInfoResponse{Response: response}
+	utils.CheckNilResponse(w, http.StatusInternalServerError, "Update User Password By ID response is nil", enhancedInfoResponse.IsResponseNil, "Received nil response while updating the user's password.")
+	utils.CheckNilResponse(w, http.StatusInternalServerError, "Update User Password By ID response info is nil", enhancedInfoResponse.IsInfoNil, "Received nil response.Info while updating user's password by id.")
 
-	if response.Info == nil {
-		log.Println("[GATEWAY] UpdateUserPassword response.Info is nil")
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", "Received nil response.Info while updating user password.")
-		return
-	}
-
+	// Check the gRPC response status and handle accordingly
 	switch response.Info.Status {
 	case http.StatusOK:
 		log.Println("[GATEWAY] User password updated successfully.")
@@ -341,9 +287,9 @@ func (gc *GatewayController) UpdatePassword(w http.ResponseWriter, r *http.Reque
 
 // UpdateRole handles updating a user's role.
 func (gc *GatewayController) UpdateRole(w http.ResponseWriter, r *http.Request) {
-	// Implementation for updating a user's role.
 	log.Println("[GATEWAY] Handling UpdateRole request...")
 
+	// Get UserID from request params
 	userIDString := mux.Vars(r)[utils.UPDATE_USER_ROLE_ID_PARAMETER]
 
 	// Convert userIDString to int64
@@ -354,13 +300,6 @@ func (gc *GatewayController) UpdateRole(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// Extract role from the request body
-	// var roleData models.RoleData
-	// if err := json.NewDecoder(r.Body).Decode(&roleData); err != nil {
-	// 	log.Println("[GATEWAY] Invalid request:", err)
-	// 	utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid request payload for changing role", err.Error())
-	// 	return
-	// }
 	// Take role data from the context after validation
 	roleData := r.Context().Value(utils.DECODED_ROLE_DATA).(*models.RoleData)
 
@@ -380,18 +319,12 @@ func (gc *GatewayController) UpdateRole(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	if response == nil {
-		log.Println("[GATEWAY] UpdateUserRole response is nil")
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", "Received nil response while updating user role.")
-		return
-	}
+	// Check response for nils
+	enhancedInfoResponse := &wrappers.EnhancedInfoResponse{Response: response}
+	utils.CheckNilResponse(w, http.StatusInternalServerError, "Update User Role By ID response is nil", enhancedInfoResponse.IsResponseNil, "Received nil response while updating the user's role.")
+	utils.CheckNilResponse(w, http.StatusInternalServerError, "Update User Role By ID response info is nil", enhancedInfoResponse.IsInfoNil, "Received nil response.Info while updating user's role by id.")
 
-	if response.Info == nil {
-		log.Println("[GATEWAY] UpdateUserRole response.Info is nil")
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", "Received nil response.Info while updating user role.")
-		return
-	}
-
+	// Check the gRPC response status and handle accordingly
 	switch response.Info.Status {
 	case http.StatusOK:
 		log.Println("[GATEWAY] User role updated successfully.")
@@ -433,18 +366,12 @@ func (gc *GatewayController) AddToBlacklist(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	if response == nil {
-		log.Println("[GATEWAY] AddToBlacklist response is nil")
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", "Received nil response while adding user to the blacklist.")
-		return
-	}
+	// Check response for nils
+	infoResponse := &wrappers.InfoResponse{Response: response}
+	utils.CheckNilResponse(w, http.StatusInternalServerError, "Add User to Blacklist response is nil", infoResponse.IsResponseNil, "Received nil response while adding the user to the blacklist.")
+	utils.CheckNilResponse(w, http.StatusInternalServerError, "Add User to Blacklist response info is nil", infoResponse.IsInfoNil, "Received nil response.Info while adding the user to the blacklist.")
 
-	if response.Info == nil {
-		log.Println("[GATEWAY] AddToBlacklist response.Info is nil")
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", "Received nil response.Info while adding user to the blacklist.")
-		return
-	}
-
+	// Check the gRPC response status and handle accordingly
 	switch response.Info.Status {
 	case http.StatusOK:
 		log.Println("[GATEWAY] AddToBlacklist request handled successfully.")
@@ -470,7 +397,9 @@ func (gc *GatewayController) AddToBlacklist(w http.ResponseWriter, r *http.Reque
 func (gc *GatewayController) CheckBlacklist(w http.ResponseWriter, r *http.Request) {
 	log.Println("[GATEWAY] Handling CheckBlacklist request...")
 
+	// Get UserID from request params
 	userIDString := mux.Vars(r)[utils.BLACKLIST_USER_ID_PARAMETER]
+	// Convert userIDString to int64
 	userID, err := strconv.ParseInt(userIDString, 10, 64)
 	if err != nil {
 		log.Println("[GATEWAY] Invalid user ID:", err)
@@ -492,18 +421,12 @@ func (gc *GatewayController) CheckBlacklist(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	if response == nil {
-		log.Println("[GATEWAY] CheckBlacklist response is nil")
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", "Received nil response while checking if the user is in the blacklist.")
-		return
-	}
+	// Check response for nils
+	infoResponse := &wrappers.InfoResponse{Response: response}
+	utils.CheckNilResponse(w, http.StatusInternalServerError, "Check User in Blacklist response is nil", infoResponse.IsResponseNil, "Received nil response while checking the user in the blacklist.")
+	utils.CheckNilResponse(w, http.StatusInternalServerError, "Check User in Blacklist response info is nil", infoResponse.IsInfoNil, "Received nil response.Info while checking the user in the blacklist.")
 
-	if response.Info == nil {
-		log.Println("[GATEWAY] CheckBlacklist response.Info is nil")
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", "Received nil response.Info while checking if the user is in the blacklist.")
-		return
-	}
-
+	// Check the gRPC response status and handle accordingly
 	switch response.Info.Status {
 	case http.StatusOK:
 		log.Println("[GATEWAY] CheckBlacklist request handled successfully.")
@@ -518,14 +441,15 @@ func (gc *GatewayController) CheckBlacklist(w http.ResponseWriter, r *http.Reque
 		utils.SendErrorResponse(w, http.StatusInternalServerError, response.Info.Message, "An unexpected error occurred while checking if the user is in the blacklist. Unexpected status code: "+strconv.Itoa(int(response.Info.Status)))
 		return
 	}
-
 }
 
 // RemoveFromBlacklist handles removing a user from the blacklist.
 func (gc *GatewayController) RemoveFromBlacklist(w http.ResponseWriter, r *http.Request) {
 	log.Println("[GATEWAY] Handling RemoveFromBlacklist request...")
 
-	userIDString := mux.Vars(r)[utils.DELETE_USER_ID_PARAMETER]
+	// Get UserID from request params
+	userIDString := mux.Vars(r)[utils.BLACKLIST_USER_ID_PARAMETER]
+	// Convert userIDString to int64
 	userID, err := strconv.ParseInt(userIDString, 10, 64)
 	if err != nil {
 		log.Println("[GATEWAY] Invalid user ID:", err)
@@ -547,18 +471,12 @@ func (gc *GatewayController) RemoveFromBlacklist(w http.ResponseWriter, r *http.
 		return
 	}
 
-	if response == nil {
-		log.Println("[GATEWAY] RemoveFromBlacklist response is nil")
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "RemoveFromBlacklist response is nil", "The RemoveFromBlacklist response is nil.")
-		return
-	}
+	// Check response for nils
+	enhancedInfoResponse := &wrappers.EnhancedInfoResponse{Response: response}
+	utils.CheckNilResponse(w, http.StatusInternalServerError, "Remove User from Blacklist response is nil", enhancedInfoResponse.IsResponseNil, "Received nil response while removing the user from the blacklist")
+	utils.CheckNilResponse(w, http.StatusInternalServerError, "Remove User from Blacklist response info is nil", enhancedInfoResponse.IsInfoNil, "Received nil response.Info while removing the user from the blacklist.")
 
-	if response.Info == nil {
-		log.Println("[GATEWAY] RemoveFromBlacklist response.Info is nil")
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "RemoveFromBlacklist response.Info is nil", "The RemoveFromBlacklist response.Info is nil.")
-		return
-	}
-
+	// Check the gRPC response status and handle accordingly
 	switch response.Info.Status {
 	case http.StatusOK:
 		log.Println("[GATEWAY] User role updated successfully.")

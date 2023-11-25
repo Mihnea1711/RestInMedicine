@@ -12,6 +12,7 @@ import (
 	"github.com/mihnea1711/POS_Project/services/gateway/pkg/utils"
 )
 
+// loadConsultationRoutes loads all the CRUD routes for the Consultation entity
 func loadConsultationRoutes(router *mux.Router, gatewayController *controllers.GatewayController, jwtConfig config.JWTConfig) {
 	// ---------------------------------------------------------- Create --------------------------------------------------------------
 	consultatieCreationHandler := http.HandlerFunc(gatewayController.CreateConsultation)
