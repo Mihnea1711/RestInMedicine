@@ -155,6 +155,7 @@ func (gc *GatewayController) GetAppointmentsByDoctorID(w http.ResponseWriter, r 
 	// Convert doctorIDString to int64
 	doctorID, err := strconv.ParseInt(doctorIDString, 10, 64)
 	if err != nil {
+		log.Printf("[GATEWAY] Invalid doctor ID: %v", err)
 		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid doctor ID", err.Error())
 		return
 	}
@@ -202,7 +203,7 @@ func (gc *GatewayController) GetAppointmentsByDoctorID(w http.ResponseWriter, r 
 
 // GetAppointmentsByPacientID handles the retrieval of appointments by pacient ID.
 func (gc *GatewayController) GetAppointmentsByPacientID(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[GATEWAY] Attempting to get appointment by patientID.")
+	log.Printf("[GATEWAY] Attempting to get appointments by patientID.")
 
 	// Get PatientID from request params
 	patientIDString := mux.Vars(r)[utils.GET_APPOINTMENT_PATIENT_ID_PARAMETER]
