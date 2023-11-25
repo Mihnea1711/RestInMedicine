@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -18,13 +17,9 @@ import (
 
 // CreateDoctor handles the creation of a new doctor.
 func (gc *GatewayController) CreateDoctor(w http.ResponseWriter, r *http.Request) {
-	var doctorRequest models.DoctorData
-
-	// Parse the request body into the DoctorData struct
-	if err := json.NewDecoder(r.Body).Decode(&doctorRequest); err != nil {
-		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid request payload", err.Error())
-		return
-	}
+	log.Printf("[GATEWAY] Attempting to create a doctor.")
+	// Take credentials data from the context after validation
+	doctorRequest := r.Context().Value(utils.DECODED_DOCTOR_DATA).(*models.DoctorData)
 
 	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_CONTEXT_TIMEOUT*time.Second)
 	defer cancel()
@@ -339,6 +334,7 @@ func (gc *GatewayController) GetDoctorByUserID(w http.ResponseWriter, r *http.Re
 
 // UpdateDoctorByID handles the update of a specific doctor by ID.
 func (gc *GatewayController) UpdateDoctorByID(w http.ResponseWriter, r *http.Request) {
+	log.Printf("[GATEWAY] Attempting to update a doctor.")
 	doctorIDString := mux.Vars(r)[utils.UPDATE_DOCTOR_BY_ID_PARAMETER]
 
 	// Convert pacientIDString to int64
@@ -349,12 +345,8 @@ func (gc *GatewayController) UpdateDoctorByID(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	var doctorData models.DoctorData
-	if err := json.NewDecoder(r.Body).Decode(&doctorData); err != nil {
-		log.Printf("[GATEWAY] Error closing response body: %v", err)
-		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid request", err.Error())
-		return
-	}
+	// Take credentials data from the context after validation
+	doctorData := r.Context().Value(utils.DECODED_DOCTOR_DATA).(*models.DoctorData)
 
 	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_CONTEXT_TIMEOUT*time.Second)
 	defer cancel()

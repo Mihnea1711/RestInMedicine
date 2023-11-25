@@ -7,6 +7,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/mihnea1711/POS_Project/services/gateway/internal/controllers"
 	"github.com/mihnea1711/POS_Project/services/gateway/internal/middleware/authorization"
+	"github.com/mihnea1711/POS_Project/services/gateway/internal/middleware/validation"
 	"github.com/mihnea1711/POS_Project/services/gateway/pkg/config"
 	"github.com/mihnea1711/POS_Project/services/gateway/pkg/utils"
 )
@@ -14,7 +15,7 @@ import (
 func loadConsultationRoutes(router *mux.Router, gatewayController *controllers.GatewayController, jwtConfig config.JWTConfig) {
 	// ---------------------------------------------------------- Create --------------------------------------------------------------
 	consultatieCreationHandler := http.HandlerFunc(gatewayController.CreateConsultation)
-	router.Handle(utils.CREATE_CONSULTATION_ENDPOINT, authorization.AdminAndDoctorMiddleware(jwtConfig, consultatieCreationHandler)).Methods("POST")
+	router.Handle(utils.CREATE_CONSULTATION_ENDPOINT, authorization.AdminAndDoctorMiddleware(jwtConfig, validation.ValidateConsultationData(consultatieCreationHandler))).Methods("POST")
 	log.Printf("[CONSULTATION] Route POST %s registered.", utils.CREATE_CONSULTATION_ENDPOINT)
 
 	// ---------------------------------------------------------- Retrieve --------------------------------------------------------------
@@ -27,8 +28,8 @@ func loadConsultationRoutes(router *mux.Router, gatewayController *controllers.G
 	log.Printf("[CONSULTATION] Route GET %s registered.", utils.GET_CONSULTATION_BY_DOCTOR_ID_ENDPOINT)
 
 	consultatieFetchByPacientIDHandler := http.HandlerFunc(gatewayController.GetConsultationsByPacientID)
-	router.HandleFunc(utils.GET_CONSULTATION_BY_PACIENT_ID_ENDPOINT, authorization.AllRolesMiddleware(jwtConfig, consultatieFetchByPacientIDHandler)).Methods("GET")
-	log.Printf("[CONSULTATION] Route GET %s registered.", utils.GET_CONSULTATION_BY_PACIENT_ID_ENDPOINT)
+	router.HandleFunc(utils.GET_CONSULTATION_BY_PATIENT_ID_ENDPOINT, authorization.AllRolesMiddleware(jwtConfig, consultatieFetchByPacientIDHandler)).Methods("GET")
+	log.Printf("[CONSULTATION] Route GET %s registered.", utils.GET_CONSULTATION_BY_PATIENT_ID_ENDPOINT)
 
 	consultatieFetchByDateHandler := http.HandlerFunc(gatewayController.GetConsultationsByDate)
 	router.HandleFunc(utils.GET_CONSULTATION_BY_DATE_ENDPOINT, authorization.AllRolesMiddleware(jwtConfig, consultatieFetchByDateHandler)).Methods("GET")
@@ -40,7 +41,7 @@ func loadConsultationRoutes(router *mux.Router, gatewayController *controllers.G
 
 	// ---------------------------------------------------------- Update --------------------------------------------------------------
 	consultatieUpdateByIDHandler := http.HandlerFunc(gatewayController.UpdateConsultationByID)
-	router.Handle(utils.UPDATE_CONSULTATION_BY_ID_ENDPOINT, authorization.AdminAndDoctorMiddleware(jwtConfig, consultatieUpdateByIDHandler)).Methods("PUT")
+	router.Handle(utils.UPDATE_CONSULTATION_BY_ID_ENDPOINT, authorization.AdminAndDoctorMiddleware(jwtConfig, validation.ValidateConsultationData(consultatieUpdateByIDHandler))).Methods("PUT")
 	log.Printf("[CONSULTATION] Route PUT %s registered.", utils.UPDATE_CONSULTATION_BY_ID_ENDPOINT)
 
 	// ---------------------------------------------------------- Delete --------------------------------------------------------------

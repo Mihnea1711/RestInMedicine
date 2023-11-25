@@ -7,6 +7,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/mihnea1711/POS_Project/services/gateway/internal/controllers"
 	"github.com/mihnea1711/POS_Project/services/gateway/internal/middleware/authorization"
+	"github.com/mihnea1711/POS_Project/services/gateway/internal/middleware/validation"
 	"github.com/mihnea1711/POS_Project/services/gateway/pkg/config"
 	"github.com/mihnea1711/POS_Project/services/gateway/pkg/utils"
 )
@@ -14,7 +15,7 @@ import (
 func loadAppointmentRoutes(router *mux.Router, gatewayController *controllers.GatewayController, jwtConfig config.JWTConfig) {
 	// ---------------------------------------------------------- Create --------------------------------------------------------------
 	appointmentCreationHandler := http.HandlerFunc(gatewayController.CreateAppointment)
-	router.Handle(utils.CREATE_APPOINTMENT_ENDPOINT, authorization.AdminAndDoctorMiddleware(jwtConfig, appointmentCreationHandler)).Methods("POST")
+	router.Handle(utils.CREATE_APPOINTMENT_ENDPOINT, authorization.AdminAndDoctorMiddleware(jwtConfig, validation.ValidateAppointmentData(appointmentCreationHandler))).Methods("POST")
 	log.Println("[APPOINTMENT] Route POST", utils.CREATE_APPOINTMENT_ENDPOINT, "registered.")
 
 	// ---------------------------------------------------------- Retrieve --------------------------------------------------------------
@@ -31,8 +32,8 @@ func loadAppointmentRoutes(router *mux.Router, gatewayController *controllers.Ga
 	log.Println("[APPOINTMENT] Route GET", utils.GET_APPOINTMENTS_BY_DOCTOR_ID_ENDPOINT, "registered.")
 
 	appointmentFetchByPacientIDHandler := http.HandlerFunc(gatewayController.GetAppointmentsByPacientID)
-	router.HandleFunc(utils.GET_APPOINTMENTS_BY_PACIENT_ID_ENDPOINT, authorization.AllRolesMiddleware(jwtConfig, appointmentFetchByPacientIDHandler)).Methods("GET")
-	log.Println("[APPOINTMENT] Route GET", utils.GET_APPOINTMENTS_BY_PACIENT_ID_ENDPOINT, "registered.")
+	router.HandleFunc(utils.GET_APPOINTMENTS_BY_PATIENT_ID_ENDPOINT, authorization.AllRolesMiddleware(jwtConfig, appointmentFetchByPacientIDHandler)).Methods("GET")
+	log.Println("[APPOINTMENT] Route GET", utils.GET_APPOINTMENTS_BY_PATIENT_ID_ENDPOINT, "registered.")
 
 	appointmentFetchByDateHandler := http.HandlerFunc(gatewayController.GetAppointmentsByDate)
 	router.HandleFunc(utils.GET_APPOINTMENTS_BY_DATE_ENDPOINT, authorization.AllRolesMiddleware(jwtConfig, appointmentFetchByDateHandler)).Methods("GET")
@@ -44,7 +45,7 @@ func loadAppointmentRoutes(router *mux.Router, gatewayController *controllers.Ga
 
 	// ---------------------------------------------------------- Update --------------------------------------------------------------
 	appointmentUpdateByIDHandler := http.HandlerFunc(gatewayController.UpdateAppointmentByID)
-	router.Handle(utils.UPDATE_APPOINTMENT_BY_ID_ENDPOINT, authorization.AdminAndDoctorMiddleware(jwtConfig, appointmentUpdateByIDHandler)).Methods("PUT")
+	router.Handle(utils.UPDATE_APPOINTMENT_BY_ID_ENDPOINT, authorization.AdminAndDoctorMiddleware(jwtConfig, validation.ValidateAppointmentData(appointmentUpdateByIDHandler))).Methods("PUT")
 	log.Println("[APPOINTMENT] Route PUT", utils.UPDATE_APPOINTMENT_BY_ID_ENDPOINT, "registered.")
 
 	// ---------------------------------------------------------- Delete --------------------------------------------------------------

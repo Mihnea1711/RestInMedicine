@@ -17,20 +17,14 @@ import (
 
 // CreateConsultation handles the creation of a new consultation.
 func (gc *GatewayController) CreateConsultation(w http.ResponseWriter, r *http.Request) {
-	var consultationRequest models.ConsultationData
-
-	// Parse the request body into the ProgramConsultationRequest struct
-	if err := json.NewDecoder(r.Body).Decode(&consultationRequest); err != nil {
-		// Handle the error (e.g., return a response with an error message)
-		log.Printf("[GATEWAY] Invalid appointment request payload: %v", err)
-		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid request payload", err.Error())
-		return
-	}
+	log.Printf("[GATEWAY] Attempting to create a consultation.")
+	// Take consultation data from the context after validation
+	consultationRequest := r.Context().Value(utils.DECODED_CONSULTATION_DATA).(*models.ConsultationData)
 
 	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_CONTEXT_TIMEOUT*time.Second)
 	defer cancel()
 
-	// Check if appointmentRequest.IDDoctor exists
+	// Check if consultationRequest.IDDoctor exists
 	responseDoctor, errDoctor := gc.redirectRequestBody(ctx, http.MethodGet, fmt.Sprintf("%s/%d", utils.DOCTOR_FETCH_DOCTOR_BY_ID_ENDPOINT, consultationRequest.IDDoctor), utils.DOCTOR_PORT, nil)
 	if errDoctor != nil {
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to validate doctor ID", errDoctor.Error())
@@ -67,7 +61,7 @@ func (gc *GatewayController) CreateConsultation(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	// Check if appointmentRequest.IDPacient exists
+	// Check if consultationRequest.IDPacient exists
 	responsePatient, errPacient := gc.redirectRequestBody(ctx, http.MethodGet, fmt.Sprintf("%s/%d", utils.PATIENT_FETCH_PATIENT_BY_ID_ENDPOINT, consultationRequest.IDPacient), utils.PATIENT_PORT, nil)
 	if errPacient != nil {
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to validate patient ID", errPacient.Error())
@@ -294,7 +288,7 @@ func (gc *GatewayController) GetConsultationsByDoctorID(w http.ResponseWriter, r
 
 // GetConsultationsByPacientID handles the retrieval of consultations by pacient ID.
 func (gc *GatewayController) GetConsultationsByPacientID(w http.ResponseWriter, r *http.Request) {
-	patientIDString := mux.Vars(r)[utils.GET_CONSULTATION_BY_PACIENT_ID_PARAMETER]
+	patientIDString := mux.Vars(r)[utils.GET_CONSULTATION_BY_PATIENT_ID_PARAMETER]
 	patientID, err := strconv.ParseInt(patientIDString, 10, 64)
 	if err != nil {
 		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid pacient ID", err.Error())
@@ -331,7 +325,7 @@ func (gc *GatewayController) GetConsultationsByPacientID(w http.ResponseWriter, 
 	}
 
 	// Redirect the request body to appointment module
-	response, err := gc.redirectRequestBody(ctx, http.MethodGet, fmt.Sprintf("%s/%d", utils.CONSULTATION_FETCH_CONSULTATIE_BY_PACIENT_ID_ENDPOINT, patientID), utils.CONSULTATION_PORT, nil)
+	response, err := gc.redirectRequestBody(ctx, http.MethodGet, fmt.Sprintf("%s/%d", utils.CONSULTATION_FETCH_CONSULTATIE_BY_PATIENT_ID_ENDPOINT, patientID), utils.CONSULTATION_PORT, nil)
 	if err != nil {
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
 		return
@@ -497,14 +491,10 @@ func (gc *GatewayController) GetConsultationByID(w http.ResponseWriter, r *http.
 
 // UpdateConsultationByID handles the update of a specific consultation by ID.
 func (gc *GatewayController) UpdateConsultationByID(w http.ResponseWriter, r *http.Request) {
+	log.Printf("[GATEWAY] Attempting to update a consultation.")
+	// Take consultation data from the context after validation
+	consultationData := r.Context().Value(utils.DECODED_CONSULTATION_DATA).(*models.ConsultationData)
 	consultationIDString := mux.Vars(r)[utils.UPDATE_CONSULTATION_BY_ID_PARAMETER]
-
-	var consultationData models.ConsultationData
-	if err := json.NewDecoder(r.Body).Decode(&consultationData); err != nil {
-		log.Printf("[GATEWAY] Error closing response body: %v", err)
-		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid request payload", err.Error())
-		return
-	}
 
 	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_CONTEXT_TIMEOUT*time.Second)
 	defer cancel()

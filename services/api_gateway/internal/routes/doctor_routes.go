@@ -7,6 +7,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/mihnea1711/POS_Project/services/gateway/internal/controllers"
 	"github.com/mihnea1711/POS_Project/services/gateway/internal/middleware/authorization"
+	"github.com/mihnea1711/POS_Project/services/gateway/internal/middleware/validation"
 	"github.com/mihnea1711/POS_Project/services/gateway/pkg/config"
 	"github.com/mihnea1711/POS_Project/services/gateway/pkg/utils"
 )
@@ -14,7 +15,7 @@ import (
 func loadDoctorRoutes(router *mux.Router, gatewayController *controllers.GatewayController, jwtConfig config.JWTConfig) {
 	// ---------------------------------------------------------- Create --------------------------------------------------------------
 	doctorCreationHandler := http.HandlerFunc(gatewayController.CreateDoctor)
-	router.Handle(utils.CREATE_DOCTOR_ENDPOINT, authorization.AdminOnlyMiddleware(jwtConfig, doctorCreationHandler)).Methods("POST")
+	router.Handle(utils.CREATE_DOCTOR_ENDPOINT, authorization.AdminOnlyMiddleware(jwtConfig, validation.ValidateDoctorData(doctorCreationHandler))).Methods("POST")
 	log.Println("[DOCTOR] Route POST", utils.CREATE_DOCTOR_ENDPOINT, "registered.")
 
 	// ---------------------------------------------------------- Retrieve --------------------------------------------------------------
@@ -36,7 +37,7 @@ func loadDoctorRoutes(router *mux.Router, gatewayController *controllers.Gateway
 
 	// ---------------------------------------------------------- Update --------------------------------------------------------------
 	doctorUpdateByIDHandler := http.HandlerFunc(gatewayController.UpdateDoctorByID)
-	router.Handle(utils.UPDATE_DOCTOR_BY_ID_ENDPOINT, authorization.AdminAndDoctorMiddleware(jwtConfig, doctorUpdateByIDHandler)).Methods("PUT")
+	router.Handle(utils.UPDATE_DOCTOR_BY_ID_ENDPOINT, authorization.AdminAndDoctorMiddleware(jwtConfig, validation.ValidateDoctorData(doctorUpdateByIDHandler))).Methods("PUT")
 	log.Println("[DOCTOR] Route PUT", utils.UPDATE_DOCTOR_BY_ID_ENDPOINT, "registered.")
 
 	// ---------------------------------------------------------- Delete --------------------------------------------------------------
