@@ -1,3 +1,9 @@
+server:
+  port: 8090
+
+jwt:
+  secret: ${JWT_SECRET}
+
 rabbitmq:
   # RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
   schema: "amqp"

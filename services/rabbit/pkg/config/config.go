@@ -11,13 +11,18 @@ import (
 )
 
 type AppConfig struct {
-	// Server   ServerConfig   `yaml:"server"`
+	Server   ServerConfig   `yaml:"server"`
+	JWT      JWTConfig      `yaml:"jwt"`
 	RabbitMq RabbitMqConfig `yaml:"rabbitmq"`
 }
 
-// type ServerConfig struct {
-// 	Port int `yaml:"port"`
-// }
+type ServerConfig struct {
+	Port int `yaml:"port"`
+}
+
+type JWTConfig struct {
+	Secret string `yaml:"secret"`
+}
 
 // RabbitMqConfig represents the RabbitMQ configuration
 type RabbitMqConfig struct {

@@ -14,9 +14,20 @@ services:
     build:
       context: .
       dockerfile: docker/api.Dockerfile
+    ports:
+      - "8090:8090"
+    deploy:
+      restart_policy:
+        condition: on-failure
     depends_on:
       - rabbitmq
     env_file:
       - .env
     environment:
       RABBITMQ_URL: ${RABBITMQ_URL}
+    healthcheck:
+      test: ["CMD", "curl", "-vf", "http://localhost:8090/api/rabbit/health-check"]
+      interval: 20s
+      timeout: 5s
+      retries: 2
+

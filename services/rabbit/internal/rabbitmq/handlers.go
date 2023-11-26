@@ -3,7 +3,7 @@ package rabbitmq
 import (
 	"log"
 
-	"github.com/mihnea1711/POS_Project/services/rabbit/internal/service"
+	"github.com/mihnea1711/POS_Project/services/rabbit/internal/delete_service"
 	"github.com/mihnea1711/POS_Project/services/rabbit/pkg/utils"
 )
 
@@ -19,7 +19,7 @@ func (rmq *RabbitMQ) SetupHandlers() {
 	log.Println("[RABBIT] Setting up message handlers for queues...")
 
 	// Setting up a handler for the DELETE_QUEUE
-	rmq.SetHandler(utils.DELETE_QUEUE, service.DeleteUserMessageHandler)
+	rmq.SetHandler(utils.DELETE_QUEUE, delete_service.DeleteUserMessageHandler)
 	log.Printf("[RABBIT] Handler set up for queue '%s'", utils.DELETE_QUEUE)
 
 	// Add more handlers for other queues as needed
