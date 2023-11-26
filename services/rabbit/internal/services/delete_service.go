@@ -1,11 +1,7 @@
-package delete_service
+package services
 
 import (
 	"fmt"
-
-	"github.com/mihnea1711/POS_Project/services/rabbit/internal/models"
-	"github.com/mihnea1711/POS_Project/services/rabbit/internal/models/participants"
-	twophasecommit "github.com/mihnea1711/POS_Project/services/rabbit/internal/two_phase_commit"
 )
 
 // DeleteUserMessageHandler is an example implementation of MessageHandler.
@@ -35,32 +31,29 @@ import (
 // This is a placeholder implementation, and the actual logic would depend on the
 // requirements and architecture of the distributed system.
 
-func DeleteUserMessageHandler(message []byte) error {
-	// Your message handling logic goes here.
-	// This is just a placeholder.
+func (s *ServiceContainer) DeleteUserMessageHandler(message []byte) error {
 	fmt.Printf("[RABBIT] Handling delete message: %s\n", string(message))
 
-	// In a real-world scenario, you might have more complex logic here.
+	// // In a real-world scenario, you might have more complex logic here.
+	// participants := []models.Transactional{&participants.IDM{}, &participants.Patient{}, &participants.Doctor{}, &participants.Appointment{}, &participants.Consultation{}}
 
-	participants := []models.Transactional{&participants.IDM{}, &participants.Patient{}, &participants.Doctor{}, &participants.Appointment{}, &participants.Consultation{}}
+	// // Phase 1: Prepare Phase
+	// prepareResponses := twophasecommit.SendPrepareMessage(participants)
+	// if twophasecommit.AnyParticipantRespondedNo(prepareResponses) {
+	// 	twophasecommit.SendAbortMessage(participants)
+	// 	return fmt.Errorf("33")
 
-	// Phase 1: Prepare Phase
-	prepareResponses := twophasecommit.SendPrepareMessage(participants)
-	if twophasecommit.AnyParticipantRespondedNo(prepareResponses) {
-		twophasecommit.SendAbortMessage(participants)
-		return fmt.Errorf("33")
+	// }
 
-	}
+	// // Phase 2: Commit Phase
+	// commitResponses := twophasecommit.SendCommitMessage(participants)
+	// if twophasecommit.AnyParticipantFailed(commitResponses) {
+	// 	twophasecommit.SendRollbackMessage(participants)
+	// 	return fmt.Errorf("33")
+	// }
 
-	// Phase 2: Commit Phase
-	commitResponses := twophasecommit.SendCommitMessage(participants)
-	if twophasecommit.AnyParticipantFailed(commitResponses) {
-		twophasecommit.SendRollbackMessage(participants)
-		return fmt.Errorf("33")
-	}
-
-	// Transaction successfully committed
-	twophasecommit.InformClient("clientID", "Delete operation completed successfully.")
+	// // Transaction successfully committed
+	// twophasecommit.InformClient("clientID", "Delete operation completed successfully.")
 
 	// Return nil to indicate that the message was successfully processed.
 	return nil

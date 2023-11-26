@@ -5,7 +5,6 @@ import (
 	"log"
 
 	"github.com/mihnea1711/POS_Project/services/rabbit/pkg/config"
-	"github.com/mihnea1711/POS_Project/services/rabbit/pkg/utils"
 )
 
 // Queue represents a RabbitMQ queue
@@ -15,7 +14,7 @@ type Queue struct {
 	Exchange     string
 	ExchangeType string
 	Durable      bool
-	Direction    string
+	IsConsumer   bool
 }
 
 // NewQueue creates a new RabbitMQ queue
@@ -26,7 +25,7 @@ func NewQueue(name, routingKey, exchange, exchangeType string, durable, consumer
 		Exchange:     exchange,
 		ExchangeType: exchangeType,
 		Durable:      durable,
-		Direction:    utils.GetDirection(consumerFlag),
+		IsConsumer:   consumerFlag,
 	}
 }
 
@@ -83,15 +82,13 @@ func (rmq *RabbitMQ) SetupQueues(queues []*Queue) error {
 		}
 		log.Printf("[RABBIT] Queue '%s' declared and bound successfully", queue.Name)
 
-		if queue.Direction == utils.QueueDirectionListen {
+		if queue.IsConsumer {
 			err := rmq.Consume(*queue)
 			if err != nil {
 				log.Printf("[RABBIT] Failed to start consumer for queue '%s': %v", queue.Name, err)
 				return err
 			}
 			log.Printf("[RABBIT] Consumer started for queue '%s'", queue.Name)
-		} else if queue.Direction == utils.QueueDirectionPublish {
-			log.Printf("[RABBIT] Queue %s should be publishing! Implement publish logic if necessary.", queue.Name)
 		}
 	}
 

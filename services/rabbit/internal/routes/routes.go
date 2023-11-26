@@ -7,15 +7,18 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/mihnea1711/POS_Project/services/rabbit/internal/controllers"
 	"github.com/mihnea1711/POS_Project/services/rabbit/internal/middleware"
+	"github.com/mihnea1711/POS_Project/services/rabbit/internal/rabbitmq"
 	"github.com/mihnea1711/POS_Project/services/rabbit/pkg/utils"
 )
 
-func SetupRoutes() *mux.Router {
+func SetupRoutes(rabbitMQ *rabbitmq.RabbitMQ) *mux.Router {
 	log.Println("[RABBIT] Setting up routes...")
 	router := mux.NewRouter()
 	router.Use(middleware.RouteLogger)
 
-	rabbitController := &controllers.RabbitController{}
+	rabbitController := &controllers.RabbitController{
+		RabbitMQ: rabbitMQ,
+	}
 
 	loadRoutes(router, rabbitController)
 
