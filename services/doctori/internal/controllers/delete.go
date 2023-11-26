@@ -72,3 +72,61 @@ func (dController *DoctorController) DeleteDoctorByID(w http.ResponseWriter, r *
 		},
 	})
 }
+
+func (dController *DoctorController) DeleteDoctorByUserID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	doctorUserIDStr := vars[utils.DELETE_DOCTOR_BY_USER_ID_PARAMETER]
+	doctorUserID, err := strconv.Atoi(doctorUserIDStr)
+	if err != nil {
+		errMsg := fmt.Sprintf("Invalid doctor ID: %s", doctorUserIDStr)
+		log.Println("[DOCTOR] " + errMsg)
+
+		// Use RespondWithJSON for error response
+		utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Invalid patient delete request"})
+		return
+	}
+
+	log.Printf("[DOCTOR] Attempting to delete doctor with user ID: %d...", doctorUserID)
+
+	// Ensure a database operation doesn't take longer than 5 seconds
+	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
+	defer cancel()
+
+	rowsAffected, err := dController.DbConn.DeleteDoctorByUserID(ctx, doctorUserID)
+	if err != nil {
+		// Check if the error is due to no rows found
+		if err == sql.ErrNoRows {
+			errMsg := fmt.Sprintf("Error deleting doctor: %s", err.Error())
+			log.Printf("[DOCTOR] %s", errMsg)
+			// Create a conflict response using ResponseData
+			utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Error: errMsg, Message: "Failed to delete doctor. Doctor not found"})
+			return
+		}
+
+		errMsg := fmt.Sprintf("Failed to delete doctor with user ID %d: %s", doctorUserID, err)
+		log.Println("[DOCTOR] " + errMsg)
+
+		// Use RespondWithJSON for error response
+		utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{Error: errMsg, Message: "Failed to delete doctor"})
+		return
+	}
+
+	if rowsAffected == 0 {
+		errMsg := fmt.Sprintf("No doctor found with user ID: %d", doctorUserID)
+		log.Println("[DOCTOR] " + errMsg)
+
+		// Use RespondWithJSON for error response
+		utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Error: errMsg, Message: "Patient not found or an unexpected error happened."})
+		return
+	}
+
+	log.Printf("[DOCTOR] Successfully deleted doctor with user ID: %d", doctorUserID)
+
+	// Use RespondWithJSON for success response
+	utils.RespondWithJSON(w, http.StatusOK, models.ResponseData{
+		Message: fmt.Sprintf("Doctor with user ID: %d deleted successfully", doctorUserID),
+		Payload: models.RowsAffected{
+			RowsAffected: rowsAffected,
+		},
+	})
+}

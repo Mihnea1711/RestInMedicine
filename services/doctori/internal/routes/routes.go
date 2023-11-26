@@ -77,5 +77,9 @@ func loadCrudRoutes(router *mux.Router, doctorController *controllers.DoctorCont
 	router.Handle(utils.DELETE_DOCTOR_BY_ID_ENDPOINT, doctorDeleteByIDHandler).Methods("DELETE") // Deletes a doctor
 	log.Println("[DOCTOR] Route DELETE", utils.DELETE_DOCTOR_BY_ID_ENDPOINT, "registered.")
 
+	doctorDeleteByUserIDHandler := http.HandlerFunc(doctorController.DeleteDoctorByUserID)
+	router.Handle(utils.DELETE_DOCTOR_BY_USER_ID_ENDPOINT, doctorDeleteByUserIDHandler).Methods("DELETE") // Deletes a doctor
+	log.Println("[DOCTOR] Route DELETE", utils.DELETE_DOCTOR_BY_USER_ID_ENDPOINT, "registered.")
+
 	log.Println("[DOCTOR] All CRUD routes for Doctor entity loaded successfully.")
 }
