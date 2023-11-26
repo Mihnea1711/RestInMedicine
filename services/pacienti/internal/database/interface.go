@@ -16,6 +16,7 @@ type Database interface {
 
 	UpdatePatientByID(ctx context.Context, patient *models.Pacient) (int, error)
 	DeletePatientByID(ctx context.Context, patientID int) (int, error)
+	DeletePatientByUserID(ctx context.Context, patientUserID int) (int, error)
 
 	// ... add more methods
 

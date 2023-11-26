@@ -36,3 +36,32 @@ func (db *MySQLDatabase) DeletePatientByID(ctx context.Context, patientID int) (
 
 	return int(rowsAffected), nil
 }
+
+func (db *MySQLDatabase) DeletePatientByUserID(ctx context.Context, patientUserID int) (int, error) {
+	// Construct the SQL delete query
+	query := fmt.Sprintf("DELETE FROM %s WHERE %s = ?", utils.TableName, utils.ColumnIDUser)
+
+	log.Printf("[PATIENT] Attempting to delete patient with user ID %d", patientUserID)
+
+	// Execute the SQL statement
+	result, err := db.ExecContext(ctx, query, patientUserID)
+	if err != nil {
+		log.Printf("[PATIENT] Error executing query to delete patient with user ID %d: %v", patientUserID, err)
+		return 0, err
+	}
+
+	// Get the number of rows affected by the delete operation
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		log.Printf("[PATIENT] Error fetching rows affected for delete query of patient with user ID %d: %v", patientUserID, err)
+		return 0, err
+	}
+
+	if rowsAffected == 0 {
+		log.Printf("[PATIENT] No patient found with user ID %d to delete.", patientUserID)
+	} else {
+		log.Printf("[PATIENT] Successfully deleted patient with user ID %d. Rows affected: %d", patientUserID, rowsAffected)
+	}
+
+	return int(rowsAffected), nil
+}

@@ -73,3 +73,62 @@ func (pController *PatientController) DeletePatientByID(w http.ResponseWriter, r
 		},
 	})
 }
+
+func (pController *PatientController) DeletePatientByUserID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	patientUserIDStr := vars[utils.DELETE_PATIENT_BY_USER_ID_PARAMETER]
+	patientUserID, err := strconv.Atoi(patientUserIDStr)
+	if err != nil {
+		errMsg := fmt.Sprintf("Invalid patient user ID: %s", patientUserIDStr)
+		log.Printf("[PATIENT] %s", errMsg)
+
+		// Use utils.RespondWithJSON for error response
+		utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Invalid patient delete request"})
+		return
+	}
+
+	log.Printf("[PATIENT] Attempting to delete patient with user ID: %d...", patientUserID)
+
+	// Ensure a database operation doesn't take longer than 5 seconds
+	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
+	defer cancel()
+
+	rowsAffected, err := pController.DbConn.DeletePatientByUserID(ctx, patientUserID)
+	if err != nil {
+		// Check if the error is due to no rows found
+		if err == sql.ErrNoRows {
+			errMsg := fmt.Sprintf("Failed to delete patient with user ID %d: %s", patientUserID, err)
+			log.Printf("[PATIENT] %s", errMsg)
+
+			// Use utils.RespondWithJSON for error response
+			utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Error: errMsg, Message: "Failed to delete patient. Patient not found"})
+			return
+		}
+
+		errMsg := fmt.Sprintf("Failed to delete patient with user ID %d: %s", patientUserID, err)
+		log.Printf("[PATIENT] %s", errMsg)
+
+		// Use utils.RespondWithJSON for error response
+		utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{Error: errMsg, Message: "Failed to delete patient"})
+		return
+	}
+
+	// Check if the patient exists and was deleted
+	if rowsAffected == 0 {
+		errMsg := fmt.Sprintf("No patient found with user ID: %d", patientUserID)
+		log.Printf("[PATIENT] %s", errMsg)
+
+		// Use utils.RespondWithJSON for error response
+		utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Error: errMsg, Message: "Patient not found or an unexpected error happened."})
+		return
+	}
+
+	log.Printf("[PATIENT] Successfully deleted patient with user ID %d", patientUserID)
+	// Use utils.RespondWithJSON for success response
+	utils.RespondWithJSON(w, http.StatusOK, models.ResponseData{
+		Message: fmt.Sprintf("Patient with user ID: %d deleted successfully", patientUserID),
+		Payload: models.RowsAffected{
+			RowsAffected: rowsAffected,
+		},
+	})
+}
