@@ -1,0 +1,10 @@
+syntax = "proto3";
+option go_package = "github.com/mihnea1711/POS_Project/services/rabbit/idm";
+
+import "proto_files/helper.proto";
+import "proto_files/user.proto";
+
+// SERVICE METHODS 
+service IDM {
+    rpc DeleteUserByID(UserIDRequest) returns (EnhancedInfoResponse);
+}

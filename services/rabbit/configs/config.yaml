@@ -1,0 +1,16 @@
+rabbitmq:
+  # RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+  schema: "amqp"
+  host: "rabbitmq"
+  port: 5672
+  username: ${RABBITMQ_USER}
+  password: ${RABBITMQ_PASS}
+  url: ${RABBITMQ_URL}
+  queues:
+    - name: "delete_queue"
+      routingKey: "delete_user_rk"
+      exchange: "delete_exchange"
+      exchange_type: "direct"
+      durable: true
+      consumer: true
+    # add more if needed

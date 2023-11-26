@@ -1,0 +1,11 @@
+syntax = "proto3";
+option go_package = "github.com/mihnea1711/POS_Project/services/rabbit/idm/proto_files";
+
+message UserID {
+    int64 ID = 1;
+}
+
+message UserIDRequest {
+    UserID UserID = 1;
+}
+
