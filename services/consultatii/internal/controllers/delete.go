@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -79,6 +80,79 @@ func (cController *ConsultationController) DeleteConsultationByID(w http.Respons
 	// Respond with a success message
 	response := models.ResponseData{
 		Message: "Consultation deleted successfully.",
+		Payload: models.RowsAffected{
+			RowsAffected: rowsAffected,
+		},
+	}
+	utils.RespondWithJSON(w, http.StatusOK, response)
+}
+
+// Delete consultations by patient or doctor ID
+func (cController *ConsultationController) DeleteConsultationByPatientOrDoctorID(w http.ResponseWriter, r *http.Request) {
+	// Log the attempt to delete a consultation by patient or doctor ID
+	log.Printf("[CONSULTATION] Attempting to delete a consultations by patient or doctor ID.")
+
+	// Extract the consultation patient or doctor ID from the request URL parameters
+	vars := mux.Vars(r)
+	patientOrDoctorIDStr := vars[utils.DELETE_CONSULTATIE_BY_PATIENT_DOCTOR_ID_PARAMETER]
+	patientOrDoctorID, err := strconv.Atoi(patientOrDoctorIDStr)
+	if err != nil {
+		// Handle the case where an invalid consultation patient or doctor ID is provided
+		response := models.ResponseData{
+			Error:   "Invalid consultation patient or doctor ID",
+			Message: "Failed to delete consultations. Invalid consultation patient or doctor ID provided.",
+		}
+		utils.RespondWithJSON(w, http.StatusBadRequest, response)
+		return
+	}
+
+	// Ensure a database operation doesn't take longer than utils.REQUEST_TIMEOUT_DURATION seconds
+	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_TIMEOUT_DURATION*time.Second)
+	defer cancel()
+
+	// Use cController.DbConn to delete the consultation by patient or doctor ID from the database
+	rowsAffected, err := cController.DbConn.DeleteConsultationsByPatientOrDoctorID(ctx, patientOrDoctorID)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			// Handle the case where no document is found with the given patient or doctor ID
+			errMsg := fmt.Sprintf("Failed to delete consultations by patient or doctor ID. Consultations not found: %s", err)
+			log.Printf("[CONSULTATION] %s: %v", errMsg, patientOrDoctorID)
+			response := models.ResponseData{
+				Error:   errMsg,
+				Message: "Failed to delete consultations. Consultations not found.",
+			}
+			utils.RespondWithJSON(w, http.StatusNotFound, response)
+			return
+		}
+
+		// Handle the case where an internal server error occurs during the deletion
+		errMsg := fmt.Sprintf("Internal server error: %s", err)
+		log.Printf("[CONSULTATION] Failed to delete consultations by patient or doctor ID: %s\n", errMsg)
+		response := models.ResponseData{
+			Error:   errMsg,
+			Message: "Failed to delete consultations. Internal server error.",
+		}
+		utils.RespondWithJSON(w, http.StatusInternalServerError, response)
+		return
+	}
+
+	// Check if the consultation exists and was deleted
+	if rowsAffected == 0 {
+		// Handle the case where the consultation is not found
+		response := models.ResponseData{
+			Error:   "Consultations not found",
+			Message: "Failed to delete consultations. Consultations not found.",
+		}
+		utils.RespondWithJSON(w, http.StatusNotFound, response)
+		return
+	}
+
+	// Log the successful deletion of the consultation
+	log.Printf("[CONSULTATION] Successfully deleted consultations %d", patientOrDoctorID)
+
+	// Respond with a success message
+	response := models.ResponseData{
+		Message: "Consultations deleted successfully.",
 		Payload: models.RowsAffected{
 			RowsAffected: rowsAffected,
 		},

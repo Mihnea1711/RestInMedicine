@@ -27,6 +27,7 @@ type Database interface {
 
 	// delete
 	DeleteConsultationByID(ctx context.Context, consultationID primitive.ObjectID) (int, error)
+	DeleteConsultationsByPatientOrDoctorID(ctx context.Context, id int) (int, error)
 
 	// Add more methods as needed
 
