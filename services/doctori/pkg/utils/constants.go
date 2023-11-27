@@ -38,14 +38,14 @@ const CLEAR_DB_RESOURCES_TIMEOUT = 10
 
 // Doctor module endpoints with parameters
 const (
-	CREATE_DOCTOR_ENDPOINT            = "/doctors"                                                   // POST
-	FETCH_ALL_DOCTORS_ENDPOINT        = "/doctors"                                                   // GET
-	FETCH_DOCTOR_BY_ID_ENDPOINT       = "/doctors/{" + FETCH_DOCTOR_BY_ID_PARAMETER + "}"            // GET
-	FETCH_DOCTOR_BY_EMAIL_ENDPOINT    = "/doctors/email/{" + FETCH_DOCTOR_BY_EMAIL_PARAMETER + "}"   // GET
-	FETCH_DOCTOR_BY_USER_ID_ENDPOINT  = "/doctors/users/{" + FETCH_DOCTOR_BY_USER_ID_PARAMETER + "}" // GET
-	UPDATE_DOCTOR_BY_ID_ENDPOINT      = "/doctors/{" + UPDATE_DOCTOR_BY_ID_PARAMETER + "}"           // PUT
-	DELETE_DOCTOR_BY_ID_ENDPOINT      = "/doctors/{" + DELETE_DOCTOR_BY_ID_PARAMETER + "}"           // DELETE
-	DELETE_DOCTOR_BY_USER_ID_ENDPOINT = "/doctors/users{" + DELETE_DOCTOR_BY_USER_ID_PARAMETER + "}" // DELETE
+	CREATE_DOCTOR_ENDPOINT            = "/doctors"                                                    // POST
+	FETCH_ALL_DOCTORS_ENDPOINT        = "/doctors"                                                    // GET
+	FETCH_DOCTOR_BY_ID_ENDPOINT       = "/doctors/{" + FETCH_DOCTOR_BY_ID_PARAMETER + "}"             // GET
+	FETCH_DOCTOR_BY_EMAIL_ENDPOINT    = "/doctors/email/{" + FETCH_DOCTOR_BY_EMAIL_PARAMETER + "}"    // GET
+	FETCH_DOCTOR_BY_USER_ID_ENDPOINT  = "/doctors/users/{" + FETCH_DOCTOR_BY_USER_ID_PARAMETER + "}"  // GET
+	UPDATE_DOCTOR_BY_ID_ENDPOINT      = "/doctors/{" + UPDATE_DOCTOR_BY_ID_PARAMETER + "}"            // PUT
+	DELETE_DOCTOR_BY_ID_ENDPOINT      = "/doctors/{" + DELETE_DOCTOR_BY_ID_PARAMETER + "}"            // DELETE
+	DELETE_DOCTOR_BY_USER_ID_ENDPOINT = "/doctors/users/{" + DELETE_DOCTOR_BY_USER_ID_PARAMETER + "}" // DELETE
 )
 
 // Doctor module parameters

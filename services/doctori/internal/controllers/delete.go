@@ -92,6 +92,31 @@ func (dController *DoctorController) DeleteDoctorByUserID(w http.ResponseWriter,
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
+	// get doctor by user id
+	doctor, err := dController.DbConn.FetchDoctorByUserID(ctx, doctorUserID)
+	if err != nil {
+		// Check if the error is due to no rows found
+		if err == sql.ErrNoRows {
+			errMsg := fmt.Sprintf("Error getting doctor by user ID: %s", err.Error())
+			log.Printf("[DOCTOR] %s", errMsg)
+			// Create a conflict response using ResponseData
+			utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Error: errMsg, Message: "Failed to get doctor by user ID. Doctor not found"})
+			return
+		}
+
+		errMsg := fmt.Sprintf("Failed to fetch doctor with user ID %d: %s", doctorUserID, err)
+		log.Printf("[DOCTOR] %s", errMsg)
+		utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{Message: "Failed to fetch doctor by doctorUserID", Error: errMsg})
+		return
+	}
+
+	if doctor == nil {
+		errMsg := fmt.Sprintf("No doctor found with user ID: %d", doctorUserID)
+		log.Printf("[DOCTOR] %s", errMsg)
+		utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Message: "Doctor not found or an unexpected error happened.", Error: errMsg})
+		return
+	}
+
 	rowsAffected, err := dController.DbConn.DeleteDoctorByUserID(ctx, doctorUserID)
 	if err != nil {
 		// Check if the error is due to no rows found
@@ -125,8 +150,9 @@ func (dController *DoctorController) DeleteDoctorByUserID(w http.ResponseWriter,
 	// Use RespondWithJSON for success response
 	utils.RespondWithJSON(w, http.StatusOK, models.ResponseData{
 		Message: fmt.Sprintf("Doctor with user ID: %d deleted successfully", doctorUserID),
-		Payload: models.RowsAffected{
+		Payload: models.ComplexResponse{
 			RowsAffected: rowsAffected,
+			DeletedID:    doctor.IDDoctor,
 		},
 	})
 }
