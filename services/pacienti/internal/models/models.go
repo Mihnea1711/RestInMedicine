@@ -29,3 +29,8 @@ type RowsAffected struct {
 type LastInsertedID struct {
 	LastInsertedID int `json:"last_inserted_id"`
 }
+
+type ComplexResponse struct {
+	RowsAffected int `json:"rows_affected"`
+	DeletedID    int `json:"deleted_id"`
+}

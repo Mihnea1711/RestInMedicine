@@ -93,6 +93,36 @@ func (pController *PatientController) DeletePatientByUserID(w http.ResponseWrite
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
+	// getPatientBYUserID
+	patient, err := pController.DbConn.FetchPatientByUserID(ctx, patientUserID)
+	if err != nil {
+		// Check if the error is due to no rows found
+		if err == sql.ErrNoRows {
+			errMsg := fmt.Sprintf("Failed to fetch patient with user ID %d: %v", patientUserID, err)
+			log.Printf("[PATIENT] %s", errMsg)
+
+			// Use utils.RespondWithJSON for error response
+			utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Error: errMsg, Message: "Failed to fetch patient by user ID. Patient not found"})
+			return
+		}
+
+		errMsg := fmt.Sprintf("Failed to fetch patient with user ID %d: %s", patientUserID, err)
+		log.Printf("[PATIENT] %s", errMsg)
+
+		// Use utils.RespondWithJSON for error response
+		utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{Error: errMsg, Message: "Failed to fetch patient by patientUserID"})
+		return
+	}
+
+	if patient == nil {
+		errMsg := fmt.Sprintf("No patient found with user ID: %d", patientUserID)
+		log.Printf("[PATIENT] %s", errMsg)
+
+		// Use utils.RespondWithJSON for error response
+		utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Error: errMsg, Message: "Patient not found or an unexpected error happened."})
+		return
+	}
+
 	rowsAffected, err := pController.DbConn.DeletePatientByUserID(ctx, patientUserID)
 	if err != nil {
 		// Check if the error is due to no rows found
@@ -127,8 +157,9 @@ func (pController *PatientController) DeletePatientByUserID(w http.ResponseWrite
 	// Use utils.RespondWithJSON for success response
 	utils.RespondWithJSON(w, http.StatusOK, models.ResponseData{
 		Message: fmt.Sprintf("Patient with user ID: %d deleted successfully", patientUserID),
-		Payload: models.RowsAffected{
+		Payload: models.ComplexResponse{
 			RowsAffected: rowsAffected,
+			DeletedID:    patient.IDPacient,
 		},
 	})
 }
