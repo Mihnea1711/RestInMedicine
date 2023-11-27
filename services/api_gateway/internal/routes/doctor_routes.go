@@ -17,32 +17,32 @@ func loadDoctorRoutes(router *mux.Router, gatewayController *controllers.Gateway
 	// ---------------------------------------------------------- Create --------------------------------------------------------------
 	doctorCreationHandler := http.HandlerFunc(gatewayController.CreateDoctor)
 	router.Handle(utils.CREATE_DOCTOR_ENDPOINT, authorization.AdminOnlyMiddleware(jwtConfig, validation.ValidateDoctorData(doctorCreationHandler))).Methods("POST")
-	log.Println("[DOCTOR] Route POST", utils.CREATE_DOCTOR_ENDPOINT, "registered.")
+	log.Println("[GATEWAY] Route POST", utils.CREATE_DOCTOR_ENDPOINT, "registered.")
 
 	// ---------------------------------------------------------- Retrieve --------------------------------------------------------------
 	doctorFetchAllHandler := http.HandlerFunc(gatewayController.GetDoctors)
 	router.HandleFunc(utils.GET_ALL_DOCTORS_ENDPOINT, authorization.AllRolesMiddleware(jwtConfig, doctorFetchAllHandler)).Methods("GET")
-	log.Println("[DOCTOR] Route GET", utils.GET_ALL_DOCTORS_ENDPOINT, "registered.")
+	log.Println("[GATEWAY] Route GET", utils.GET_ALL_DOCTORS_ENDPOINT, "registered.")
 
 	doctorFetchByIDHandler := http.HandlerFunc(gatewayController.GetDoctorByID)
 	router.HandleFunc(utils.GET_DOCTOR_BY_ID_ENDPOINT, authorization.AllRolesMiddleware(jwtConfig, doctorFetchByIDHandler)).Methods("GET")
-	log.Println("[DOCTOR] Route GET", utils.GET_DOCTOR_BY_ID_ENDPOINT, "registered.")
+	log.Println("[GATEWAY] Route GET", utils.GET_DOCTOR_BY_ID_ENDPOINT, "registered.")
 
 	doctorFetchByEmailHandler := http.HandlerFunc(gatewayController.GetDoctorByEmail)
 	router.Handle(utils.GET_DOCTOR_BY_EMAIL_ENDPOINT, authorization.AllRolesMiddleware(jwtConfig, doctorFetchByEmailHandler)).Methods("GET")
-	log.Println("[DOCTOR] Route GET", utils.GET_DOCTOR_BY_EMAIL_ENDPOINT, "registered.")
+	log.Println("[GATEWAY] Route GET", utils.GET_DOCTOR_BY_EMAIL_ENDPOINT, "registered.")
 
 	doctorFetchByUserIDHandler := http.HandlerFunc(gatewayController.GetDoctorByUserID)
 	router.Handle(utils.GET_DOCTOR_BY_USER_ID_ENDPOINT, authorization.AllRolesMiddleware(jwtConfig, doctorFetchByUserIDHandler)).Methods("GET")
-	log.Println("[DOCTOR] Route GET", utils.GET_DOCTOR_BY_USER_ID_ENDPOINT, "registered.")
+	log.Println("[GATEWAY] Route GET", utils.GET_DOCTOR_BY_USER_ID_ENDPOINT, "registered.")
 
 	// ---------------------------------------------------------- Update --------------------------------------------------------------
 	doctorUpdateByIDHandler := http.HandlerFunc(gatewayController.UpdateDoctorByID)
 	router.Handle(utils.UPDATE_DOCTOR_BY_ID_ENDPOINT, authorization.AdminAndDoctorMiddleware(jwtConfig, validation.ValidateDoctorData(doctorUpdateByIDHandler))).Methods("PUT")
-	log.Println("[DOCTOR] Route PUT", utils.UPDATE_DOCTOR_BY_ID_ENDPOINT, "registered.")
+	log.Println("[GATEWAY] Route PUT", utils.UPDATE_DOCTOR_BY_ID_ENDPOINT, "registered.")
 
 	// ---------------------------------------------------------- Delete --------------------------------------------------------------
 	doctorDeleteByIDHandler := http.HandlerFunc(gatewayController.DeleteDoctorByID)
 	router.Handle(utils.DELETE_DOCTOR_BY_ID_ENDPOINT, authorization.AdminAndDoctorMiddleware(jwtConfig, doctorDeleteByIDHandler)).Methods("DELETE")
-	log.Println("[DOCTOR] Route DELETE", utils.DELETE_DOCTOR_BY_ID_ENDPOINT, "registered.")
+	log.Println("[GATEWAY] Route DELETE", utils.DELETE_DOCTOR_BY_ID_ENDPOINT, "registered.")
 }

@@ -26,33 +26,36 @@ func New(config *config.AppConfig, parentCtx context.Context) (*App, error) {
 		config: config,
 	}
 
-	// Setup gRPC connection
-	creds := insecure.NewCredentials()
-	log.Printf("[GATEWAY] Initializing IDM client connection on %s:%d.", utils.IDM_HOST, utils.IDM_PORT)
-	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", utils.IDM_HOST, utils.IDM_PORT), grpc.WithTransportCredentials(creds))
-	if err != nil {
-		return nil, fmt.Errorf("failed to connect to IDM gRPC server: %v", err)
-	}
-	// Create IDM client
-	app.idmClient = idm.NewIDMClient(conn)
-
-	// setup router for the app
-	router := routes.SetupRoutes(app.idmClient, config.JWT)
-	app.router = router
-
 	log.Println("[GATEWAY] Application successfully initialized.")
 	return app, nil
 }
 
 func (a *App) Start(ctx context.Context) error {
 	log.Println("[GATEWAY] Starting server...")
+
+	// Setup gRPC connection
+	creds := insecure.NewCredentials()
+	log.Printf("[GATEWAY] Initializing IDM client connection on %s:%d.", utils.IDM_HOST, utils.IDM_PORT)
+	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", utils.IDM_HOST, utils.IDM_PORT), grpc.WithTransportCredentials(creds))
+	if err != nil {
+		return fmt.Errorf("failed to connect to IDM gRPC server: %v", err)
+	}
+	// Manually close te connection to the IDM
+	defer conn.Close()
+	// Create IDM client
+	a.idmClient = idm.NewIDMClient(conn)
+
+	// setup router for the app
+	router := routes.SetupRoutes(a.idmClient, a.config.JWT)
+	a.router = router
+
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%d", a.config.Server.Port),
 		Handler: a.router,
 	}
 
 	// Log the message just before starting the server in the goroutine
-	fmt.Printf("[GATEWAY] Server started and listening on port %d\n", a.config.Server.Port)
+	log.Printf("[GATEWAY] Server started and listening on port %d\n", a.config.Server.Port)
 
 	channel := make(chan error, 1)
 	go func() {

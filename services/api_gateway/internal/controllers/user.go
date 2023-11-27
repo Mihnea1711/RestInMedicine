@@ -205,6 +205,10 @@ func (gc *GatewayController) DeleteUser(w http.ResponseWriter, r *http.Request) 
 	utils.CheckNilResponse(w, http.StatusInternalServerError, "Delete User By ID response is nil", enhancedInfoResponse.IsResponseNil, "Received nil response while deleting the user.")
 	utils.CheckNilResponse(w, http.StatusInternalServerError, "Delete User By ID response info is nil", enhancedInfoResponse.IsInfoNil, "Received nil response.Info while deleting user by id.")
 
+	// delete from patient module
+	// delete from doctor module
+	// delete from consultation module
+
 	// Check the gRPC response status and handle accordingly
 	switch response.Info.Status {
 	case http.StatusOK:

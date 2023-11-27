@@ -52,6 +52,10 @@ const (
 )
 
 const (
+	CHECK_HEALTH_ENDPOINT = "/api/gateway/health"
+)
+
+const (
 	// Endpoints
 	REGISTER_USER_ENDPOINT     = "/api/users"
 	LOGIN_USER_ENDPOINT        = "/api/login"

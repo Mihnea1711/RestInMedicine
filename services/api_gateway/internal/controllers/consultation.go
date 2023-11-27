@@ -258,20 +258,13 @@ func (gc *GatewayController) GetConsultationByID(w http.ResponseWriter, r *http.
 
 	// Get PatientID from request params
 	consultationIDString := mux.Vars(r)[utils.GET_CONSULTATION_BY_ID_PARAMETER]
-	// Convert patientIDString to int64
-	consultationID, err := strconv.ParseInt(consultationIDString, 10, 64)
-	if err != nil {
-		log.Printf("[GATEWAY] Invalid consultation ID: %v", err)
-		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid consultation ID", err.Error())
-		return
-	}
 
 	// Create a context with a timeout (adjust the timeout as needed)
 	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_CONTEXT_TIMEOUT*time.Second)
 	defer cancel()
 
 	// Redirect the request body to another module
-	decodedResponse, status, err := gc.redirectRequestBody(ctx, http.MethodGet, fmt.Sprintf("%s/%d", utils.CONSULTATION_FETCH_CONSULTATIE_BY_ID_ENDPOINT, consultationID), utils.CONSULTATION_PORT, nil)
+	decodedResponse, status, err := gc.redirectRequestBody(ctx, http.MethodGet, fmt.Sprintf("%s/%s", utils.CONSULTATION_FETCH_CONSULTATIE_BY_ID_ENDPOINT, consultationIDString), utils.CONSULTATION_PORT, nil)
 	if err != nil {
 		log.Printf("[GATEWAY] Error redirecting consultation request: %v", err)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
@@ -301,13 +294,6 @@ func (gc *GatewayController) UpdateConsultationByID(w http.ResponseWriter, r *ht
 
 	// Get consultationIDString from request params
 	consultationIDString := mux.Vars(r)[utils.UPDATE_CONSULTATION_BY_ID_PARAMETER]
-	// Convert consultationIDString to int64
-	consultationID, err := strconv.ParseInt(consultationIDString, 10, 64)
-	if err != nil {
-		log.Printf("[GATEWAY] Invalid consultation ID: %v", err)
-		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid consultation ID", err.Error())
-		return
-	}
 
 	// Take consultation data from the context after validation
 	consultationData := r.Context().Value(utils.DECODED_CONSULTATION_DATA).(*models.ConsultationData)
@@ -343,7 +329,7 @@ func (gc *GatewayController) UpdateConsultationByID(w http.ResponseWriter, r *ht
 	}
 
 	// Redirect the request body to programare module to create the consultation
-	decodedResponse, status, err := gc.redirectRequestBody(ctx, utils.PUT, fmt.Sprintf("%s/%d", utils.CONSULTATION_UPDATE_CONSULTATIE_BY_ID_ENDPOINT, consultationID), utils.CONSULTATION_PORT, consultationData)
+	decodedResponse, status, err := gc.redirectRequestBody(ctx, utils.PUT, fmt.Sprintf("%s/%s", utils.CONSULTATION_UPDATE_CONSULTATIE_BY_ID_ENDPOINT, consultationIDString), utils.CONSULTATION_PORT, consultationData)
 	if err != nil {
 		log.Printf("[GATEWAY] Error redirecting consultation request: %v", err)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
@@ -377,20 +363,13 @@ func (gc *GatewayController) DeleteConsultationByID(w http.ResponseWriter, r *ht
 
 	// Get consultationIDString from request params
 	consultationIDString := mux.Vars(r)[utils.DELETE_CONSULTATION_BY_ID_PARAMETER]
-	// Convert consultationIDString to int64
-	consultationID, err := strconv.ParseInt(consultationIDString, 10, 64)
-	if err != nil {
-		log.Printf("[GATEWAY] Invalid consultation ID: %v", err)
-		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid consultation ID", err.Error())
-		return
-	}
 
 	// Create a context with a timeout (adjust the timeout as needed)
 	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_CONTEXT_TIMEOUT*time.Second)
 	defer cancel()
 
 	// Redirect the request body to another module
-	decodedResponse, status, err := gc.redirectRequestBody(ctx, utils.DELETE, fmt.Sprintf("%s/%d", utils.CONSULTATION_DELETE_CONSULTATIE_BY_ID_ENDPOINT, consultationID), utils.CONSULTATION_PORT, nil)
+	decodedResponse, status, err := gc.redirectRequestBody(ctx, utils.DELETE, fmt.Sprintf("%s/%s", utils.CONSULTATION_DELETE_CONSULTATIE_BY_ID_ENDPOINT, consultationIDString), utils.CONSULTATION_PORT, nil)
 	if err != nil {
 		log.Printf("[GATEWAY] Error redirecting consultation request: %v", err)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
