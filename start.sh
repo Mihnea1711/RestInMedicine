@@ -1,16 +1,22 @@
 #!/bin/bash
 
-echo "[DOCTOR] Stopping existing containers..."
-docker compose down
+echo "[GATEWAY] Stopping and removing existing containers..."
+docker-compose down --volumes --remove-orphans
 
-echo "[DOCTOR] Removing MySQL data volume..."
-docker volume rm pos_project_doctori-mysql-data
+# echo "[GATEWAY] Removing specific volumes..."
+# docker volume rm pos_project_GATEWAYi-mysql-data pos_project_GATEWAYi-redis-data
 
-echo "[DOCTOR] Removing Redis data volume..."
-docker volume rm pos_project_doctori-redis-data
+echo "[GATEWAY] Cleaning up images and containers..."
+docker ps -aq --filter name="pos_project_*" | xargs docker stop | xargs docker rm
+docker images --format="{{.Repository}}" | grep pos_project_ | xargs docker rmi
 
-echo "[DOCTOR] Building Docker images..."
+echo "[GATEWAY] Pruning unused resources..."
+docker container prune --force
+docker image prune --force
+docker volume prune --force
+
+echo "[GATEWAY] Building Docker images..."
 docker compose build
 
-echo "[DOCTOR] Starting containers..."
+echo "[GATEWAY] Starting containers..."
 docker compose up --force-recreate --build

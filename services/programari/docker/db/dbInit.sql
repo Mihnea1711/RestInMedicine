@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS appointment (
     id_patient INT NOT NULL,
     id_doctor INT NOT NULL,
     date DATE NOT NULL,
-    status ENUM('onorata', 'neprezentata', 'anulata') NOT NULL,
+    status ENUM('onorata', 'programata', 'confirmata', 'neprezentata', 'anulata') NOT NULL,
     UNIQUE KEY unique_appointment (id_patient, id_doctor, date)
     -- FOREIGN KEY (id_patient) REFERENCES pacient(id_patient),
     -- FOREIGN KEY (id_doctor) REFERENCES doctor(id_doctor)

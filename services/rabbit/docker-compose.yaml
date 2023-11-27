@@ -6,6 +6,8 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+    env_file:
+      - .env
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
@@ -23,8 +25,6 @@ services:
       - rabbitmq
     env_file:
       - .env
-    environment:
-      RABBITMQ_URL: ${RABBITMQ_URL}
     healthcheck:
       test: ["CMD", "curl", "-vf", "http://localhost:8090/api/rabbit/health-check"]
       interval: 20s

@@ -1,0 +1,58 @@
+version: "3.8"
+
+services:
+  rabbitmq:
+    image: "rabbitmq:3-management"
+    # container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    env_file:
+      - ./services/rabbit/.env
+    environment:
+      RABBITMQ_DEFAULT_USER: "guest"
+      RABBITMQ_DEFAULT_PASS: "guest"
+    networks:
+      - pos_network
+
+  api_gateway:
+    build:
+      context: ./services/api_gateway
+      dockerfile: docker/api.Dockerfile
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./services/api_gateway/.env  # Path to the .env file
+    # depends_on:
+    #   - other_service
+    restart: always
+    networks:
+      - pos_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/gateway/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  rabbit_app:
+    build:
+      context: ./services/rabbit
+      dockerfile: docker/api.Dockerfile
+    ports:
+      - "8090:8090"
+    restart: always
+    depends_on:
+      - rabbitmq
+    env_file:
+      - ./services/rabbit/.env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8090/api/rabbit/health-check"]
+      interval: 20s
+      timeout: 5s
+      retries: 2
+    networks:
+      - pos_network
+
+networks:
+  pos_network:
+    driver: bridge
