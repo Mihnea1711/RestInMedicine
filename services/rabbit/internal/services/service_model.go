@@ -6,4 +6,7 @@ import "github.com/mihnea1711/POS_Project/services/rabbit/idm"
 type ServiceContainer struct {
 	IDMClient idm.IDMClient
 	// Add more dependencies as needed
+
+	// maybe add here list of participants
+	// have a queue that listens to gateway sending info about current participants
 }

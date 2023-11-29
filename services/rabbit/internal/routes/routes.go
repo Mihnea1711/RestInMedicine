@@ -32,7 +32,7 @@ func loadRoutes(router *mux.Router, rabbitController *controllers.RabbitControll
 	// ---------------------------------------------------------- Create --------------------------------------------------------------
 	healthCheckHandler := http.HandlerFunc(rabbitController.HandleHealthCheck)
 	router.Handle(utils.HEALTH_CHECK_ENDPOINT, healthCheckHandler).Methods("GET") // Handles health check
-	log.Println("[RABBIT] Route POST", utils.HEALTH_CHECK_ENDPOINT, "registered.")
+	log.Println("[RABBIT] Route GET", utils.HEALTH_CHECK_ENDPOINT, "registered.")
 
 	log.Println("[RABBIT] All routes for RABBIT entity loaded successfully.")
 }

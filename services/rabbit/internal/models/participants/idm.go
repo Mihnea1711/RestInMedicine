@@ -1,41 +1,40 @@
 package participants
 
-import "github.com/mihnea1711/POS_Project/services/rabbit/internal/models"
+import (
+	"github.com/google/uuid"
+	"github.com/mihnea1711/POS_Project/services/rabbit/internal/models"
+)
 
 // IDM represents the IDM module
 type IDM struct {
-	models.ParticipantData // Embed Participant struct
+	models.Participant // Embed Participant struct
 	// Additional fields specific to IDM, if any
 }
 
-func NewIDM(id, name string) *IDM {
+func NewIDM(participantID uuid.UUID, participantType models.ParticipantType) *IDM {
 	return &IDM{
-		ParticipantData: models.ParticipantData{
-			ID:   id,
-			Name: name,
-		},
-		// Initialize additional fields here
+		Participant: *models.NewParticipant(participantID, participantType),
 	}
 }
 
-// Override the Inform method for IDM
-func (idm *IDM) Inform(commit bool) error {
-	// Implement IDM-specific inform logic
-	return nil
+// Implement the Transactional interface methods for Participant
+func (idm *IDM) Prepare() (*models.ParticipantResponse, error) {
+	// Implement preparation logic
+	return nil, nil
 }
 
 // Implement the Transactional interface methods for Participant
-func (idm *IDM) Prepare() error {
-	// Implement preparation logic
-	return nil
+func (idm *IDM) Abort() (*models.ParticipantResponse, error) {
+	// Implement abort logic
+	return nil, nil
 }
 
-func (idm *IDM) Commit() error {
+func (idm *IDM) Commit() (*models.ParticipantResponse, error) {
 	// Implement commit logic
-	return nil
+	return nil, nil
 }
 
-func (idm *IDM) Rollback() error {
+func (idm *IDM) Rollback() (*models.ParticipantResponse, error) {
 	// Implement rollback logic
-	return nil
+	return nil, nil
 }

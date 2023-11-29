@@ -1,41 +1,40 @@
 package participants
 
-import "github.com/mihnea1711/POS_Project/services/rabbit/internal/models"
+import (
+	"github.com/google/uuid"
+	"github.com/mihnea1711/POS_Project/services/rabbit/internal/models"
+)
 
 // IDM represents the IDM module
 type Appointment struct {
-	models.ParticipantData // Embed Participant struct
+	models.Participant // Embed Participant struct
 	// Additional fields specific to IDM, if any
 }
 
-func NewAppointment(id, name string) *Appointment {
+func NewAppointment(participantID uuid.UUID, participantType models.ParticipantType) *Appointment {
 	return &Appointment{
-		ParticipantData: models.ParticipantData{
-			ID:   id,
-			Name: name,
-		},
-		// Initialize additional fields here
+		Participant: *models.NewParticipant(participantID, participantType),
 	}
 }
 
 // Override the Inform method for IDM
-func (a *Appointment) Inform(commit bool) error {
+func (a *Appointment) Inform(commit bool) (*models.ParticipantResponse, error) {
 	// Implement IDM-specific inform logic
-	return nil
+	return nil, nil
 }
 
 // Implement the Transactional interface methods for Participant
-func (a *Appointment) Prepare() error {
+func (a *Appointment) Prepare() (*models.ParticipantResponse, error) {
 	// Implement preparation logic
-	return nil
+	return nil, nil
 }
 
-func (a *Appointment) Commit() error {
+func (a *Appointment) Commit() (*models.ParticipantResponse, error) {
 	// Implement commit logic
-	return nil
+	return nil, nil
 }
 
-func (a *Appointment) Rollback() error {
+func (a *Appointment) Rollback() (*models.ParticipantResponse, error) {
 	// Implement rollback logic
-	return nil
+	return nil, nil
 }

@@ -1,15 +1,16 @@
 package models
 
+import "github.com/google/uuid"
+
 // ParticipantResponse represents the response from a participant in a transaction
 type ParticipantResponse struct {
-	ParticipantID string
-	Success       bool
-	// Include other relevant information in the response if needed
+	ID      uuid.UUID
+	Code    int
+	Message string
 }
 
-// Participant represents a module that participates in a distributed transaction
-type ParticipantData struct {
-	// Include other relevant fields if needed
-	ID   string
-	Name string
+// ClientResponse represents the response that is sent to the client after 2pc finishes
+type ClientResponse struct {
+	Code    int
+	Message string
 }
