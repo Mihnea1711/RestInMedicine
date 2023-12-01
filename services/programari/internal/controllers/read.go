@@ -25,7 +25,7 @@ func (aController *AppointmentController) GetAppointments(w http.ResponseWriter,
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
-	log.Printf("[PATIENT] Fetching appointments with limit: %d, page: %d", limit, page)
+	log.Printf("[APPOINTMENT] Fetching appointments with limit: %d, page: %d", limit, page)
 
 	// Use aController.DbConn to fetch all appointments from the database
 	appointments, err := aController.DbConn.FetchAppointments(ctx, page, limit)
@@ -151,7 +151,7 @@ func (aController *AppointmentController) GetAppointmentsByDoctorID(w http.Respo
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
-	log.Printf("[PATIENT] Fetching appointments by doctor ID %d with limit: %d, page: %d", doctorID, limit, page)
+	log.Printf("[APPOINTMENT] Fetching appointments by doctor ID %d with limit: %d, page: %d", doctorID, limit, page)
 
 	// Use aController.DbConn to fetch appointments by Doctor ID from the database
 	appointments, err := aController.DbConn.FetchAppointmentsByDoctorID(ctx, doctorID, page, limit)
@@ -206,7 +206,7 @@ func (aController *AppointmentController) GetAppointmentsByPatientID(w http.Resp
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
-	log.Printf("[PATIENT] Fetching appointments by patient ID %d with limit: %d, page: %d", patientID, limit, page)
+	log.Printf("[APPOINTMENT] Fetching appointments by patient ID %d with limit: %d, page: %d", patientID, limit, page)
 
 	// Use aController.DbConn to fetch appointments by Patient ID from the database
 	appointments, err := aController.DbConn.FetchAppointmentsByPatientID(ctx, patientID, page, limit)
@@ -266,7 +266,7 @@ func (aController *AppointmentController) GetAppointmentsByDate(w http.ResponseW
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
-	log.Printf("[PATIENT] Fetching appointments by date %s with limit: %d, page: %d", date, limit, page)
+	log.Printf("[APPOINTMENT] Fetching appointments by date %s with limit: %d, page: %d", date, limit, page)
 
 	// Use aController.DbConn to fetch appointments by date from the database
 	appointments, err := aController.DbConn.FetchAppointmentsByDate(ctx, date, page, limit)
@@ -310,7 +310,7 @@ func (aController *AppointmentController) GetAppointmentsByStatus(w http.Respons
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
-	log.Printf("[PATIENT] Fetching appointments by status %s with limit: %d, page: %d", status, limit, page)
+	log.Printf("[APPOINTMENT] Fetching appointments by status %s with limit: %d, page: %d", status, limit, page)
 
 	// Use aController.DbConn to fetch appointments by status from the database
 	appointments, err := aController.DbConn.FetchAppointmentsByStatus(ctx, status, page, limit)

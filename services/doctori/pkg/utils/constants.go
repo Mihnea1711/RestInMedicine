@@ -46,6 +46,8 @@ const (
 	UPDATE_DOCTOR_BY_ID_ENDPOINT      = "/doctors/{" + UPDATE_DOCTOR_BY_ID_PARAMETER + "}"            // PUT
 	DELETE_DOCTOR_BY_ID_ENDPOINT      = "/doctors/{" + DELETE_DOCTOR_BY_ID_PARAMETER + "}"            // DELETE
 	DELETE_DOCTOR_BY_USER_ID_ENDPOINT = "/doctors/users/{" + DELETE_DOCTOR_BY_USER_ID_PARAMETER + "}" // DELETE
+
+	HEALTH_CHECK_ENDPOINT = "/doctors/health-check"
 )
 
 // Doctor module parameters

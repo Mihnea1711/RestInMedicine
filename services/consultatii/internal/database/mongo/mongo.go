@@ -19,14 +19,17 @@ type MongoDB struct {
 }
 
 func NewMongoDB(ctx context.Context, cfg *config.MongoDBConfig) (database.Database, error) {
+	// auth := options.Client().SetAuth()
 	clientOptions := options.Client().
-		ApplyURI(fmt.Sprintf("mongodb://%s:%s@%s:%d", cfg.User, cfg.Password, cfg.Host, cfg.Port))
+		ApplyURI(fmt.Sprintf("mongodb://%s:%s@%s:%d/?authSource=admin", cfg.User, cfg.Password, cfg.Host, cfg.Port))
 
 	client, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
 		log.Printf("[CONSULTATION] Error connecting to MongoDB: %v", err)
 		return nil, err
 	}
+
+	log.Printf("Connected client to Mongo: %s", fmt.Sprintf("mongodb://%s:%s@%s:%d", cfg.User, cfg.Password, cfg.Host, cfg.Port))
 
 	// Ping the MongoDB server to ensure connectivity
 	if err := client.Ping(ctx, readpref.Primary()); err != nil {

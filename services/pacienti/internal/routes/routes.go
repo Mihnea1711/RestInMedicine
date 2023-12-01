@@ -61,6 +61,10 @@ func loadCrudRoutes(router *mux.Router, pacientController *controllers.PatientCo
 	router.HandleFunc(utils.FETCH_PATIENT_BY_USER_ID_ENDPOINT, pacientFetchByUserIDHandler).Methods("GET")
 	log.Println("[PATIENT] Route GET", utils.FETCH_PATIENT_BY_USER_ID_ENDPOINT, "registered.")
 
+	healthCheckHandler := http.HandlerFunc(pacientController.HealthCheck)
+	router.Handle(utils.HEALTH_CHECK_ENDPOINT, healthCheckHandler).Methods("GET")
+	log.Println("[PATIENT] Route GET", utils.HEALTH_CHECK_ENDPOINT, "registered.")
+
 	pacientFetchByIDHandler := http.HandlerFunc(pacientController.GetPatientByID)
 	router.HandleFunc(utils.FETCH_PATIENT_BY_ID_ENDPOINT, pacientFetchByIDHandler).Methods("GET")
 	log.Println("[PATIENT] Route GET", utils.FETCH_PATIENT_BY_ID_ENDPOINT, "registered.")

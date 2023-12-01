@@ -25,6 +25,7 @@ RUN apk --no-cache add ca-certificates bash netcat-openbsd curl
 # Copy the binary from the builder stage to the current stage
 COPY --from=builder /workspace/app_rabbit /app_rabbit
 COPY --from=builder /workspace/configs/config.yaml /configs/config.yaml
+COPY --from=builder /workspace/.env .env
 
 # Copy the entrypoint script
 COPY docker/entrypoint.sh /entrypoint.sh

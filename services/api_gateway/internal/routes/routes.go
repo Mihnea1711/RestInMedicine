@@ -47,5 +47,5 @@ func loadRoutes(router *mux.Router, gatewayController *controllers.GatewayContro
 func loadHealthRoutes(router *mux.Router, gatewayController *controllers.GatewayController) {
 	healthHandler := http.HandlerFunc(gatewayController.HealthCheck)
 	router.Handle(utils.CHECK_HEALTH_ENDPOINT, healthHandler).Methods("GET")
-	log.Printf("[GATEWAY] Route POST %s registered.\n", utils.CHECK_HEALTH_ENDPOINT)
+	log.Println("[GATEWAY] Route POST", utils.CHECK_HEALTH_ENDPOINT, "registered.")
 }

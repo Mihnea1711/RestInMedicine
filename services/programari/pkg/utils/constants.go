@@ -45,6 +45,8 @@ const (
 	FETCH_APPOINTMENTS_BY_STATUS_ENDPOINT     = "/appointments/status/{" + FETCH_APPOINTMENTS_BY_STATUS_PARAMETER + "}"       // GET
 	UPDATE_APPOINTMENT_BY_ID_ENDPOINT         = "/appointments/{" + UPDATE_APPOINTMENT_BY_ID_PARAMETER + "}"                  // PUT
 	DELETE_APPOINTMENT_BY_ID_ENDPOINT         = "/appointments/{" + DELETE_APPOINTMENT_BY_ID_PARAMETER + "}"                  // DELETE
+
+	HEALTH_CHECK_ENDPOINT = "/appointments/health-check"
 )
 
 // Parameters

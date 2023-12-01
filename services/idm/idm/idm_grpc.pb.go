@@ -36,6 +36,7 @@ type IDMClient interface {
 	AddUserToBlacklist(ctx context.Context, in *proto_files.BlacklistRequest, opts ...grpc.CallOption) (*proto_files.InfoResponse, error)
 	CheckUserInBlacklist(ctx context.Context, in *proto_files.UserIDRequest, opts ...grpc.CallOption) (*proto_files.InfoResponse, error)
 	RemoveUserFromBlacklist(ctx context.Context, in *proto_files.UserIDRequest, opts ...grpc.CallOption) (*proto_files.EnhancedInfoResponse, error)
+	HealthCheck(ctx context.Context, in *proto_files.HealthCheckRequest, opts ...grpc.CallOption) (*proto_files.HealthCheckResponse, error)
 }
 
 type iDMClient struct {
@@ -163,6 +164,15 @@ func (c *iDMClient) RemoveUserFromBlacklist(ctx context.Context, in *proto_files
 	return out, nil
 }
 
+func (c *iDMClient) HealthCheck(ctx context.Context, in *proto_files.HealthCheckRequest, opts ...grpc.CallOption) (*proto_files.HealthCheckResponse, error) {
+	out := new(proto_files.HealthCheckResponse)
+	err := c.cc.Invoke(ctx, "/IDM/HealthCheck", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // IDMServer is the server API for IDM service.
 // All implementations must embed UnimplementedIDMServer
 // for forward compatibility
@@ -180,6 +190,7 @@ type IDMServer interface {
 	AddUserToBlacklist(context.Context, *proto_files.BlacklistRequest) (*proto_files.InfoResponse, error)
 	CheckUserInBlacklist(context.Context, *proto_files.UserIDRequest) (*proto_files.InfoResponse, error)
 	RemoveUserFromBlacklist(context.Context, *proto_files.UserIDRequest) (*proto_files.EnhancedInfoResponse, error)
+	HealthCheck(context.Context, *proto_files.HealthCheckRequest) (*proto_files.HealthCheckResponse, error)
 	mustEmbedUnimplementedIDMServer()
 }
 
@@ -225,6 +236,9 @@ func (UnimplementedIDMServer) CheckUserInBlacklist(context.Context, *proto_files
 }
 func (UnimplementedIDMServer) RemoveUserFromBlacklist(context.Context, *proto_files.UserIDRequest) (*proto_files.EnhancedInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveUserFromBlacklist not implemented")
+}
+func (UnimplementedIDMServer) HealthCheck(context.Context, *proto_files.HealthCheckRequest) (*proto_files.HealthCheckResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method HealthCheck not implemented")
 }
 func (UnimplementedIDMServer) mustEmbedUnimplementedIDMServer() {}
 
@@ -473,6 +487,24 @@ func _IDM_RemoveUserFromBlacklist_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _IDM_HealthCheck_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(proto_files.HealthCheckRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IDMServer).HealthCheck(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/IDM/HealthCheck",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IDMServer).HealthCheck(ctx, req.(*proto_files.HealthCheckRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // IDM_ServiceDesc is the grpc.ServiceDesc for IDM service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -531,6 +563,10 @@ var IDM_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RemoveUserFromBlacklist",
 			Handler:    _IDM_RemoveUserFromBlacklist_Handler,
+		},
+		{
+			MethodName: "HealthCheck",
+			Handler:    _IDM_HealthCheck_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

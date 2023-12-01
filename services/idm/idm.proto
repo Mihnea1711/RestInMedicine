@@ -24,4 +24,6 @@ service IDM {
     rpc AddUserToBlacklist(BlacklistRequest) returns (InfoResponse);
     rpc CheckUserInBlacklist(UserIDRequest) returns (InfoResponse);
     rpc RemoveUserFromBlacklist(UserIDRequest) returns (EnhancedInfoResponse);
+
+    rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
 }

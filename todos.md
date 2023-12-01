@@ -1,16 +1,20 @@
 # Create a logger class for better/easier logging
 
-# test auth and html parsing in appointments and consultations
-
-# last check for logs and improve where possible
-# refactor and re-use code as much as possible to a degree (try to compress blocks and to extract re-usable functions)
-
 # add the delete queue listener module 
-## implement logic for connecting to rabbit and listening to queue changes
 ##  implement logic to delete from the databases. 
 ###     send delete req to gateway
 ###     send delete req to each module
 
-# docker cleanup in pc
 # docker compose
+
+# when creating a patient => check if a doctor exists and if so don't create a patient
+# when creating a doctor => check if a patient exists and if so don't create a doctor 
+
+# switching roles
+## patient => doctor -> delete patient and create a doctor with same data
+## doctor => patient -> delete doctor and create a patient with same data
+## patient/doctor => admin -> delete patient and doctor
+## admin => patient/doctor not allowed (need more data for tables)
+
+
 

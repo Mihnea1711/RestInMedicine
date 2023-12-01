@@ -51,7 +51,7 @@ func (aController *AppointmentController) CreateAppointment(w http.ResponseWrite
 	// Check if the appointment was created
 	if lastInsertID == 0 {
 		errorMsg := "Patient has not been saved to the database due to an unexpected error."
-		log.Printf("[PATIENT] %s", errorMsg)
+		log.Printf("[APPOINTMENT] %s", errorMsg)
 
 		// Use RespondWithJSON for conflict response
 		utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{

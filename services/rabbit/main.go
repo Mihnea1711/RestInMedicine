@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 
+	"github.com/joho/godotenv"
 	"github.com/mihnea1711/POS_Project/services/rabbit/application"
 	"github.com/mihnea1711/POS_Project/services/rabbit/pkg/config"
 	"github.com/mihnea1711/POS_Project/services/rabbit/pkg/utils"
@@ -26,8 +27,18 @@ func main() {
 		log.Println("[RABBIT] Successfully loaded the config file.")
 	}
 
+	log.Println(conf)
+
+	// load .env vars into the app
+	err = godotenv.Load(".env")
+	if err != nil {
+		log.Fatalf("[RABBIT] Failed to load environment variables. Exitting...")
+	}
+
 	// load .env vars into the config
 	config.ReplacePlaceholdersInStruct(conf)
+
+	log.Println(conf)
 
 	// catch interrupt signal
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)

@@ -64,4 +64,4 @@ docker-compose.*.override.yml
 *.temp
 
 # Env file
-.env
+# .env

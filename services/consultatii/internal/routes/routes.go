@@ -71,6 +71,10 @@ func loadCrudRoutes(router *mux.Router, consultatieController *controllers.Consu
 	router.HandleFunc(utils.FILTER_CONSULTATII_ENDPOINT, filteredConsultationHandler).Methods("GET") // Filtered consultatii
 	log.Printf("[CONSULTATION] Route GET %s registered.", utils.FILTER_CONSULTATII_ENDPOINT)
 
+	healthHandler := http.HandlerFunc(consultatieController.HealthCheck)
+	router.Handle(utils.HEALTH_CHECK_ENDPOINT, healthHandler).Methods("GET") // Receives health checks
+	log.Printf("[CONSULTATION] Route DELETE %s registered.", utils.HEALTH_CHECK_ENDPOINT)
+
 	consultatieFetchByIDHandler := http.HandlerFunc(consultatieController.GetConsultationByID)
 	router.HandleFunc(utils.FETCH_CONSULTATIE_BY_ID_ENDPOINT, consultatieFetchByIDHandler).Methods("GET") // Get consultatii by consultatie ID
 	log.Printf("[CONSULTATION] Route GET %s registered.", utils.FETCH_CONSULTATIE_BY_ID_ENDPOINT)

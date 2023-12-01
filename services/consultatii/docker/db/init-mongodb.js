@@ -1,6 +1,19 @@
 // Define your database name
 var dbName = "consultations_db";
 
+// Connect to the admin database
+var adminDB = db.getSiblingDB("admin");
+
+// Create a user with the necessary privileges for the targeted database
+adminDB.createUser({
+  user: "mihnea_pos",
+  pwd: "mihnea_pos",
+  roles: [
+    { role: "readWrite", db: dbName },
+    { role: "dbAdmin", db: dbName }
+  ]
+});
+
 // Connect to the database
 var db = db.getSiblingDB(dbName);
 

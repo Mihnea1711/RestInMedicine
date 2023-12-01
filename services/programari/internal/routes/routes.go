@@ -23,13 +23,13 @@ func SetupRoutes(ctx context.Context, dbConn database.Database, rdb *redis.Redis
 	router := mux.NewRouter()
 
 	router.Use(rateLimiter.Limit)
-	log.Println("[PATIENT] Rate limiter middleware set up successfully.")
+	log.Println("[APPOINTMENT] Rate limiter middleware set up successfully.")
 
 	router.Use(middleware.RouteLogger)
-	log.Println("[PATIENT] Route logger middleware set up successfully.")
+	log.Println("[APPOINTMENT] Route logger middleware set up successfully.")
 
 	router.Use(middleware.SanitizeInputMiddleware) // comment this out if you want to see pretty JSON :)
-	log.Println("[PATIENT] Input sanitizer middleware set up successfully.")
+	log.Println("[APPOINTMENT] Input sanitizer middleware set up successfully.")
 
 	appointmentsController := &controllers.AppointmentController{
 		DbConn: dbConn,
@@ -56,10 +56,6 @@ func loadCrudRoutes(router *mux.Router, appointmentController *controllers.Appoi
 	router.HandleFunc(utils.FETCH_ALL_APPOINTMENTS_ENDPOINT, appointmentFetchAllHandler).Methods("GET") // Lists all appointments
 	log.Println("[APPOINTMENT] Route GET", utils.FETCH_ALL_APPOINTMENTS_ENDPOINT, "registered.")
 
-	appointmentFetchByIDHandler := http.HandlerFunc(appointmentController.GetAppointmentByID)
-	router.HandleFunc(utils.FETCH_APPOINTMENT_BY_ID_ENDPOINT, appointmentFetchByIDHandler).Methods("GET") // Get a specific appointment by ID
-	log.Println("[APPOINTMENT] Route GET", utils.FETCH_APPOINTMENT_BY_ID_ENDPOINT, "registered.")
-
 	appointmentFetchByDoctorIDHandler := http.HandlerFunc(appointmentController.GetAppointmentsByDoctorID)
 	router.HandleFunc(utils.FETCH_APPOINTMENTS_BY_DOCTOR_ID_ENDPOINT, appointmentFetchByDoctorIDHandler).Methods("GET") // Get appointments by doctor ID
 	log.Println("[APPOINTMENT] Route GET", utils.FETCH_APPOINTMENTS_BY_DOCTOR_ID_ENDPOINT, "registered.")
@@ -75,6 +71,14 @@ func loadCrudRoutes(router *mux.Router, appointmentController *controllers.Appoi
 	appointmentFetchByStatusHandler := http.HandlerFunc(appointmentController.GetAppointmentsByStatus)
 	router.HandleFunc(utils.FETCH_APPOINTMENTS_BY_STATUS_ENDPOINT, appointmentFetchByStatusHandler).Methods("GET") // Get appointments by status
 	log.Println("[APPOINTMENT] Route GET", utils.FETCH_APPOINTMENTS_BY_STATUS_ENDPOINT, "registered.")
+
+	healthCheckHandler := http.HandlerFunc(appointmentController.HealthCheck)
+	router.Handle(utils.HEALTH_CHECK_ENDPOINT, healthCheckHandler).Methods("GET")
+	log.Println("[APPOINTMENT] Route GET", utils.HEALTH_CHECK_ENDPOINT, "registered.")
+
+	appointmentFetchByIDHandler := http.HandlerFunc(appointmentController.GetAppointmentByID)
+	router.HandleFunc(utils.FETCH_APPOINTMENT_BY_ID_ENDPOINT, appointmentFetchByIDHandler).Methods("GET") // Get a specific appointment by ID
+	log.Println("[APPOINTMENT] Route GET", utils.FETCH_APPOINTMENT_BY_ID_ENDPOINT, "registered.")
 
 	// ---------------------------------------------------------- Update --------------------------------------------------------------
 	appointmentUpdateByIDHandler := http.HandlerFunc(appointmentController.UpdateAppointmentByID)

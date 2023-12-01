@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 
+	"github.com/joho/godotenv"
 	"github.com/mihnea1711/POS_Project/services/doctori/application"
 	"github.com/mihnea1711/POS_Project/services/doctori/pkg/config"
 	"github.com/mihnea1711/POS_Project/services/doctori/pkg/utils"
@@ -13,6 +14,7 @@ import (
 
 func main() {
 	// setup logger
+	log.Println("[DOCTOR] Setting log stream to stdout...")
 	log.SetOutput(os.Stdout) // Set log output to the stdout
 	log.Println("[DOCTOR] Application starting...")
 
@@ -22,6 +24,12 @@ func main() {
 		log.Fatalf("[DOCTOR] Error loading the config file: %s", err)
 	} else {
 		log.Println("[DOCTOR] Successfully loaded the config file.")
+	}
+
+	// load .env vars into the app
+	err = godotenv.Load(".env")
+	if err != nil {
+		log.Fatalf("[DOCTOR] Failed to load environment variables. Exitting...")
 	}
 
 	// load .env vars into the config

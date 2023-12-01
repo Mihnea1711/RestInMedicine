@@ -30,6 +30,7 @@ const (
 	UPDATE_PATIENT_BY_ID_ENDPOINT      = "/patients/{" + UPDATE_PATIENT_BY_ID_PARAMETER + "}"
 	DELETE_PATIENT_BY_ID_ENDPOINT      = "/patients/{" + DELETE_PATIENT_BY_ID_PARAMETER + "}"
 	DELETE_PATIENT_BY_USER_ID_ENDPOINT = "/patients/users/{" + DELETE_PATIENT_BY_USER_ID_PARAMETER + "}"
+	HEALTH_CHECK_ENDPOINT              = "/patients/health-check"
 
 	// Parameters
 	FETCH_PATIENT_BY_ID_PARAMETER       = "patient_id"

@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 
+	"github.com/joho/godotenv"
 	"github.com/mihnea1711/POS_Project/services/consultatii/application"
 	"github.com/mihnea1711/POS_Project/services/consultatii/pkg/config"
 	"github.com/mihnea1711/POS_Project/services/consultatii/pkg/utils"
@@ -24,8 +25,20 @@ func main() {
 		log.Println("[CONSULTATION] Successfully loaded the config file.")
 	}
 
+	log.Println(conf)
+
+	log.Println(os.Environ())
+
+	// load .env vars into the app
+	err = godotenv.Load(".env")
+	if err != nil {
+		log.Fatalf("[CONSULTATION] Failed to load environment variables. Exitting...")
+	}
+
 	// load .env vars into the config
 	utils.ReplacePlaceholdersInStruct(conf)
+
+	log.Println(conf)
 
 	// catch interrupt signal
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)

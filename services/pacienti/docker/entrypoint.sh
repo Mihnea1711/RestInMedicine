@@ -6,7 +6,7 @@ echo "[PATIENT_ENTRYPOINT] Starting entry script..."
 wait_for_mysql() {
     echo "[PATIENT_ENTRYPOINT] Waiting for MySQL to be ready..."
     while true; do
-        nc -z patient_mysql 3306 && echo "[PATIENT_ENTRYPOINT] MySQL is ready." && break
+        nc -z pdp_mysql 3306 && echo "[PATIENT_ENTRYPOINT] MySQL is ready." && break
     done
 }
 
@@ -19,9 +19,7 @@ wait_for_redis() {
 
 # Execute the wait functions
 wait_for_mysql
-echo "[PATIENT_ENTRYPOINT] After waiting for MySQL. Continuing..."
 wait_for_redis
-echo "[PATIENT_ENTRYPOINT] After waiting for Redis. Continuing..."
 
 # Start your Go application
 echo "[PATIENT_ENTRYPOINT] Starting the application..."

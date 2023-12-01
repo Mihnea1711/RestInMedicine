@@ -52,7 +52,7 @@ const (
 )
 
 const (
-	CHECK_HEALTH_ENDPOINT = "/api/gateway/health"
+	CHECK_HEALTH_ENDPOINT = "/api/gateway/health-check"
 )
 
 const (

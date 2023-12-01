@@ -5,13 +5,11 @@ jwt:
   secret: ${JWT_SECRET}
 
 rabbitmq:
-  # RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
   schema: "amqp"
   host: "rabbitmq"
   port: 5672
-  username: ${RABBITMQ_USER}
-  password: ${RABBITMQ_PASS}
-  url: ${RABBITMQ_URL}
+  username: ${RABBITMQ_DEFAULT_USER}
+  password: ${RABBITMQ_DEFAULT_PASS}
   queues:
     - name: "delete_queue"
       routingKey: "delete_user_rk"

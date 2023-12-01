@@ -2,7 +2,7 @@ server:
   port: 8083
 
 mysql_db:
-  host: doctor_mysql 
+  host: pdp_mysql 
   port: 3306 
   user: ${MYSQL_USER}
   password: ${MYSQL_PASSWORD}

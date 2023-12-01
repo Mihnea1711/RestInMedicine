@@ -1,58 +1,314 @@
 version: "3.8"
 
-services:
+services:  
+  # RabbitMQ container #
   rabbitmq:
     image: "rabbitmq:3-management"
-    # container_name: rabbitmq
+    container_name: rabbitmq
     ports:
       - "5672:5672"
       - "15672:15672"
     env_file:
-      - ./services/rabbit/.env
-    environment:
-      RABBITMQ_DEFAULT_USER: "guest"
-      RABBITMQ_DEFAULT_PASS: "guest"
+      - services/rabbit/.env
     networks:
       - pos_network
-
-  api_gateway:
-    build:
-      context: ./services/api_gateway
-      dockerfile: docker/api.Dockerfile
-    ports:
-      - "8080:8080"
-    env_file:
-      - ./services/api_gateway/.env  # Path to the .env file
-    # depends_on:
-    #   - other_service
-    restart: always
-    networks:
-      - pos_network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/api/gateway/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
+  
+  # RabbitMQ module #
   rabbit_app:
     build:
       context: ./services/rabbit
       dockerfile: docker/api.Dockerfile
+    container_name: rabbit_app
     ports:
       - "8090:8090"
-    restart: always
-    depends_on:
-      - rabbitmq
     env_file:
       - ./services/rabbit/.env
+    depends_on:
+      - rabbitmq
+    restart: always
+    networks:
+      - pos_network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8090/api/rabbit/health-check"]
       interval: 20s
       timeout: 5s
       retries: 2
+  
+#   ######################################################################################################################################################
+
+  idm_mysql:
+    image: mysql:8.2.0
+    container_name: "idm_mysql"
+    build: 
+      context: ./services/idm 
+      dockerfile: docker/mysql.Dockerfile
+    env_file:
+      - environments/idm.env
+      - services/idm/.env
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_IDM_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_IDM_DATABASE}
+    ports:
+      - "3306:3306"
+    restart: always
+    networks:
+      - pos_network
+    # volumes:
+    #   - "./data/mysql/idm:/var/lib/mysql"    
+    command: --default-authentication-plugin=caching_sha2_password
+
+  idm_redis:
+    image: redis:latest
+    container_name: "idm_redis"
+    ports:
+      - "6374:6379"
+    env_file:
+      - services/idm/.env 
+    networks:
+      - pos_network
+    command: ["redis-server", "--requirepass", "${IDM_REDIS_PASSWORD}"]
+
+  idm_app:
+    container_name: idm_app
+    build:
+      context: ./services/idm 
+      dockerfile: docker/api.Dockerfile  
+    ports:
+      - "8081:8081"
+    depends_on:
+      - idm_mysql
+      - idm_redis
+    env_file:
+      - services/idm/.env
+    environment:
+      DATABASE_HOST: idm_mysql
+    restart: always
+    networks:
+      - pos_network
+    # healthcheck:
+    #   test: ["CMD", "grpcurl", "-plaintext", "localhost:8081", "IDM/HealthCheck"]      
+    #   interval: 20s
+    #   timeout: 5s
+    #   retries: 2
+
+#   ######################################################################################################################################################
+
+  pdp_mysql:
+    image: mysql:8.2.0
+    container_name: "pdp_mysql"
+    build: 
+      context: .
+      dockerfile: docker/pdp.Dockerfile
+    ports:
+      - "3307:3306"
+    env_file:
+      - environments/pdp.env
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_PDP_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_PDP_DATABASE}
+    networks:
+      - pos_network
+    # volumes:
+    #   - "./data/mysql/pdp:/var/lib/mysql"
+    command: --default-authentication-plugin=caching_sha2_password
+
+  # patient_redis:
+  #   image: redis:latest
+  #   container_name: "patient_redis"
+  #   ports:
+  #     - "6378:6379"
+  #   env_file:
+  #       - services/pacienti/.env
+  #   networks:
+  #   - pos_network
+  #   command: ["redis-server", "--requirepass", "${PATIENT_REDIS_PASSWORD}"]
+
+  #   # Patient module
+  # patient_app:
+  #   container_name: "patient_app"
+  #   build:
+  #     context: ./services/pacienti
+  #     dockerfile: docker/api.Dockerfile
+  #   ports:
+  #     - "8082:8082"
+  #   depends_on:
+  #     - pdp_mysql
+  #     - patient_redis
+  #   env_file:
+  #     - ./services/pacienti/.env
+  #   environment:
+  #     DATABASE_HOST: pdp_mysql
+  #   restart: always
+  #   networks:
+  #     - pos_network
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:8082/patients/health-check"]
+  #     interval: 20s
+  #     timeout: 5s
+  #     retries: 2
+
+  #   ######################################################################################################################################################
+
+  # doctor_redis:
+  #   image: redis:latest
+  #   container_name: "doctor_redis"
+  #   ports:
+  #     - "6377:6379"
+  #   env_file:
+  #     - services/doctori/.env
+  #   networks:
+  #     - pos_network
+  #   command: ["redis-server", "--requirepass", "${DOCTOR_REDIS_PASSWORD}"]
+
+  # doctor_app:
+  #   container_name: "doctor_app"
+  #   build:
+  #     context: ./services/doctori
+  #     dockerfile: docker/api.Dockerfile
+  #   ports:
+  #     - "8083:8083"
+  #   depends_on:
+  #     - pdp_mysql
+  #     - doctor_redis
+  #   env_file:
+  #     - ./services/doctori/.env
+  #   environment:
+  #     DATABASE_HOST: pdp_mysql
+  #   restart: always
+  #   networks:
+  #     - pos_network
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:8083/doctors/health-check"]
+  #     interval: 20s
+  #     timeout: 5s
+  #     retries: 2
+
+  # ######################################################################################################################################################
+
+  # appointment_redis:
+  #   image: redis:latest
+  #   container_name: "appointment_redis"
+  #   ports:
+  #     - "6376:6379"
+  #   env_file:
+  #     - services/programari/.env
+  #   networks:
+  #     - pos_network
+  #   command: ["redis-server", "--requirepass", "${APPOINTMENT_REDIS_PASSWORD}"]
+
+  # appointment_app:
+  #   container_name: "appointment_app"
+  #   build:
+  #     context: ./services/programari 
+  #     dockerfile: docker/api.Dockerfile
+  #   ports:
+  #     - "8084:8084"
+  #   depends_on:
+  #     - pdp_mysql
+  #     - appointment_redis
+  #   env_file:
+  #     - ./services/programari/.env
+  #   environment:
+  #     DATABASE_HOST: pdp_mysql
+  #   restart: always
+  #   networks:
+  #     - pos_network
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:8084/appointments/health-check"]
+  #     interval: 20s
+  #     timeout: 5s
+  #     retries: 2
+
+  # ######################################################################################################################################################
+
+  # MongoDB container
+  consultation_mongodb:
+    image: mongo:latest
+    container_name: consultation_mongodb
+    build:
+      context: ./services/consultatii
+      dockerfile: docker/mongo.Dockerfile
+    ports:
+      - "27017:27017"
+    env_file:
+      - ./services/consultatii/.env
+    # volumes:
+    #   - "./data/mongo/consultation:/data/db"
     networks:
       - pos_network
 
+  # Redis container for consultation module
+  consultation_redis:
+    image: redis:latest
+    container_name: consultation_redis
+    ports:
+      - "6375:6379"
+    env_file:
+      - ./services/consultatii/.env
+    networks:
+      - pos_network
+    command: ["redis-server", "--requirepass", "${CONSULTATION_REDIS_PASSWORD}"]
+
+  # Consultation module
+  consultation_app:
+    build:
+      context: ./services/consultatii
+      dockerfile: docker/api.Dockerfile
+    container_name: consultation_app
+    ports:
+      - "8085:8085"
+    restart: always
+    depends_on:
+      - consultation_mongodb
+      - consultation_redis
+    env_file:
+      - ./services/consultatii/.env
+    networks:
+      - pos_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8085/consultations/health-check"]
+      interval: 20s
+      timeout: 5s
+      retries: 2
+
+  ######################################################################################################################################################
+
+  # Gateway module
+  gateway_app:
+    build:
+      context: ./services/api_gateway
+      dockerfile: docker/api.Dockerfile
+    container_name: gateway_app
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./services/api_gateway/.env 
+    # depends_on:
+      # - idm_app
+      # - patient_app
+      # - doctor_app
+      # - appointment_app
+      # - consultation_app
+      # - rabbit_app
+    restart: always
+    networks:
+      - pos_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/gateway/health-check"]
+      interval: 20s
+      timeout: 5s
+      retries: 2
+
+#   ######################################################################################################################################################
+
+
+# Available networks
 networks:
   pos_network:
     driver: bridge
+
+# # Volumes
+# volumes:
+  # ./data/mysql/idm:
+#   ./data/mysql/pdp:
+#   ./data/mongo/consultation:

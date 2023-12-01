@@ -4,7 +4,7 @@ echo "[CONSULTATION_ENTRYPOINT] Starting entry script..."
 
 # Function to wait for MongoDB to be ready
 wait_for_mongodb() {
-    echo "[CONSULTATION_ENTRYPOINT_ENTRYPOINT] Waiting for MongoDB to be ready..."
+    echo "[CONSULTATION_ENTRYPOINT] Waiting for MongoDB to be ready..."
     while true; do
         nc -z consultation_mongodb 27017 && echo "[CONSULTATION_ENTRYPOINT] MongoDB is ready." && break
     done

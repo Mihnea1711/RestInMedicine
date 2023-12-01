@@ -6,7 +6,7 @@ echo "[DOCTOR_ENTRYPOINT] Starting entry script..."
 wait_for_mysql() {
     echo "[DOCTOR_ENTRYPOINT] Waiting for mysql to be ready..."
     while true; do
-        nc -z doctor_mysql 3306 && echo "[DOCTOR_ENTRYPOINT] MySQL is ready." && break
+        nc -z pdp_mysql 3306 && echo "[DOCTOR_ENTRYPOINT] MySQL is ready." && break
     done
 }
 

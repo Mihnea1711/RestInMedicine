@@ -10,6 +10,9 @@ COPY go.mod go.sum ./
 # Download dependencies
 RUN go mod download
 
+# Download grpcurl
+# RUN go get -u -v github.com/fullstorydev/grpcurl
+
 # Copy the entire project into the container
 COPY . .
 
@@ -20,11 +23,13 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o app_idm ./main.go
 FROM alpine:latest
 
 # Add ca-certificates for secure connections and bash for the entrypoint script
-RUN apk --no-cache add ca-certificates bash netcat-openbsd
+RUN apk --no-cache add ca-certificates bash
 
 # Copy the binary from the builder stage to the current stage
+# COPY --from=builder /usr/local/bin/grpcurl /usr/local/bin/grpcurl
 COPY --from=builder /workspace/app_idm /app_idm
 COPY --from=builder /workspace/configs/config.yaml /configs/config.yaml
+COPY --from=builder /workspace/.env .env
 
 # Copy the entrypoint script
 COPY docker/entrypoint.sh /entrypoint.sh

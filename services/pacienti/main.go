@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 
+	"github.com/joho/godotenv"
 	"github.com/mihnea1711/POS_Project/services/pacienti/application"
 	"github.com/mihnea1711/POS_Project/services/pacienti/pkg/config"
 	"github.com/mihnea1711/POS_Project/services/pacienti/pkg/utils"
@@ -24,6 +25,12 @@ func main() {
 		log.Fatalf("[PATIENT] Error loading the config file: %s", err)
 	} else {
 		log.Println("[PATIENT] Successfully loaded the config file.")
+	}
+
+	// load .env vars into the app
+	err = godotenv.Load(".env")
+	if err != nil {
+		log.Fatalf("[PATIENT] Failed to load environment variables. Exitting...")
 	}
 
 	// load .env vars into the config

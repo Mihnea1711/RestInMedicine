@@ -1,3 +1,8 @@
+-- DROP USER 'mihnea_pos'@'%';
+CREATE USER 'mihnea_pos'@'%' IDENTIFIED BY 'mihnea_pos';
+GRANT ALL PRIVILEGES ON pdp_db.* TO 'mihnea_pos'@'%';
+FLUSH PRIVILEGES;
+
 USE pdp_db;
 
 CREATE TABLE IF NOT EXISTS doctor (

@@ -2,7 +2,7 @@ server:
   port: 8084
 
 mysql_db:
-  host: appointment_mysql 
+  host: pdp_mysql 
   port: 3306 
   user: ${MYSQL_USER}
   password: ${MYSQL_PASSWORD}

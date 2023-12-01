@@ -1,4 +1,9 @@
-use idm_db;
+-- DROP USER 'mihnea_pos'@'%';
+CREATE USER 'mihnea_pos'@'%' IDENTIFIED BY 'mihnea_pos';
+GRANT ALL PRIVILEGES ON idm_db.* TO 'mihnea_pos'@'%';
+FLUSH PRIVILEGES;
+
+USE idm_db;
 
 -- Create User Table with a UNIQUE Username Constraint
 CREATE TABLE IF NOT EXISTS User (

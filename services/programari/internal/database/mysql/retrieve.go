@@ -49,7 +49,7 @@ func (db *MySQLDatabase) FetchAppointments(ctx context.Context, page, limit int)
 		return nil, err
 	}
 
-	log.Printf("[PATIENT] Successfully fetched %d appointments.", len(appointments))
+	log.Printf("[APPOINTMENT] Successfully fetched %d appointments.", len(appointments))
 	return appointments, nil
 }
 
@@ -118,7 +118,7 @@ func (db *MySQLDatabase) FetchAppointmentsByPatientID(ctx context.Context, patie
 		return nil, err
 	}
 
-	log.Printf("[PATIENT] Successfully fetched %d appointments by patientID %d.", len(appointments), patientID)
+	log.Printf("[APPOINTMENT] Successfully fetched %d appointments by patientID %d.", len(appointments), patientID)
 	return appointments, nil
 }
 
@@ -161,7 +161,7 @@ func (db *MySQLDatabase) FetchAppointmentsByDoctorID(ctx context.Context, doctor
 		return nil, err
 	}
 
-	log.Printf("[PATIENT] Successfully fetched %d appointments by doctorID %d.", len(appointments), doctorID)
+	log.Printf("[APPOINTMENT] Successfully fetched %d appointments by doctorID %d.", len(appointments), doctorID)
 	return appointments, nil
 }
 
@@ -204,7 +204,7 @@ func (db *MySQLDatabase) FetchAppointmentsByDate(ctx context.Context, date time.
 		return nil, err
 	}
 
-	log.Printf("[PATIENT] Successfully fetched %d appointments by date %s.", len(appointments), date)
+	log.Printf("[APPOINTMENT] Successfully fetched %d appointments by date %s.", len(appointments), date)
 	return appointments, nil
 }
 
@@ -247,6 +247,6 @@ func (db *MySQLDatabase) FetchAppointmentsByStatus(ctx context.Context, status s
 		return nil, err
 	}
 
-	log.Printf("[PATIENT] Successfully fetched %d appointments by status %s.", len(appointments), status)
+	log.Printf("[APPOINTMENT] Successfully fetched %d appointments by status %s.", len(appointments), status)
 	return appointments, nil
 }

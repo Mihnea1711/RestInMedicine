@@ -29,13 +29,13 @@ func SanitizeInputMiddleware(next http.Handler) http.Handler {
 		ctx := context.WithValue(r.Context(), SanitizedResponseWriterContextKeyInstance, sanitizedWriter)
 		r = r.WithContext(ctx)
 
-		log.Println("[DOCTOR_SANITIZER] Request URI:", r.RequestURI)
-		log.Println("[DOCTOR_SANITIZER] Starting input sanitization...")
+		log.Println("[GATEWAY_SANITIZER] Request URI:", r.RequestURI)
+		log.Println("[GATEWAY_SANITIZER] Starting input sanitization...")
 
 		// Call the next handler in the chain
 		next.ServeHTTP(sanitizedWriter, r)
 
-		log.Println("[DOCTOR_SANITIZER] Input sanitization completed.")
+		log.Println("[GATEWAY_SANITIZER] Input sanitization completed.")
 	})
 }
 
@@ -58,7 +58,7 @@ func (sw *SanitizedResponseWriter) Write(b []byte) (int, error) {
 	// Sanitize the response body using the policy
 	sanitizedBody := sw.policy.Sanitize(string(b))
 
-	log.Println("[DOCTOR_SANITIZER] Sanitizing response body...")
+	log.Println("[GATEWAY_SANITIZER] Sanitizing response body...")
 
 	// Write the sanitized body to the original ResponseWriter
 	return sw.ResponseWriter.Write([]byte(sanitizedBody))
