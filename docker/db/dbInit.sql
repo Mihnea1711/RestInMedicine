@@ -1,4 +1,5 @@
 -- DROP USER 'mihnea_pos'@'%';
+CREATE DATABASE pdp_db;
 CREATE USER 'mihnea_pos'@'%' IDENTIFIED BY 'mihnea_pos';
 GRANT ALL PRIVILEGES ON pdp_db.* TO 'mihnea_pos'@'%';
 FLUSH PRIVILEGES;

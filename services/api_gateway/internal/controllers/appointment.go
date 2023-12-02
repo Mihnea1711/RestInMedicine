@@ -25,7 +25,7 @@ func (gc *GatewayController) CreateAppointment(w http.ResponseWriter, r *http.Re
 	defer cancel()
 
 	// Check if appointmentRequest.IDDoctor exists
-	decodedResponseDoctor, statusDoctor, errDoctor := gc.redirectRequestBody(ctx, http.MethodGet, fmt.Sprintf("%s/%d", utils.DOCTOR_FETCH_DOCTOR_BY_ID_ENDPOINT, appointmentRequest.IDDoctor), utils.DOCTOR_PORT, nil)
+	decodedResponseDoctor, statusDoctor, errDoctor := gc.redirectRequestBody(ctx, http.MethodGet, utils.APPOINTMENT_HOST, fmt.Sprintf("%s/%d", utils.DOCTOR_FETCH_DOCTOR_BY_ID_ENDPOINT, appointmentRequest.IDDoctor), utils.DOCTOR_PORT, nil)
 	if errDoctor != nil {
 		log.Printf("[GATEWAY] Error redirecting doctor ID request: %v", errDoctor)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to validate doctor ID", errDoctor.Error())
@@ -38,7 +38,7 @@ func (gc *GatewayController) CreateAppointment(w http.ResponseWriter, r *http.Re
 	}
 
 	// Check if appointmentRequest.IDPatient exists
-	decodedResponsePatient, statusPatient, errPatient := gc.redirectRequestBody(ctx, http.MethodGet, fmt.Sprintf("%s/%d", utils.PATIENT_FETCH_PATIENT_BY_ID_ENDPOINT, appointmentRequest.IDPatient), utils.PATIENT_PORT, nil)
+	decodedResponsePatient, statusPatient, errPatient := gc.redirectRequestBody(ctx, http.MethodGet, utils.APPOINTMENT_HOST, fmt.Sprintf("%s/%d", utils.PATIENT_FETCH_PATIENT_BY_ID_ENDPOINT, appointmentRequest.IDPatient), utils.PATIENT_PORT, nil)
 	if errPatient != nil {
 		log.Printf("[GATEWAY] Error redirecting patient ID request: %v", errPatient)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to validate patient ID", errPatient.Error())
@@ -51,7 +51,7 @@ func (gc *GatewayController) CreateAppointment(w http.ResponseWriter, r *http.Re
 	}
 
 	// Redirect the request body to appointment module to create the appointment
-	decodedResponse, status, err := gc.redirectRequestBody(ctx, utils.POST, utils.APPOINTMENT_CREATE_APPOINTMENT_ENDPOINT, utils.APPOINTMENT_PORT, appointmentRequest)
+	decodedResponse, status, err := gc.redirectRequestBody(ctx, utils.POST, utils.APPOINTMENT_HOST, utils.APPOINTMENT_CREATE_APPOINTMENT_ENDPOINT, utils.APPOINTMENT_PORT, appointmentRequest)
 	if err != nil {
 		log.Printf("[GATEWAY] Error redirecting appointment request: %v", err)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
@@ -84,7 +84,7 @@ func (gc *GatewayController) GetAppointments(w http.ResponseWriter, r *http.Requ
 	defer cancel()
 
 	// Redirect the request to another module
-	decodedResponse, status, err := gc.redirectRequestBody(ctx, utils.GET, utils.APPOINTMENT_FETCH_ALL_APPOINTMENTS_ENDPOINT, utils.APPOINTMENT_PORT, nil)
+	decodedResponse, status, err := gc.redirectRequestBody(ctx, utils.GET, utils.APPOINTMENT_HOST, utils.APPOINTMENT_FETCH_ALL_APPOINTMENTS_ENDPOINT, utils.APPOINTMENT_PORT, nil)
 	if err != nil {
 		log.Printf("[GATEWAY] Error redirecting appointment request: %v", err)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
@@ -123,7 +123,7 @@ func (gc *GatewayController) GetAppointmentByID(w http.ResponseWriter, r *http.R
 	defer cancel()
 
 	// Redirect the request body to another module
-	decodedResponse, status, err := gc.redirectRequestBody(ctx, http.MethodGet, fmt.Sprintf("%s/%d", utils.APPOINTMENT_FETCH_APPOINTMENT_BY_ID_ENDPOINT, appointmentID), utils.APPOINTMENT_PORT, nil)
+	decodedResponse, status, err := gc.redirectRequestBody(ctx, http.MethodGet, utils.APPOINTMENT_HOST, fmt.Sprintf("%s/%d", utils.APPOINTMENT_FETCH_APPOINTMENT_BY_ID_ENDPOINT, appointmentID), utils.APPOINTMENT_PORT, nil)
 	if err != nil {
 		log.Printf("[GATEWAY] Error redirecting appointment request: %v", err)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
@@ -166,7 +166,7 @@ func (gc *GatewayController) GetAppointmentsByDoctorID(w http.ResponseWriter, r 
 	defer cancel()
 
 	// Check if appointmentRequest.IDDoctor exists
-	decodedResponseDoctor, statusDoctor, errDoctor := gc.redirectRequestBody(ctx, http.MethodGet, fmt.Sprintf("%s/%d", utils.DOCTOR_FETCH_DOCTOR_BY_ID_ENDPOINT, doctorID), utils.DOCTOR_PORT, nil)
+	decodedResponseDoctor, statusDoctor, errDoctor := gc.redirectRequestBody(ctx, http.MethodGet, utils.APPOINTMENT_HOST, fmt.Sprintf("%s/%d", utils.DOCTOR_FETCH_DOCTOR_BY_ID_ENDPOINT, doctorID), utils.DOCTOR_PORT, nil)
 	if errDoctor != nil {
 		log.Printf("[GATEWAY] Error redirecting doctor ID request: %v", errDoctor)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to validate doctor ID", errDoctor.Error())
@@ -179,7 +179,7 @@ func (gc *GatewayController) GetAppointmentsByDoctorID(w http.ResponseWriter, r 
 	}
 
 	// Redirect the request body to appointment module
-	decodedResponse, status, err := gc.redirectRequestBody(ctx, http.MethodGet, fmt.Sprintf("%s/%d", utils.APPOINTMENT_FETCH_APPOINTMENTS_BY_DOCTOR_ID_ENDPOINT, doctorID), utils.APPOINTMENT_PORT, nil)
+	decodedResponse, status, err := gc.redirectRequestBody(ctx, http.MethodGet, utils.APPOINTMENT_HOST, fmt.Sprintf("%s/%d", utils.APPOINTMENT_FETCH_APPOINTMENTS_BY_DOCTOR_ID_ENDPOINT, doctorID), utils.APPOINTMENT_PORT, nil)
 	if err != nil {
 		log.Printf("[GATEWAY] Error redirecting appointment request: %v", err)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
@@ -222,7 +222,7 @@ func (gc *GatewayController) GetAppointmentsByPatientID(w http.ResponseWriter, r
 	defer cancel()
 
 	// Check if appointmentRequest.IDPatient exists
-	decodedResponsePatient, statusPatient, errPatient := gc.redirectRequestBody(ctx, http.MethodGet, fmt.Sprintf("%s/%d", utils.PATIENT_FETCH_PATIENT_BY_ID_ENDPOINT, patientID), utils.PATIENT_PORT, nil)
+	decodedResponsePatient, statusPatient, errPatient := gc.redirectRequestBody(ctx, http.MethodGet, utils.APPOINTMENT_HOST, fmt.Sprintf("%s/%d", utils.PATIENT_FETCH_PATIENT_BY_ID_ENDPOINT, patientID), utils.PATIENT_PORT, nil)
 	if errPatient != nil {
 		log.Printf("[GATEWAY] Error redirecting patient ID request: %v", errPatient)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to validate patient ID", errPatient.Error())
@@ -235,7 +235,7 @@ func (gc *GatewayController) GetAppointmentsByPatientID(w http.ResponseWriter, r
 	}
 
 	// Redirect the request body to appointment module
-	decodedResponse, status, err := gc.redirectRequestBody(ctx, http.MethodGet, fmt.Sprintf("%s/%d", utils.APPOINTMENT_FETCH_APPOINTMENTS_BY_PATIENT_ID_ENDPOINT, patientID), utils.APPOINTMENT_PORT, nil)
+	decodedResponse, status, err := gc.redirectRequestBody(ctx, http.MethodGet, utils.APPOINTMENT_HOST, fmt.Sprintf("%s/%d", utils.APPOINTMENT_FETCH_APPOINTMENTS_BY_PATIENT_ID_ENDPOINT, patientID), utils.APPOINTMENT_PORT, nil)
 	if err != nil {
 		log.Printf("[GATEWAY] Error redirecting appointment request: %v", err)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
@@ -271,7 +271,7 @@ func (gc *GatewayController) GetAppointmentsByDate(w http.ResponseWriter, r *htt
 	defer cancel()
 
 	// Redirect the request body to appointment module
-	decodedResponse, status, err := gc.redirectRequestBody(ctx, http.MethodGet, fmt.Sprintf("%s/%s", utils.APPOINTMENT_FETCH_APPOINTMENTS_BY_DATE_ENDPOINT, dateStr), utils.APPOINTMENT_PORT, nil)
+	decodedResponse, status, err := gc.redirectRequestBody(ctx, http.MethodGet, utils.APPOINTMENT_HOST, fmt.Sprintf("%s/%s", utils.APPOINTMENT_FETCH_APPOINTMENTS_BY_DATE_ENDPOINT, dateStr), utils.APPOINTMENT_PORT, nil)
 	if err != nil {
 		log.Printf("[GATEWAY] Error redirecting appointment request: %v", err)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
@@ -307,7 +307,7 @@ func (gc *GatewayController) GetAppointmentsByStatus(w http.ResponseWriter, r *h
 	defer cancel()
 
 	// Redirect the request body to appointment module
-	decodedResponse, status, err := gc.redirectRequestBody(ctx, http.MethodGet, fmt.Sprintf("%s/%s", utils.APPOINTMENT_FETCH_APPOINTMENTS_BY_STATUS_ENDPOINT, statusStr), utils.APPOINTMENT_PORT, nil)
+	decodedResponse, status, err := gc.redirectRequestBody(ctx, http.MethodGet, utils.APPOINTMENT_HOST, fmt.Sprintf("%s/%s", utils.APPOINTMENT_FETCH_APPOINTMENTS_BY_STATUS_ENDPOINT, statusStr), utils.APPOINTMENT_PORT, nil)
 	if err != nil {
 		log.Printf("[GATEWAY] Error redirecting appointment request: %v", err)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
@@ -353,7 +353,7 @@ func (gc *GatewayController) UpdateAppointmentByID(w http.ResponseWriter, r *htt
 	defer cancel()
 
 	// Check if appointmentRequest.IDDoctor exists
-	decodedResponseDoctor, statusDoctor, errDoctor := gc.redirectRequestBody(ctx, http.MethodGet, fmt.Sprintf("%s/%d", utils.DOCTOR_FETCH_DOCTOR_BY_ID_ENDPOINT, appointmentData.IDDoctor), utils.DOCTOR_PORT, nil)
+	decodedResponseDoctor, statusDoctor, errDoctor := gc.redirectRequestBody(ctx, http.MethodGet, utils.APPOINTMENT_HOST, fmt.Sprintf("%s/%d", utils.DOCTOR_FETCH_DOCTOR_BY_ID_ENDPOINT, appointmentData.IDDoctor), utils.DOCTOR_PORT, nil)
 	if errDoctor != nil {
 		log.Printf("[GATEWAY] Error redirecting doctor ID request: %v", errDoctor)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to validate doctor ID", errDoctor.Error())
@@ -366,7 +366,7 @@ func (gc *GatewayController) UpdateAppointmentByID(w http.ResponseWriter, r *htt
 	}
 
 	// Check if appointmentRequest.IDPatient exists
-	decodedResponsePatient, statusPatient, errPatient := gc.redirectRequestBody(ctx, http.MethodGet, fmt.Sprintf("%s/%d", utils.PATIENT_FETCH_PATIENT_BY_ID_ENDPOINT, appointmentData.IDPatient), utils.PATIENT_PORT, nil)
+	decodedResponsePatient, statusPatient, errPatient := gc.redirectRequestBody(ctx, http.MethodGet, utils.APPOINTMENT_HOST, fmt.Sprintf("%s/%d", utils.PATIENT_FETCH_PATIENT_BY_ID_ENDPOINT, appointmentData.IDPatient), utils.PATIENT_PORT, nil)
 	if errPatient != nil {
 		log.Printf("[GATEWAY] Error redirecting patient ID request: %v", errPatient)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to validate patient ID", errPatient.Error())
@@ -379,7 +379,7 @@ func (gc *GatewayController) UpdateAppointmentByID(w http.ResponseWriter, r *htt
 	}
 
 	// Redirect the request body to appointment module to update the appointment
-	decodedResponse, status, err := gc.redirectRequestBody(ctx, utils.PUT, fmt.Sprintf("%s/%d", utils.APPOINTMENT_UPDATE_APPOINTMENT_BY_ID_ENDPOINT, appointmentID), utils.APPOINTMENT_PORT, appointmentData)
+	decodedResponse, status, err := gc.redirectRequestBody(ctx, utils.PUT, utils.APPOINTMENT_HOST, fmt.Sprintf("%s/%d", utils.APPOINTMENT_UPDATE_APPOINTMENT_BY_ID_ENDPOINT, appointmentID), utils.APPOINTMENT_PORT, appointmentData)
 	if err != nil {
 		log.Printf("[GATEWAY] Error redirecting appointment request: %v", err)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
@@ -426,7 +426,7 @@ func (gc *GatewayController) DeleteAppointmentByID(w http.ResponseWriter, r *htt
 	defer cancel()
 
 	// Redirect the request body to another module
-	decodedResponse, status, err := gc.redirectRequestBody(ctx, utils.DELETE, fmt.Sprintf("%s/%d", utils.APPOINTMENT_DELETE_APPOINTMENT_BY_ID_ENDPOINT, appointmentID), utils.APPOINTMENT_PORT, nil)
+	decodedResponse, status, err := gc.redirectRequestBody(ctx, utils.DELETE, utils.APPOINTMENT_HOST, fmt.Sprintf("%s/%d", utils.APPOINTMENT_DELETE_APPOINTMENT_BY_ID_ENDPOINT, appointmentID), utils.APPOINTMENT_PORT, nil)
 	if err != nil {
 		log.Printf("[GATEWAY] Error redirecting appointment request: %v", err)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())

@@ -11,11 +11,19 @@ const (
 )
 
 const (
-	IDM_HOST          = "localhost"
-	IDM_PORT          = 8081
-	PATIENT_PORT      = 8082
-	DOCTOR_PORT       = 8083
-	APPOINTMENT_PORT  = 8084
+	IDM_HOST = "idm_app"
+	IDM_PORT = 8081
+
+	PATIENT_HOST = "patient_app"
+	PATIENT_PORT = 8082
+
+	DOCTOR_HOST = "doctor_app"
+	DOCTOR_PORT = 8083
+
+	APPOINTMENT_HOST = "appointment_app"
+	APPOINTMENT_PORT = 8084
+
+	CONSULTATION_HOST = "consultation_app"
 	CONSULTATION_PORT = 8085
 )
 

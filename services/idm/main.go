@@ -33,8 +33,12 @@ func main() {
 		log.Fatalf("[PATIENT] Failed to load environment variables. Exitting...")
 	}
 
+	log.Println(conf)
+
 	// load .env vars into the config
 	utils.ReplacePlaceholdersInStruct(conf)
+
+	log.Println(conf)
 
 	// catch interrupt signal
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)

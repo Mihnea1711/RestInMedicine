@@ -17,7 +17,7 @@ type GatewayController struct {
 	IDMClient idm.IDMClient
 }
 
-func (gc *GatewayController) redirectRequestBody(ctx context.Context, methodType string, endpoint string, port int, data interface{}) (*models.ResponseData, int, error) {
+func (gc *GatewayController) redirectRequestBody(ctx context.Context, methodType, host, endpoint string, port int, data interface{}) (*models.ResponseData, int, error) {
 	// Convert data to JSON
 	jsonData, err := json.Marshal(data)
 	if err != nil {
@@ -26,7 +26,7 @@ func (gc *GatewayController) redirectRequestBody(ctx context.Context, methodType
 	}
 
 	// Create a new request
-	request, err := http.NewRequestWithContext(ctx, methodType, fmt.Sprintf("http://localhost:%v%v", port, endpoint), bytes.NewBuffer(jsonData))
+	request, err := http.NewRequestWithContext(ctx, methodType, fmt.Sprintf("http://%s:%d%s", host, port, endpoint), bytes.NewBuffer(jsonData))
 	if err != nil {
 		log.Printf("[GATEWAY] Error creating HTTP request: %v", err)
 		return nil, http.StatusInternalServerError, err

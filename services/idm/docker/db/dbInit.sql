@@ -1,5 +1,6 @@
 -- DROP USER 'mihnea_pos'@'%';
-CREATE USER 'mihnea_pos'@'%' IDENTIFIED BY 'mihnea_pos';
+-- CREATE DATABASE idm_db;
+-- CREATE USER 'mihnea_pos'@'%' IDENTIFIED BY 'mihnea_pos';
 GRANT ALL PRIVILEGES ON idm_db.* TO 'mihnea_pos'@'%';
 FLUSH PRIVILEGES;
 

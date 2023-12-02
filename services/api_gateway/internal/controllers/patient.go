@@ -40,7 +40,7 @@ func (gc *GatewayController) CreatePatient(w http.ResponseWriter, r *http.Reques
 	utils.CheckNilResponse(w, http.StatusInternalServerError, userResponse.Info.Message, userResponseWrapper.IsUserNil, "Received nil response.User while getting the user.")
 
 	// Redirect the request body to another module
-	decodedResponse, status, err := gc.redirectRequestBody(ctx, utils.POST, utils.PATIENT_CREATE_PATIENT_ENDPOINT, utils.PATIENT_PORT, patientRequest)
+	decodedResponse, status, err := gc.redirectRequestBody(ctx, utils.POST, utils.PATIENT_HOST, utils.PATIENT_CREATE_PATIENT_ENDPOINT, utils.PATIENT_PORT, patientRequest)
 	if err != nil {
 		log.Printf("[GATEWAY] Error redirecting patient request: %v", err)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", "Failed to redirect request: "+err.Error())
@@ -73,7 +73,7 @@ func (gc *GatewayController) GetPatients(w http.ResponseWriter, r *http.Request)
 	defer cancel()
 
 	// Redirect the request to another module
-	decodedResponse, status, err := gc.redirectRequestBody(ctx, utils.GET, utils.PATIENT_FETCH_ALL_PATIENTS_ENDPOINT, utils.PATIENT_PORT, nil)
+	decodedResponse, status, err := gc.redirectRequestBody(ctx, utils.GET, utils.PATIENT_HOST, utils.PATIENT_FETCH_ALL_PATIENTS_ENDPOINT, utils.PATIENT_PORT, nil)
 	if err != nil {
 		log.Printf("[GATEWAY] Error redirecting patient request: %v", err)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", "Failed to redirect request: "+err.Error())
@@ -112,7 +112,7 @@ func (gc *GatewayController) GetPatientByID(w http.ResponseWriter, r *http.Reque
 	defer cancel()
 
 	// Redirect the request body to another module
-	decodedResponse, status, err := gc.redirectRequestBody(ctx, http.MethodGet, fmt.Sprintf("%s/%d", utils.PATIENT_FETCH_PATIENT_BY_ID_ENDPOINT, patientID), utils.PATIENT_PORT, nil)
+	decodedResponse, status, err := gc.redirectRequestBody(ctx, http.MethodGet, utils.PATIENT_HOST, fmt.Sprintf("%s/%d", utils.PATIENT_FETCH_PATIENT_BY_ID_ENDPOINT, patientID), utils.PATIENT_PORT, nil)
 	if err != nil {
 		log.Printf("[GATEWAY] Error redirecting patient request: %v", err)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", "Failed to redirect request: "+err.Error())
@@ -148,7 +148,7 @@ func (gc *GatewayController) GetPatientByEmail(w http.ResponseWriter, r *http.Re
 	defer cancel()
 
 	// Redirect the request body to another module
-	decodedResponse, status, err := gc.redirectRequestBody(ctx, http.MethodGet, fmt.Sprintf("%s/%s", utils.PATIENT_FETCH_PATIENT_BY_EMAIL_ENDPOINT, patientEmail), utils.PATIENT_PORT, nil)
+	decodedResponse, status, err := gc.redirectRequestBody(ctx, http.MethodGet, utils.PATIENT_HOST, fmt.Sprintf("%s/%s", utils.PATIENT_FETCH_PATIENT_BY_EMAIL_ENDPOINT, patientEmail), utils.PATIENT_PORT, nil)
 	if err != nil {
 		log.Printf("[GATEWAY] Error redirecting patient request: %v", err)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
@@ -191,7 +191,7 @@ func (gc *GatewayController) GetPatientByUserID(w http.ResponseWriter, r *http.R
 	defer cancel()
 
 	// Redirect the request body to another module
-	decodedResponse, status, err := gc.redirectRequestBody(ctx, http.MethodGet, fmt.Sprintf("%s/%d", utils.PATIENT_FETCH_PATIENT_BY_USER_ID_ENDPOINT, userID), utils.PATIENT_PORT, nil)
+	decodedResponse, status, err := gc.redirectRequestBody(ctx, http.MethodGet, utils.PATIENT_HOST, fmt.Sprintf("%s/%d", utils.PATIENT_FETCH_PATIENT_BY_USER_ID_ENDPOINT, userID), utils.PATIENT_PORT, nil)
 	if err != nil {
 		// Handle the error (e.g., return a response with an error message)
 		log.Printf("[GATEWAY] Error redirecting patient request: %v", err)
@@ -238,7 +238,7 @@ func (gc *GatewayController) UpdatePatientByID(w http.ResponseWriter, r *http.Re
 	defer cancel()
 
 	// Redirect the request body to another module
-	decodedResponse, status, err := gc.redirectRequestBody(ctx, http.MethodPut, fmt.Sprintf("%s/%d", utils.PATIENT_UPDATE_PATIENT_BY_ID_ENDPOINT, patientID), utils.PATIENT_PORT, patientData)
+	decodedResponse, status, err := gc.redirectRequestBody(ctx, http.MethodPut, utils.PATIENT_HOST, fmt.Sprintf("%s/%d", utils.PATIENT_UPDATE_PATIENT_BY_ID_ENDPOINT, patientID), utils.PATIENT_PORT, patientData)
 	if err != nil {
 		log.Printf("[GATEWAY] Error redirecting patient request: %v", err)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
@@ -285,7 +285,7 @@ func (gc *GatewayController) DeletePatientByID(w http.ResponseWriter, r *http.Re
 	defer cancel()
 
 	// Redirect the request body to another module
-	decodedResponse, status, err := gc.redirectRequestBody(ctx, http.MethodDelete, fmt.Sprintf("%s/%d", utils.PATIENT_DELETE_PATIENT_BY_ID_ENDPOINT, patientID), utils.PATIENT_PORT, nil)
+	decodedResponse, status, err := gc.redirectRequestBody(ctx, http.MethodDelete, utils.PATIENT_HOST, fmt.Sprintf("%s/%d", utils.PATIENT_DELETE_PATIENT_BY_ID_ENDPOINT, patientID), utils.PATIENT_PORT, nil)
 	if err != nil {
 		log.Printf("[GATEWAY] Error redirecting patient request: %v", err)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
