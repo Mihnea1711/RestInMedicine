@@ -5,6 +5,7 @@ type contextKey string
 const CONFIG_PATH = "configs/config.yaml"
 
 const DECODED_PATIENT contextKey = "decodedPatient"
+const DECODED_PATIENT_ACTIVITY contextKey = "decodedPatientActivity"
 
 const (
 	LIMITER_REQUESTS_ALLOWED  = 10
@@ -31,6 +32,7 @@ const (
 	DELETE_PATIENT_BY_ID_ENDPOINT      = "/patients/{" + DELETE_PATIENT_BY_ID_PARAMETER + "}"
 	DELETE_PATIENT_BY_USER_ID_ENDPOINT = "/patients/users/{" + DELETE_PATIENT_BY_USER_ID_PARAMETER + "}"
 	HEALTH_CHECK_ENDPOINT              = "/patients/health-check"
+	TOGGLE_PATIENT_ACTIVITY_ENDPOINT   = "/patients/activity"
 
 	// Parameters
 	FETCH_PATIENT_BY_ID_PARAMETER       = "patient_id"

@@ -73,13 +73,17 @@ func loadCrudRoutes(router *mux.Router, pacientController *controllers.PatientCo
 	router.Handle(utils.UPDATE_PATIENT_BY_ID_ENDPOINT, middleware.ValidatePacientInfo(pacientUpdateByIDHandler)).Methods("PUT")
 	log.Println("[PATIENT] Route PUT", utils.UPDATE_PATIENT_BY_ID_ENDPOINT, "registered.")
 
-	pacientDeleteByIDHandler := http.HandlerFunc(pacientController.DeletePatientByID)
-	router.Handle(utils.DELETE_PATIENT_BY_ID_ENDPOINT, pacientDeleteByIDHandler).Methods("DELETE")
-	log.Println("[PATIENT] Route DELETE", utils.DELETE_PATIENT_BY_ID_ENDPOINT, "registered.")
+	toggleActivityHandler := http.HandlerFunc(pacientController.TogglePatientActivity)
+	router.Handle(utils.TOGGLE_PATIENT_ACTIVITY_ENDPOINT, middleware.ValidatePatientActivityInfo(toggleActivityHandler)).Methods("PATCH")
+	log.Println("[PATIENT] Route POST", utils.TOGGLE_PATIENT_ACTIVITY_ENDPOINT, "registered.")
 
 	pacientDeleteByUserIDHandler := http.HandlerFunc(pacientController.DeletePatientByUserID)
 	router.Handle(utils.DELETE_PATIENT_BY_USER_ID_ENDPOINT, pacientDeleteByUserIDHandler).Methods("DELETE")
 	log.Println("[PATIENT] Route DELETE", utils.DELETE_PATIENT_BY_USER_ID_ENDPOINT, "registered.")
+
+	pacientDeleteByIDHandler := http.HandlerFunc(pacientController.DeletePatientByID)
+	router.Handle(utils.DELETE_PATIENT_BY_ID_ENDPOINT, pacientDeleteByIDHandler).Methods("DELETE")
+	log.Println("[PATIENT] Route DELETE", utils.DELETE_PATIENT_BY_ID_ENDPOINT, "registered.")
 
 	log.Println("[PATIENT] All CRUD routes for Patient entity loaded successfully.")
 }

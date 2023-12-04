@@ -34,3 +34,8 @@ type ComplexResponse struct {
 	RowsAffected int `json:"rows_affected"`
 	DeletedID    int `json:"deleted_id"`
 }
+
+type ActivityData struct {
+	IsActive bool `json:"is_active"`
+	IDUser   int  `json:"id_user"`
+}

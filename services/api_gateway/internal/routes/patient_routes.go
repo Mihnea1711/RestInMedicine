@@ -24,10 +24,6 @@ func loadPatientRoutes(router *mux.Router, gatewayController *controllers.Gatewa
 	router.HandleFunc(utils.GET_ALL_PATIENTS_ENDPOINT, authorization.AllRolesMiddleware(jwtConfig, patientFetchAllHandler)).Methods("GET")
 	log.Printf("[GATEWAY] Route GET %s registered.\n", utils.GET_ALL_PATIENTS_ENDPOINT)
 
-	patientFetchByIDHandler := http.HandlerFunc(gatewayController.GetPatientByID)
-	router.HandleFunc(utils.GET_PATIENT_BY_ID_ENDPOINT, authorization.AllRolesMiddleware(jwtConfig, patientFetchByIDHandler)).Methods("GET")
-	log.Printf("[GATEWAY] Route GET %s registered.\n", utils.GET_PATIENT_BY_ID_ENDPOINT)
-
 	patientFetchByEmailHandler := http.HandlerFunc(gatewayController.GetPatientByEmail)
 	router.Handle(utils.GET_PATIENT_BY_EMAIL_ENDPOINT, authorization.AllRolesMiddleware(jwtConfig, patientFetchByEmailHandler)).Methods("GET")
 	log.Printf("[GATEWAY] Route GET %s registered.\n", utils.GET_PATIENT_BY_EMAIL_ENDPOINT)
@@ -36,10 +32,18 @@ func loadPatientRoutes(router *mux.Router, gatewayController *controllers.Gatewa
 	router.Handle(utils.GET_PATIENT_BY_USER_ID_ENDPOINT, authorization.AllRolesMiddleware(jwtConfig, patientFetchByUserIDHandler)).Methods("GET")
 	log.Printf("[GATEWAY] Route GET %s registered.\n", utils.GET_PATIENT_BY_USER_ID_ENDPOINT)
 
+	patientFetchByIDHandler := http.HandlerFunc(gatewayController.GetPatientByID)
+	router.HandleFunc(utils.GET_PATIENT_BY_ID_ENDPOINT, authorization.AllRolesMiddleware(jwtConfig, patientFetchByIDHandler)).Methods("GET")
+	log.Printf("[GATEWAY] Route GET %s registered.\n", utils.GET_PATIENT_BY_ID_ENDPOINT)
+
 	// ---------------------------------------------------------- Update --------------------------------------------------------------
 	patientUpdateByIDHandler := http.HandlerFunc(gatewayController.UpdatePatientByID)
 	router.Handle(utils.UPDATE_PATIENT_BY_ID_ENDPOINT, authorization.AdminAndPatientMiddleware(jwtConfig, validation.ValidatePatientData(patientUpdateByIDHandler))).Methods("PUT")
 	log.Printf("[GATEWAY] Route PUT %s registered.\n", utils.UPDATE_PATIENT_BY_ID_ENDPOINT)
+
+	toggleActivityHandler := http.HandlerFunc(gatewayController.TogglePatientActivityByUserID)
+	router.Handle(utils.TOGGLE_PATIENT_ACTIVITY_ENDPOINT, authorization.AdminOnlyMiddleware(jwtConfig, validation.ValidatePatientActivityData(toggleActivityHandler))).Methods("PATCH")
+	log.Println("[PATIENT] Route POST", utils.TOGGLE_PATIENT_ACTIVITY_ENDPOINT, "registered.")
 
 	// ---------------------------------------------------------- Delete --------------------------------------------------------------
 	patientDeleteByIDHandler := http.HandlerFunc(gatewayController.DeletePatientByID)

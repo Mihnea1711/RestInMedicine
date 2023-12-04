@@ -8,6 +8,7 @@ import (
 	"github.com/mihnea1711/POS_Project/services/gateway/idm"
 	"github.com/mihnea1711/POS_Project/services/gateway/internal/controllers"
 	"github.com/mihnea1711/POS_Project/services/gateway/internal/middleware"
+	"github.com/mihnea1711/POS_Project/services/gateway/internal/middleware/validation"
 	"github.com/mihnea1711/POS_Project/services/gateway/pkg/config"
 	"github.com/mihnea1711/POS_Project/services/gateway/pkg/utils"
 )
@@ -21,6 +22,9 @@ func SetupRoutes(idmClient idm.IDMClient, jwtConfig config.JWTConfig) *mux.Route
 
 	router.Use(middleware.SanitizeInputMiddleware)
 	log.Println("[GATEWAY] Input sanitizer middleware set up successfully.")
+
+	// register custom validations
+	validation.RegisterCustomValidationTags()
 
 	gatewayController := &controllers.GatewayController{
 		IDMClient: idmClient,

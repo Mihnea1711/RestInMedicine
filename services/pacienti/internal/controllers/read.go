@@ -24,9 +24,9 @@ func (pController *PatientController) GetPatients(w http.ResponseWriter, r *http
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
-	log.Printf("[PATIENT] Fetching patients with limit: %d, page: %d", limit, page)
+	log.Printf("[PATIENT] Fetching active patients with limit: %d, page: %d", limit, page)
 
-	patients, err := pController.DbConn.FetchPatients(ctx, page, limit)
+	patients, err := pController.DbConn.FetchActivePatients(ctx, page, limit)
 	if err != nil {
 		errMsg := fmt.Sprintf("Internal server error: %s", err)
 		log.Printf("[PATIENT] %s", errMsg)
@@ -81,7 +81,7 @@ func (pController *PatientController) GetPatientByID(w http.ResponseWriter, r *h
 		return
 	}
 
-	if patient == nil {
+	if patient == nil || !patient.IsActive {
 		errMsg := fmt.Sprintf("No patient found with ID: %d", patientID)
 		log.Printf("[PATIENT] %s", errMsg)
 
@@ -125,7 +125,7 @@ func (pController *PatientController) GetPatientByEmail(w http.ResponseWriter, r
 		return
 	}
 
-	if patient == nil {
+	if patient == nil || !patient.IsActive {
 		errMsg := fmt.Sprintf("No patient found with email: %s", patientEmail)
 		log.Printf("[PATIENT] %s", errMsg)
 
@@ -179,7 +179,7 @@ func (pController *PatientController) GetPatientByUserID(w http.ResponseWriter, 
 		return
 	}
 
-	if patient == nil {
+	if patient == nil || !patient.IsActive {
 		errMsg := fmt.Sprintf("No patient found with user ID: %d", userID)
 		log.Printf("[PATIENT] %s", errMsg)
 

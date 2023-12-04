@@ -58,6 +58,56 @@ func (db *MySQLDatabase) FetchPatients(ctx context.Context, page, limit int) ([]
 	return patients, nil
 }
 
+func (db *MySQLDatabase) FetchActivePatients(ctx context.Context, page, limit int) ([]models.Pacient, error) {
+	// Get the offset based on page and limit
+	offset := (page - 1) * limit
+
+	// Construct the SQL insert query
+	query := fmt.Sprintf("SELECT %s, %s, %s, %s, %s, %s, %s, %s, %s FROM %s WHERE %s = true LIMIT ? OFFSET ?",
+		utils.ColumnIDPacient,
+		utils.ColumnIDUser,
+		utils.ColumnNume,
+		utils.ColumnPrenume,
+		utils.ColumnEmail,
+		utils.ColumnTelefon,
+		utils.ColumnCNP,
+		utils.ColumnDataNasterii,
+		utils.ColumnIsActive,
+		utils.TableName,
+		utils.ColumnIsActive,
+	)
+
+	log.Printf("[PATIENT] Attempting to fetch active patients with limit=%d, offset=%d", limit, offset)
+
+	// Execute the SQL query with context
+	rows, err := db.QueryContext(ctx, query, limit, offset)
+	if err != nil {
+		log.Printf("[PATIENT] Error executing query to fetch active patients: %v", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var patients []models.Pacient
+	for rows.Next() {
+		var patient models.Pacient
+		err := rows.Scan(&patient.IDPacient, &patient.IDUser, &patient.Nume, &patient.Prenume, &patient.Email, &patient.Telefon, &patient.CNP, &patient.DataNasterii, &patient.IsActive)
+		if err != nil {
+			log.Printf("[PATIENT] Error scanning patient row: %v", err)
+			return nil, err
+		}
+		patients = append(patients, patient)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		log.Printf("[PATIENT] Error after iterating over rows: %v", err)
+		return nil, err
+	}
+
+	log.Printf("[PATIENT] Successfully fetched %d active patients.", len(patients))
+	return patients, nil
+}
+
 func (db *MySQLDatabase) FetchPatientByID(ctx context.Context, patientID int) (*models.Pacient, error) {
 	// Construct the SQL insert query
 	query := fmt.Sprintf("SELECT %s, %s, %s, %s, %s, %s, %s, %s, %s FROM %s WHERE %s = ?",

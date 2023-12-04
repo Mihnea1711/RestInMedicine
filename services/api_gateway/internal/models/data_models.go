@@ -51,12 +51,13 @@ type PatientData struct {
 type Specializare string
 type DoctorData struct {
 	IDDoctor     int          `db:"id_doctor" json:"idDoctor" sql:"type:int primary key"`
-	IDUser       int          `db:"id_user" json:"idUser" sql:"type:int"`
+	IDUser       int          `db:"id_user" json:"idUser" sql:"type:int" validate:"required"`
 	Nume         string       `db:"nume" json:"nume" sql:"type:varchar(50)" validate:"required,max=50"`
 	Prenume      string       `db:"prenume" json:"prenume" sql:"type:varchar(50)" validate:"required,max=50"`
 	Email        string       `db:"email" json:"email" sql:"type:varchar(70) unique" validate:"required,email"`
 	Telefon      string       `db:"telefon" json:"telefon" sql:"type:char(10) check (telefon ~ '^[0-9]{10}$')" validate:"required,len=10,numeric"`
 	Specializare Specializare `db:"specializare" json:"specializare" sql:"type:enum"`
+	IsActive     bool         `db:"is_active" json:"is_active" validate:"required"`
 }
 
 type StatusProgramare string
@@ -82,4 +83,9 @@ type Investigatie struct {
 	Denumire        string             `json:"denumire" bson:"denumire" validate:"required"`
 	DurataProcesare int                `json:"durata_procesare" bson:"durata_procesare" validate:"required"`
 	Rezultat        string             `json:"rezultat" bson:"rezultat" validate:"required"`
+}
+
+type ActivityData struct {
+	IsActive bool `json:"is_active"`
+	IDUser   int  `json:"id_user" validate:"required"`
 }

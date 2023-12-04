@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"reflect"
 	"strings"
 	"time"
 
@@ -195,4 +196,47 @@ func ValidateEmail(next http.Handler) http.Handler {
 		log.Printf("[PATIENT_VALIDATION] Email validated successfully: %s", email)
 		next.ServeHTTP(w, r)
 	})
+}
+
+func ValidatePatientActivityInfo(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var PatientActivityData models.ActivityData
+
+		dec := json.NewDecoder(r.Body)
+		dec.DisallowUnknownFields()
+
+		err := dec.Decode(&PatientActivityData)
+		if checkErrorOnDecode(err, w) {
+			errMsg := "Failed to decode Patient"
+			log.Printf("[PATIENT_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
+			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Patient validation failed due to decoding."})
+			return
+		}
+
+		// Basic validation for each field
+		if !isBoolean(PatientActivityData.IsActive) {
+			errMsg := "Invalid IsActive field type"
+			log.Printf("[PATIENT_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
+			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Patient validation failed due to IsActive"})
+			return
+		}
+
+		if PatientActivityData.IDUser <= 0 {
+			errMsg := "Invalid or missing IDUser"
+			log.Printf("[PATIENT_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
+			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Patient validation failed due to user ID"})
+			return
+		}
+
+		log.Printf("[PATIENT_VALIDATION] Patient info validated successfully in request: %s", r.RequestURI)
+
+		// If all validations pass, proceed to the actual controller
+		ctx := context.WithValue(r.Context(), utils.DECODED_PATIENT_ACTIVITY, &PatientActivityData)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+// isBoolean checks if a variable is of boolean type
+func isBoolean(value interface{}) bool {
+	return reflect.ValueOf(value).Kind() == reflect.Bool
 }

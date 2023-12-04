@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"reflect"
 	"strings"
 
 	"github.com/gorilla/mux"
@@ -24,47 +25,47 @@ func ValidateDoctorInfo(next http.Handler) http.Handler {
 
 		err := dec.Decode(&doctor)
 		if checkErrorOnDecode(err, w) {
-			errMsg := "Failed to decode patient"
-			log.Printf("[PATIENT_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
-			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Patient validation failed due to decoding."})
+			errMsg := "Failed to decode doctor"
+			log.Printf("[DOCTOR_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
+			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Doctor validation failed due to decoding."})
 			return
 		}
 
 		// Basic validation for each field
 		if doctor.Nume == "" || len(doctor.Nume) > 255 {
 			errMsg := "Invalid or missing Nume"
-			log.Printf("[PATIENT_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
-			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Patient validation failed due to first name"})
+			log.Printf("[DOCTOR_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
+			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Doctor validation failed due to first name"})
 			return
 		}
 
 		if doctor.Prenume == "" || len(doctor.Prenume) > 255 {
 			errMsg := "Invalid or missing Prenume"
-			log.Printf("[PATIENT_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
-			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Patient validation failed due to second name"})
+			log.Printf("[DOCTOR_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
+			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Doctor validation failed due to second name"})
 			return
 		}
 
 		// Validate email format using regex
 		if !utils.EmailRegex.MatchString(doctor.Email) || len(doctor.Email) > 255 {
 			errMsg := "Invalid or missing Email"
-			log.Printf("[PATIENT_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
-			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Patient validation failed due to email"})
+			log.Printf("[DOCTOR_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
+			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Doctor validation failed due to email"})
 			return
 		}
 
 		// Validate Romanian phone number format
 		if !utils.PhoneRegex.MatchString(doctor.Telefon) || len(doctor.Telefon) != 10 {
 			errMsg := "Invalid or missing Telefon"
-			log.Printf("[PATIENT_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
-			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Patient validation failed due to phone nr"})
+			log.Printf("[DOCTOR_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
+			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Doctor validation failed due to phone nr"})
 			return
 		}
 
 		if !isValidSpecializare(models.Specializare(doctor.Specializare)) {
 			errMsg := "Invalid Specializare in request"
 			log.Printf("[DOCTOR_VALIDATION] %s: %s", errMsg, r.RequestURI)
-			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Patient validation failed due to specialization"})
+			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Doctor validation failed due to specialization"})
 			return
 		}
 
@@ -167,4 +168,47 @@ func ValidateEmail(next http.Handler) http.Handler {
 		log.Printf("[DOCTOR_VALIDATION] Email validated successfully: %s", email)
 		next.ServeHTTP(w, r)
 	})
+}
+
+func ValidateDoctorActivityInfo(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var doctorActivityData models.ActivityData
+
+		dec := json.NewDecoder(r.Body)
+		dec.DisallowUnknownFields()
+
+		err := dec.Decode(&doctorActivityData)
+		if checkErrorOnDecode(err, w) {
+			errMsg := "Failed to decode doctor"
+			log.Printf("[DOCTOR_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
+			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Doctor validation failed due to decoding."})
+			return
+		}
+
+		// Basic validation for each field
+		if !isBoolean(doctorActivityData.IsActive) {
+			errMsg := "Invalid IsActive field type"
+			log.Printf("[DOCTOR_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
+			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Doctor validation failed due to IsActive"})
+			return
+		}
+
+		if doctorActivityData.IDUser <= 0 {
+			errMsg := "Invalid or missing IDUser"
+			log.Printf("[DOCTOR_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
+			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Doctor validation failed due to first name"})
+			return
+		}
+
+		log.Printf("[DOCTOR_VALIDATION] Doctor info validated successfully in request: %s", r.RequestURI)
+
+		// If all validations pass, proceed to the actual controller
+		ctx := context.WithValue(r.Context(), utils.DECODED_DOCTOR_ACTIVITY, &doctorActivityData)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+// isBoolean checks if a variable is of boolean type
+func isBoolean(value interface{}) bool {
+	return reflect.ValueOf(value).Kind() == reflect.Bool
 }

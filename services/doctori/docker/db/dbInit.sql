@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS doctor (
     email VARCHAR(255) NOT NULL UNIQUE,
     telefon VARCHAR(20) NOT NULL,
     specializare VARCHAR(255) NOT NULL
+    is_active BOOLEAN DEFAULT true
 );
 
 -- Inserting two sample doctors

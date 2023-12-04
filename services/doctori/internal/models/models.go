@@ -11,6 +11,7 @@ type Doctor struct {
 	Email        string       `db:"email" json:"email" sql:"type:varchar(70) unique"`
 	Telefon      string       `db:"telefon" json:"telefon" sql:"type:char(10) check (telefon ~ '^[0-9]{10}$')"`
 	Specializare Specializare `db:"specializare" json:"specializare" sql:"type:enum"`
+	IsActive     bool         `db:"is_active" json:"is_active"`
 }
 
 type ResponseData struct {
@@ -30,4 +31,9 @@ type LastInsertedID struct {
 type ComplexResponse struct {
 	RowsAffected int `json:"rows_affected"`
 	DeletedID    int `json:"deleted_id"`
+}
+
+type ActivityData struct {
+	IsActive bool `json:"is_active"`
+	IDUser   int  `json:"id_user"`
 }

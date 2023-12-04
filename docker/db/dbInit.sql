@@ -15,13 +15,13 @@ CREATE TABLE IF NOT EXISTS patient (
     telefon VARCHAR(20) NOT NULL,
     cnp CHAR(13) NOT NULL UNIQUE ,
     data_nasterii DATE NOT NULL,
-    is_active BOOLEAN DEFAULT false
+    is_active BOOLEAN DEFAULT true
 );
 
 -- Inserting two sample patients
 INSERT INTO patient (id_user, nume, prenume, email, telefon, cnp, data_nasterii, is_active)
 VALUES
-    (1, 'Popescu', 'Ion', 'ion.popescu@example.com', '0712345678', '1010100890123', '2000-01-01', false),
+    (1, 'Popescu', 'Ion', 'ion.popescu@example.com', '0712345678', '1010100890123', '2000-01-01', true),
     (2, 'Ionescu', 'Ana', 'ana.ionescu@example.com', '0712345679', '9150290210987', '1990-02-15', false);
 
 
@@ -32,7 +32,8 @@ CREATE TABLE IF NOT EXISTS doctor (
     prenume VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     telefon VARCHAR(20) NOT NULL,
-    specializare VARCHAR(255) NOT NULL
+    specializare VARCHAR(255) NOT NULL,
+    is_active BOOLEAN DEFAULT true
 );
 
 -- Inserting two sample doctors
@@ -48,9 +49,9 @@ CREATE TABLE IF NOT EXISTS appointment (
     id_doctor INT NOT NULL,
     date DATE NOT NULL,
     status ENUM('onorata', 'programata', 'confirmata', 'neprezentata', 'anulata') NOT NULL,
-    UNIQUE KEY unique_appointment (id_patient, id_doctor, date)
-    -- FOREIGN KEY (id_patient) REFERENCES pacient(id_patient),
-    -- FOREIGN KEY (id_doctor) REFERENCES doctor(id_doctor)
+    UNIQUE KEY unique_appointment (id_patient, id_doctor, date),
+    FOREIGN KEY (id_patient) REFERENCES patient(id_patient),
+    FOREIGN KEY (id_doctor) REFERENCES doctor(id_doctor)
 );
 
 

@@ -24,10 +24,6 @@ func loadDoctorRoutes(router *mux.Router, gatewayController *controllers.Gateway
 	router.HandleFunc(utils.GET_ALL_DOCTORS_ENDPOINT, authorization.AllRolesMiddleware(jwtConfig, doctorFetchAllHandler)).Methods("GET")
 	log.Println("[GATEWAY] Route GET", utils.GET_ALL_DOCTORS_ENDPOINT, "registered.")
 
-	doctorFetchByIDHandler := http.HandlerFunc(gatewayController.GetDoctorByID)
-	router.HandleFunc(utils.GET_DOCTOR_BY_ID_ENDPOINT, authorization.AllRolesMiddleware(jwtConfig, doctorFetchByIDHandler)).Methods("GET")
-	log.Println("[GATEWAY] Route GET", utils.GET_DOCTOR_BY_ID_ENDPOINT, "registered.")
-
 	doctorFetchByEmailHandler := http.HandlerFunc(gatewayController.GetDoctorByEmail)
 	router.Handle(utils.GET_DOCTOR_BY_EMAIL_ENDPOINT, authorization.AllRolesMiddleware(jwtConfig, doctorFetchByEmailHandler)).Methods("GET")
 	log.Println("[GATEWAY] Route GET", utils.GET_DOCTOR_BY_EMAIL_ENDPOINT, "registered.")
@@ -36,7 +32,15 @@ func loadDoctorRoutes(router *mux.Router, gatewayController *controllers.Gateway
 	router.Handle(utils.GET_DOCTOR_BY_USER_ID_ENDPOINT, authorization.AllRolesMiddleware(jwtConfig, doctorFetchByUserIDHandler)).Methods("GET")
 	log.Println("[GATEWAY] Route GET", utils.GET_DOCTOR_BY_USER_ID_ENDPOINT, "registered.")
 
+	doctorFetchByIDHandler := http.HandlerFunc(gatewayController.GetDoctorByID)
+	router.HandleFunc(utils.GET_DOCTOR_BY_ID_ENDPOINT, authorization.AllRolesMiddleware(jwtConfig, doctorFetchByIDHandler)).Methods("GET")
+	log.Println("[GATEWAY] Route GET", utils.GET_DOCTOR_BY_ID_ENDPOINT, "registered.")
+
 	// ---------------------------------------------------------- Update --------------------------------------------------------------
+	toggleActivityHandler := http.HandlerFunc(gatewayController.ToggleDoctorActivityByUserID)
+	router.Handle(utils.TOGGLE_DOCTOR_ACTIVITY_ENDPOINT, authorization.AdminOnlyMiddleware(jwtConfig, validation.ValidateDoctorActivityData(toggleActivityHandler))).Methods("PATCH")
+	log.Println("[PATIENT] Route POST", utils.TOGGLE_DOCTOR_ACTIVITY_ENDPOINT, "registered.")
+
 	doctorUpdateByIDHandler := http.HandlerFunc(gatewayController.UpdateDoctorByID)
 	router.Handle(utils.UPDATE_DOCTOR_BY_ID_ENDPOINT, authorization.AdminAndDoctorMiddleware(jwtConfig, validation.ValidateDoctorData(doctorUpdateByIDHandler))).Methods("PUT")
 	log.Println("[GATEWAY] Route PUT", utils.UPDATE_DOCTOR_BY_ID_ENDPOINT, "registered.")

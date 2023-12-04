@@ -10,6 +10,7 @@ type Database interface {
 	SavePatient(ctx context.Context, patient *models.Pacient) (int, error)
 
 	FetchPatients(ctx context.Context, page, limit int) ([]models.Pacient, error)
+	FetchActivePatients(ctx context.Context, page, limit int) ([]models.Pacient, error)
 	FetchPatientByID(ctx context.Context, patientID int) (*models.Pacient, error)
 	FetchPatientByEmail(ctx context.Context, email string) (*models.Pacient, error)
 	FetchPatientByUserID(ctx context.Context, userID int) (*models.Pacient, error)
@@ -18,7 +19,7 @@ type Database interface {
 	DeletePatientByID(ctx context.Context, patientID int) (int, error)
 	DeletePatientByUserID(ctx context.Context, patientUserID int) (int, error)
 
-	// ... add more methods
+	SetPatientActivityByUserID(ctx context.Context, isActive bool, userID int) (int, error)
 
 	Close() error
 }

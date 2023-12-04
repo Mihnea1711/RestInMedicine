@@ -14,12 +14,12 @@ CREATE TABLE IF NOT EXISTS patient (
     telefon VARCHAR(20) NOT NULL,
     cnp CHAR(13) NOT NULL UNIQUE ,
     data_nasterii DATE NOT NULL,
-    is_active BOOLEAN DEFAULT false
+    is_active BOOLEAN DEFAULT true
 );
 
 -- Inserting two sample patients
 INSERT INTO patient (id_user, nume, prenume, email, telefon, cnp, data_nasterii, is_active)
 VALUES
-    (1, 'Popescu', 'Ion', 'ion.popescu@example.com', '0712345678', '1010100890123', '2000-01-01', false),
+    (1, 'Popescu', 'Ion', 'ion.popescu@example.com', '0712345678', '1010100890123', '2000-01-01', true),
     (2, 'Ionescu', 'Ana', 'ana.ionescu@example.com', '0712345679', '9150290210987', '1990-02-15', false);
 

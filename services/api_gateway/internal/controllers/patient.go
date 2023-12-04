@@ -308,3 +308,39 @@ func (gc *GatewayController) DeletePatientByID(w http.ResponseWriter, r *http.Re
 		return
 	}
 }
+
+// TogglePatientActivityByUserID handles updating the activity of patient by user ID.
+func (gc *GatewayController) TogglePatientActivityByUserID(w http.ResponseWriter, r *http.Request) {
+	log.Printf("[GATEWAY] Attempting to update patient activity by user ID.")
+
+	// Take patient activity data from context
+	reqData := r.Context().Value(utils.DECODED_PATIENT_ACTIVITY_DATA).(*models.ActivityData)
+
+	// Create a context with a timeout (adjust the timeout as needed)
+	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_CONTEXT_TIMEOUT*time.Second)
+	defer cancel()
+
+	// Redirect the request body to another module
+	decodedResponse, status, err := gc.redirectRequestBody(ctx, http.MethodPatch, utils.PATIENT_HOST, utils.PATIENT_TOGGLE_PATIENT_ACTIVITY_ENDPOINT, utils.PATIENT_PORT, reqData)
+	if err != nil {
+		log.Printf("[GATEWAY] Error redirecting patient request: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
+		return
+	}
+
+	// Check the response status and handle accordingly
+	switch status {
+	case http.StatusOK:
+		log.Printf("[GATEWAY] TogglePatientActivityByUserID: Request successful with status %d", status)
+		utils.SendMessageResponse(w, http.StatusOK, decodedResponse.Message, decodedResponse.Payload)
+		return
+	case http.StatusNotFound:
+		log.Printf("[GATEWAY] TogglePatientActivityByUserID: Request failed with not found status %d", status)
+		utils.SendErrorResponse(w, http.StatusNotFound, decodedResponse.Message, "Patient not found: "+decodedResponse.Error)
+		return
+	default:
+		log.Printf("[GATEWAY] TogglePatientActivityByUserID: Request failed with unexpected status %d", status)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, decodedResponse.Message, "Unexpected status code: "+strconv.Itoa(status)+". Error: "+decodedResponse.Error)
+		return
+	}
+}

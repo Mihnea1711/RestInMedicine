@@ -1,33 +1,33 @@
 version: "3.8"
 
 services:  
-  # RabbitMQ container #
-  rabbitmq:
-    image: "rabbitmq:3-management"
-    container_name: rabbitmq
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    env_file:
-      - services/rabbit/.env
-    networks:
-      - pos_network
+  # # RabbitMQ container #
+  # rabbitmq:
+  #   image: "rabbitmq:3-management"
+  #   container_name: rabbitmq
+  #   ports:
+  #     - "5672:5672"
+  #     - "15672:15672"
+  #   env_file:
+  #     - services/rabbit/.env
+  #   networks:
+  #     - pos_network
 
-  # RabbitMQ module #
-  rabbit_app:
-    build:
-      context: ./services/rabbit
-      dockerfile: docker/api.Dockerfile
-    container_name: rabbit_app
-    ports:
-      - "8090:8090"
-    env_file:
-      - ./services/rabbit/.env
-    depends_on:
-      - rabbitmq
-    restart: always
-    networks:
-      - pos_network
+  # # RabbitMQ module #
+  # rabbit_app:
+  #   build:
+  #     context: ./services/rabbit
+  #     dockerfile: docker/api.Dockerfile
+  #   container_name: rabbit_app
+  #   ports:
+  #     - "8090:8090"
+  #   env_file:
+  #     - ./services/rabbit/.env
+  #   depends_on:
+  #     - rabbitmq
+  #   restart: always
+  #   networks:
+  #     - pos_network
     # healthcheck:
     #   test: ["CMD", "curl", "-f", "http://localhost:8090/api/rabbit/health-check"]
     #   interval: 20s
@@ -36,50 +36,50 @@ services:
   
 #   ######################################################################################################################################################
 
-  idm_mysql:
-    image: mysql:8.2.0
-    container_name: "idm_mysql"
-    env_file:
-      - services/idm/.env
-    ports:
-      - "3306:3306"
-    restart: always
-    networks:
-      - pos_network
-    volumes:
-      - ./services/idm/docker/db:/docker-entrypoint-initdb.d
-    # volumes:
-    #   - "./data/mysql/idm:/var/lib/mysql"    
-    command: --default-authentication-plugin=caching_sha2_password
+  # idm_mysql:
+  #   image: mysql:8.2.0
+  #   container_name: "idm_mysql"
+  #   env_file:
+  #     - services/idm/.env
+  #   ports:
+  #     - "3306:3306"
+  #   restart: always
+  #   networks:
+  #     - pos_network
+  #   volumes:
+  #     - ./services/idm/docker/db:/docker-entrypoint-initdb.d
+  #   # volumes:
+  #   #   - "./data/mysql/idm:/var/lib/mysql"    
+  #   command: --default-authentication-plugin=caching_sha2_password
 
-  idm_redis:
-    image: redis:latest
-    container_name: "idm_redis"
-    ports:
-      - "6374:6379"
-    env_file:
-      - services/idm/.env
-    networks:
-      - pos_network
-    command: ["redis-server", "--requirepass", "${IDM_REDIS_PASSWORD}"]
+  # idm_redis:
+  #   image: redis:latest
+  #   container_name: "idm_redis"
+  #   ports:
+  #     - "6374:6379"
+  #   env_file:
+  #     - services/idm/.env
+  #   networks:
+  #     - pos_network
+  #   command: ["redis-server", "--requirepass", "${IDM_REDIS_PASSWORD}"]
 
-  idm_app:
-    container_name: idm_app
-    build:
-      context: ./services/idm
-      dockerfile: docker/api.Dockerfile
-    ports:
-      - "8081:8081"
-    depends_on:
-      - idm_mysql
-      - idm_redis
-    env_file:
-      - services/idm/.env
-    environment:
-      DATABASE_HOST: idm_mysql
-    restart: always
-    networks:
-      - pos_network
+  # idm_app:
+  #   container_name: idm_app
+  #   build:
+  #     context: ./services/idm
+  #     dockerfile: docker/api.Dockerfile
+  #   ports:
+  #     - "8081:8081"
+  #   depends_on:
+  #     - idm_mysql
+  #     - idm_redis
+  #   env_file:
+  #     - services/idm/.env
+  #   environment:
+  #     DATABASE_HOST: idm_mysql
+  #   restart: always
+  #   networks:
+  #     - pos_network
     # healthcheck:
     #   test: ["CMD", "grpcurl", "-plaintext", "localhost:8081", "IDM/HealthCheck"]      
     #   interval: 20s
@@ -213,49 +213,49 @@ services:
   # ######################################################################################################################################################
 
   # MongoDB container
-  consultation_mongodb:
-    image: mongo:latest
-    container_name: consultation_mongodb
-    build:
-      context: ./services/consultatii
-      dockerfile: docker/mongo.Dockerfile
-    ports:
-      - "27017:27017"
-    env_file:
-      - ./services/consultatii/.env
-    # volumes:
-    #   - "./data/mongo/consultation:/data/db"
-    networks:
-      - pos_network
+  # consultation_mongodb:
+  #   image: mongo:latest
+  #   container_name: consultation_mongodb
+  #   build:
+  #     context: ./services/consultatii
+  #     dockerfile: docker/mongo.Dockerfile
+  #   ports:
+  #     - "27017:27017"
+  #   env_file:
+  #     - ./services/consultatii/.env
+  #   # volumes:
+  #   #   - "./data/mongo/consultation:/data/db"
+  #   networks:
+  #     - pos_network
 
-  # Redis container for consultation module
-  consultation_redis:
-    image: redis:latest
-    container_name: consultation_redis
-    ports:
-      - "6375:6379"
-    env_file:
-      - ./services/consultatii/.env
-    networks:
-      - pos_network
-    command: ["redis-server", "--requirepass", "${CONSULTATION_REDIS_PASSWORD}"]
+  # # Redis container for consultation module
+  # consultation_redis:
+  #   image: redis:latest
+  #   container_name: consultation_redis
+  #   ports:
+  #     - "6375:6379"
+  #   env_file:
+  #     - ./services/consultatii/.env
+  #   networks:
+  #     - pos_network
+  #   command: ["redis-server", "--requirepass", "${CONSULTATION_REDIS_PASSWORD}"]
 
-  # Consultation module
-  consultation_app:
-    build:
-      context: ./services/consultatii
-      dockerfile: docker/api.Dockerfile
-    container_name: consultation_app
-    ports:
-      - "8085:8085"
-    restart: always
-    depends_on:
-      - consultation_mongodb
-      - consultation_redis
-    env_file:
-      - ./services/consultatii/.env
-    networks:
-      - pos_network
+  # # Consultation module
+  # consultation_app:
+  #   build:
+  #     context: ./services/consultatii
+  #     dockerfile: docker/api.Dockerfile
+  #   container_name: consultation_app
+  #   ports:
+  #     - "8085:8085"
+  #   restart: always
+  #   depends_on:
+  #     - consultation_mongodb
+  #     - consultation_redis
+  #   env_file:
+  #     - ./services/consultatii/.env
+  #   networks:
+  #     - pos_network
     # healthcheck:
     #   test: ["CMD", "curl", "-f", "http://localhost:8085/consultations/health-check"]
     #   interval: 20s

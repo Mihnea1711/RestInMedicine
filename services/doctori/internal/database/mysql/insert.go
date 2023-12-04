@@ -11,7 +11,7 @@ import (
 
 func (db *MySQLDatabase) SaveDoctor(ctx context.Context, doctor *models.Doctor) (int, error) {
 	// Construct the SQL insert query
-	query := fmt.Sprintf("INSERT INTO %s (%s, %s, %s, %s, %s, %s) VALUES (?, ?, ?, ?, ?, ?)",
+	query := fmt.Sprintf("INSERT INTO %s (%s, %s, %s, %s, %s, %s, %s) VALUES (?, ?, ?, ?, ?, ?, ?)",
 		utils.DoctorTableName,
 		utils.ColumnIDUser,
 		utils.ColumnNume,
@@ -19,12 +19,13 @@ func (db *MySQLDatabase) SaveDoctor(ctx context.Context, doctor *models.Doctor) 
 		utils.ColumnEmail,
 		utils.ColumnTelefon,
 		utils.ColumnSpecializare,
+		utils.ColumnIsActive,
 	)
 
 	log.Println("[PATIENT] Attempting to save doctor")
 
 	// Execute the SQL statement
-	result, err := db.ExecContext(ctx, query, doctor.IDUser, doctor.Nume, doctor.Prenume, doctor.Email, doctor.Telefon, doctor.Specializare)
+	result, err := db.ExecContext(ctx, query, doctor.IDUser, doctor.Nume, doctor.Prenume, doctor.Email, doctor.Telefon, doctor.Specializare, doctor.IsActive)
 	if err != nil {
 		log.Printf("[DOCTOR] Error executing query to save doctor: %v", err)
 		return 0, fmt.Errorf("failed to save doctor: %w", err)

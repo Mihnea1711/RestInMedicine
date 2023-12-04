@@ -3,6 +3,7 @@ package validation
 import (
 	"context"
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
@@ -36,6 +37,40 @@ func ValidatePatientData(next http.Handler) http.Handler {
 
 		// If validation passes, proceed to the next handler
 		ctx := context.WithValue(r.Context(), utils.DECODED_PATIENT_DATA, &patientData)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+// ValidatePatientData validates the PatientData struct using the validator package
+func validatePatientActivityData(patientActivityData models.ActivityData) error {
+	validate := validator.New()
+	return validate.Struct(patientActivityData)
+}
+
+// ValidatePatientData is a middleware that validates PatientData
+func ValidatePatientActivityData(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var patientActivityData models.ActivityData
+
+		log.Println(r.Body)
+
+		// Decode the request body into PatientData
+		err := json.NewDecoder(r.Body).Decode(&patientActivityData)
+		if err != nil {
+			logAndRespondWithError(w, http.StatusBadRequest, "Error decoding patient request body", err)
+			return
+		}
+
+		log.Println(patientActivityData)
+
+		// Validate PatientData
+		if err := validatePatientActivityData(patientActivityData); err != nil {
+			logAndRespondWithError(w, http.StatusBadRequest, "Validation error for patient struct", err)
+			return
+		}
+
+		// If validation passes, proceed to the next handler
+		ctx := context.WithValue(r.Context(), utils.DECODED_PATIENT_ACTIVITY_DATA, &patientActivityData)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

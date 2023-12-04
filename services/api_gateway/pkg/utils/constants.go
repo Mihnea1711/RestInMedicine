@@ -31,6 +31,7 @@ const (
 	POST   = "POST"
 	GET    = "GET"
 	PUT    = "PUT"
+	PATCH  = "PATCH"
 	DELETE = "DELETE"
 )
 
@@ -57,6 +58,9 @@ const (
 	DECODED_PASSWORD_DATA          contextKey = "password_data"
 	DECODED_ROLE_DATA              contextKey = "role_data"
 	DECODED_BLACKLIST_DATA         contextKey = "blacklist_data"
+
+	DECODED_PATIENT_ACTIVITY_DATA contextKey = "patient_activity_data"
+	DECODED_DOCTOR_ACTIVITY_DATA  contextKey = "doctor_activity_data"
 )
 
 const (
@@ -92,13 +96,14 @@ const (
 
 const (
 	// Endpoints
-	CREATE_PATIENT_ENDPOINT         = "/api/patients"
-	GET_ALL_PATIENTS_ENDPOINT       = "/api/patients"
-	GET_PATIENT_BY_ID_ENDPOINT      = "/api/patients/{" + GET_PATIENT_ID_PARAMETER + "}"
-	GET_PATIENT_BY_EMAIL_ENDPOINT   = "/api/patients/email/{" + GET_PATIENT_EMAIL_PARAMETER + "}"
-	GET_PATIENT_BY_USER_ID_ENDPOINT = "/api/patients/users/{" + GET_PATIENT_USER_ID_PARAMETER + "}"
-	UPDATE_PATIENT_BY_ID_ENDPOINT   = "/api/patients/{" + UPDATE_PATIENT_ID_PARAMETER + "}"
-	DELETE_PATIENT_BY_ID_ENDPOINT   = "/api/patients/{" + DELETE_PATIENT_ID_PARAMETER + "}"
+	CREATE_PATIENT_ENDPOINT          = "/api/patients"
+	GET_ALL_PATIENTS_ENDPOINT        = "/api/patients"
+	GET_PATIENT_BY_ID_ENDPOINT       = "/api/patients/{" + GET_PATIENT_ID_PARAMETER + "}"
+	GET_PATIENT_BY_EMAIL_ENDPOINT    = "/api/patients/email/{" + GET_PATIENT_EMAIL_PARAMETER + "}"
+	GET_PATIENT_BY_USER_ID_ENDPOINT  = "/api/patients/users/{" + GET_PATIENT_USER_ID_PARAMETER + "}"
+	UPDATE_PATIENT_BY_ID_ENDPOINT    = "/api/patients/{" + UPDATE_PATIENT_ID_PARAMETER + "}"
+	DELETE_PATIENT_BY_ID_ENDPOINT    = "/api/patients/{" + DELETE_PATIENT_ID_PARAMETER + "}"
+	TOGGLE_PATIENT_ACTIVITY_ENDPOINT = "/api/patients/activity"
 
 	// Parameters
 	GET_PATIENT_ID_PARAMETER      = "patientID"
@@ -115,17 +120,19 @@ const (
 	PATIENT_FETCH_PATIENT_BY_USER_ID_ENDPOINT = "/patients/users"
 	PATIENT_UPDATE_PATIENT_BY_ID_ENDPOINT     = "/patients"
 	PATIENT_DELETE_PATIENT_BY_ID_ENDPOINT     = "/patients"
+	PATIENT_TOGGLE_PATIENT_ACTIVITY_ENDPOINT  = "/patients/activity"
 )
 
 const (
 	// Endpoints
-	CREATE_DOCTOR_ENDPOINT         = "/api/doctors"
-	GET_ALL_DOCTORS_ENDPOINT       = "/api/doctors"
-	GET_DOCTOR_BY_ID_ENDPOINT      = "/api/doctors/{" + GET_DOCTOR_BY_ID_PARAMETER + "}"
-	GET_DOCTOR_BY_EMAIL_ENDPOINT   = "/api/doctors/email/{" + GET_DOCTOR_BY_EMAIL_PARAMETER + "}"
-	GET_DOCTOR_BY_USER_ID_ENDPOINT = "/api/doctors/users/{" + GET_DOCTOR_BY_USER_ID_PARAMETER + "}"
-	UPDATE_DOCTOR_BY_ID_ENDPOINT   = "/api/doctors/{" + UPDATE_DOCTOR_BY_ID_PARAMETER + "}"
-	DELETE_DOCTOR_BY_ID_ENDPOINT   = "/api/doctors/{" + DELETE_DOCTOR_BY_ID_PARAMETER + "}"
+	CREATE_DOCTOR_ENDPOINT          = "/api/doctors"
+	GET_ALL_DOCTORS_ENDPOINT        = "/api/doctors"
+	GET_DOCTOR_BY_ID_ENDPOINT       = "/api/doctors/{" + GET_DOCTOR_BY_ID_PARAMETER + "}"
+	GET_DOCTOR_BY_EMAIL_ENDPOINT    = "/api/doctors/email/{" + GET_DOCTOR_BY_EMAIL_PARAMETER + "}"
+	GET_DOCTOR_BY_USER_ID_ENDPOINT  = "/api/doctors/users/{" + GET_DOCTOR_BY_USER_ID_PARAMETER + "}"
+	UPDATE_DOCTOR_BY_ID_ENDPOINT    = "/api/doctors/{" + UPDATE_DOCTOR_BY_ID_PARAMETER + "}"
+	DELETE_DOCTOR_BY_ID_ENDPOINT    = "/api/doctors/{" + DELETE_DOCTOR_BY_ID_PARAMETER + "}"
+	TOGGLE_DOCTOR_ACTIVITY_ENDPOINT = "/api/doctors/activity"
 
 	// Parameters
 	GET_DOCTOR_BY_ID_PARAMETER      = "doctorID"
@@ -142,6 +149,7 @@ const (
 	DOCTOR_FETCH_DOCTOR_BY_USER_ID_ENDPOINT = "/doctors/users"
 	DOCTOR_UPDATE_DOCTOR_BY_ID_ENDPOINT     = "/doctors"
 	DOCTOR_DELETE_DOCTOR_BY_ID_ENDPOINT     = "/doctors"
+	DOCTOR_TOGGLE_DOCTOR_ACTIVITY_ENDPOINT  = "/doctors/activity"
 )
 
 const (

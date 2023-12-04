@@ -26,7 +26,7 @@ func (dController *DoctorController) GetDoctors(w http.ResponseWriter, r *http.R
 
 	log.Printf("[DOCTOR] Fetching doctors with limit: %d, page: %d", limit, page)
 
-	doctors, err := dController.DbConn.FetchDoctors(ctx, page, limit)
+	doctors, err := dController.DbConn.FetchActiveDoctors(ctx, page, limit)
 	if err != nil {
 		errMsg := fmt.Sprintf("internal server error: %s", err)
 		log.Printf("[DOCTOR] Error fetching doctors: %s", errMsg)
@@ -82,7 +82,7 @@ func (dController *DoctorController) GetDoctorByID(w http.ResponseWriter, r *htt
 		return
 	}
 
-	if doctor == nil {
+	if doctor == nil || !doctor.IsActive {
 		errMsg := fmt.Sprintf("No doctor found with ID: %d", doctorID)
 		log.Printf("[DOCTOR] %s", errMsg)
 		utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Message: "Doctor not found or an unexpected error happened.", Error: errMsg})
@@ -124,7 +124,7 @@ func (dController *DoctorController) GetDoctorByEmail(w http.ResponseWriter, r *
 		return
 	}
 
-	if doctor == nil {
+	if doctor == nil || !doctor.IsActive {
 		errMsg := fmt.Sprintf("No doctor found with email: %s", doctorEmail)
 		log.Printf("[DOCTOR] %s", errMsg)
 		utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Message: "Doctor not found or an unexpected error happened.", Error: errMsg})
@@ -174,7 +174,7 @@ func (dController *DoctorController) GetDoctorByUserID(w http.ResponseWriter, r 
 		return
 	}
 
-	if doctor == nil {
+	if doctor == nil || !doctor.IsActive {
 		errMsg := fmt.Sprintf("No doctor found with user ID: %d", userID)
 		log.Printf("[DOCTOR] %s", errMsg)
 		utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Message: "Doctor not found or an unexpected error happened.", Error: errMsg})
