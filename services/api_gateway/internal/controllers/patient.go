@@ -39,6 +39,19 @@ func (gc *GatewayController) CreatePatient(w http.ResponseWriter, r *http.Reques
 	utils.CheckNilResponse(w, http.StatusInternalServerError, "Get User By ID response info is nil", userResponseWrapper.IsInfoNil, "Received nil response.Info while getting user by id.")
 	utils.CheckNilResponse(w, http.StatusInternalServerError, userResponse.Info.Message, userResponseWrapper.IsUserNil, "Received nil response.User while getting the user.")
 
+	// Check if there is already a doctor associated with the user ID
+	_, statusDoctor, err := gc.redirectRequestBody(ctx, utils.GET, utils.DOCTOR_HOST, fmt.Sprintf("%s/%d", utils.DOCTOR_FETCH_DOCTOR_BY_USER_ID_ENDPOINT, patientRequest.IDUser), utils.DOCTOR_PORT, nil)
+	if err != nil {
+		log.Printf("[GATEWAY] Error redirecting doctor request: %v", err)
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", "Failed to redirect request: "+err.Error())
+		return
+	}
+	if statusDoctor == http.StatusOK {
+		log.Println("[GATEWAY] Error creating a new patient. There is already a doctor associated with this UserID")
+		utils.SendErrorResponse(w, http.StatusConflict, "There is already a doctor associated with this UserID", "Error creating a new patient")
+		return
+	}
+
 	// Redirect the request body to another module
 	decodedResponse, status, err := gc.redirectRequestBody(ctx, utils.POST, utils.PATIENT_HOST, utils.PATIENT_CREATE_PATIENT_ENDPOINT, utils.PATIENT_PORT, patientRequest)
 	if err != nil {

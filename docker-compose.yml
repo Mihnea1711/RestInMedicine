@@ -1,7 +1,7 @@
 version: "3.8"
 
 services:  
-  # # RabbitMQ container #
+  # RabbitMQ container #
   # rabbitmq:
   #   image: "rabbitmq:3-management"
   #   container_name: rabbitmq
@@ -28,65 +28,65 @@ services:
   #   restart: always
   #   networks:
   #     - pos_network
-    # healthcheck:
-    #   test: ["CMD", "curl", "-f", "http://localhost:8090/api/rabbit/health-check"]
-    #   interval: 20s
-    #   timeout: 5s
-    #   retries: 2
+  #   # healthcheck:
+  #   #   test: ["CMD", "curl", "-f", "http://localhost:8090/api/rabbit/health-check"]
+  #   #   interval: 20s
+  #   #   timeout: 5s
+  #   #   retries: 2
   
-#   ######################################################################################################################################################
+  # ######################################################################################################################################################
 
-  # idm_mysql:
-  #   image: mysql:8.2.0
-  #   container_name: "idm_mysql"
-  #   env_file:
-  #     - services/idm/.env
-  #   ports:
-  #     - "3306:3306"
-  #   restart: always
-  #   networks:
-  #     - pos_network
-  #   volumes:
-  #     - ./services/idm/docker/db:/docker-entrypoint-initdb.d
-  #   # volumes:
-  #   #   - "./data/mysql/idm:/var/lib/mysql"    
-  #   command: --default-authentication-plugin=caching_sha2_password
+  idm_mysql:
+    image: mysql:8.2.0
+    container_name: "idm_mysql"
+    env_file:
+      - services/idm/.env
+    ports:
+      - "3306:3306"
+    restart: always
+    networks:
+      - pos_network
+    volumes:
+      - ./services/idm/docker/db:/docker-entrypoint-initdb.d
+    # volumes:
+    #   - "./data/mysql/idm:/var/lib/mysql"    
+    command: --default-authentication-plugin=caching_sha2_password
 
-  # idm_redis:
-  #   image: redis:latest
-  #   container_name: "idm_redis"
-  #   ports:
-  #     - "6374:6379"
-  #   env_file:
-  #     - services/idm/.env
-  #   networks:
-  #     - pos_network
-  #   command: ["redis-server", "--requirepass", "${IDM_REDIS_PASSWORD}"]
+  idm_redis:
+    image: redis:latest
+    container_name: "idm_redis"
+    ports:
+      - "6374:6379"
+    env_file:
+      - services/idm/.env
+    networks:
+      - pos_network
+    command: ["redis-server", "--requirepass", "${IDM_REDIS_PASSWORD}"]
 
-  # idm_app:
-  #   container_name: idm_app
-  #   build:
-  #     context: ./services/idm
-  #     dockerfile: docker/api.Dockerfile
-  #   ports:
-  #     - "8081:8081"
-  #   depends_on:
-  #     - idm_mysql
-  #     - idm_redis
-  #   env_file:
-  #     - services/idm/.env
-  #   environment:
-  #     DATABASE_HOST: idm_mysql
-  #   restart: always
-  #   networks:
-  #     - pos_network
-    # healthcheck:
-    #   test: ["CMD", "grpcurl", "-plaintext", "localhost:8081", "IDM/HealthCheck"]      
-    #   interval: 20s
-    #   timeout: 5s
-    #   retries: 2
+  idm_app:
+    container_name: idm_app
+    build:
+      context: ./services/idm
+      dockerfile: docker/api.Dockerfile
+    ports:
+      - "8081:8081"
+    depends_on:
+      - idm_mysql
+      - idm_redis
+    env_file:
+      - services/idm/.env
+    environment:
+      DATABASE_HOST: idm_mysql
+    restart: always
+    networks:
+      - pos_network
+  #   healthcheck:
+  #     test: ["CMD", "grpcurl", "-plaintext", "localhost:8081", "IDM/HealthCheck"]      
+  #     interval: 20s
+  #     timeout: 5s
+  #     retries: 2
 
-#   ######################################################################################################################################################
+  ######################################################################################################################################################
 
   pdp_mysql:
     image: mysql:8.2.0
@@ -176,41 +176,41 @@ services:
 
   ######################################################################################################################################################
 
-  appointment_redis:
-    image: redis:latest
-    container_name: "appointment_redis"
-    ports:
-      - "6376:6379"
-    env_file:
-      - services/programari/.env
-    networks:
-      - pos_network
-    command: ["redis-server", "--requirepass", "${APPOINTMENT_REDIS_PASSWORD}"]
+  # appointment_redis:
+  #   image: redis:latest
+  #   container_name: "appointment_redis"
+  #   ports:
+  #     - "6376:6379"
+  #   env_file:
+  #     - services/programari/.env
+  #   networks:
+  #     - pos_network
+  #   command: ["redis-server", "--requirepass", "${APPOINTMENT_REDIS_PASSWORD}"]
 
-  appointment_app:
-    container_name: "appointment_app"
-    build:
-      context: ./services/programari
-      dockerfile: docker/api.Dockerfile
-    ports:
-      - "8084:8084"
-    depends_on:
-      - pdp_mysql
-      - appointment_redis
-    env_file:
-      - ./services/programari/.env
-    environment:
-      DATABASE_HOST: pdp_mysql
-    restart: always
-    networks:
-      - pos_network
+  # appointment_app:
+  #   container_name: "appointment_app"
+  #   build:
+  #     context: ./services/programari
+  #     dockerfile: docker/api.Dockerfile
+  #   ports:
+  #     - "8084:8084"
+  #   depends_on:
+  #     - pdp_mysql
+  #     - appointment_redis
+  #   env_file:
+  #     - ./services/programari/.env
+  #   environment:
+  #     DATABASE_HOST: pdp_mysql
+  #   restart: always
+  #   networks:
+  #     - pos_network
     # healthcheck:
     #   test: ["CMD", "curl", "-f", "http://localhost:8084/appointments/health-check"]
     #   interval: 20s
     #   timeout: 5s
     #   retries: 2
 
-  # ######################################################################################################################################################
+  ######################################################################################################################################################
 
   # MongoDB container
   # consultation_mongodb:
@@ -256,11 +256,11 @@ services:
   #     - ./services/consultatii/.env
   #   networks:
   #     - pos_network
-    # healthcheck:
-    #   test: ["CMD", "curl", "-f", "http://localhost:8085/consultations/health-check"]
-    #   interval: 20s
-    #   timeout: 5s
-    #   retries: 2
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:8085/consultations/health-check"]
+  #     interval: 20s
+  #     timeout: 5s
+  #     retries: 2
 
   ######################################################################################################################################################
 
@@ -275,12 +275,12 @@ services:
     env_file:
       - ./services/api_gateway/.env
     # depends_on:
-      # - idm_app
-      # - patient_app
-      # - doctor_app
-      # - appointment_app
-      # - consultation_app
-      # - rabbit_app
+    #   - idm_app
+    #   - patient_app
+    #   - doctor_app
+    #   - appointment_app
+    #   - consultation_app
+    #   - rabbit_app
     restart: always
     networks:
       - pos_network
