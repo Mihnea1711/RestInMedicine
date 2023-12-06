@@ -14,3 +14,19 @@ type ClientResponse struct {
 	Code    int
 	Message string
 }
+
+type DeleteMessageData struct {
+	JWT    string `json:"jwt"`
+	IDUser int    `json:"id_user"`
+}
+
+type ResponseData struct {
+	Message string      `json:"message"`
+	Error   string      `json:"error"`
+	Payload interface{} `json:"payload"`
+}
+
+type ActivityData struct {
+	IsActive bool `json:"is_active"`
+	IDUser   int  `json:"id_user"`
+}

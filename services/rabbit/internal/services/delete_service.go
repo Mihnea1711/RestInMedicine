@@ -2,6 +2,14 @@ package services
 
 import (
 	"fmt"
+	"log"
+	"net/http"
+
+	"github.com/mihnea1711/POS_Project/services/rabbit/internal/middleware/authorization"
+	"github.com/mihnea1711/POS_Project/services/rabbit/internal/models"
+	"github.com/mihnea1711/POS_Project/services/rabbit/internal/models/participants"
+	twophasecommit "github.com/mihnea1711/POS_Project/services/rabbit/internal/two_phase_commit"
+	"github.com/mihnea1711/POS_Project/services/rabbit/pkg/utils"
 )
 
 // DeleteUserMessageHandler is an example implementation of MessageHandler.
@@ -34,26 +42,54 @@ import (
 func (s *ServiceContainer) DeleteUserMessageHandler(message []byte) error {
 	fmt.Printf("[RABBIT] Handling delete message: %s\n", string(message))
 
-	// // In a real-world scenario, you might have more complex logic here.
-	// participants := []models.Transactional{&participants.IDM{}, &participants.Patient{}, &participants.Doctor{}, &participants.Appointment{}, &participants.Consultation{}}
+	// parse jwt and roles
+	// Authorize the client based on the JWT in the message
+	messageData, err := authorization.AuthorizeClient(message, s.JWTConfig)
+	if err != nil {
+		// Log the authorization error
+		log.Printf("[RABBIT] Authorization error while deleting user: %v", err)
+		twophasecommit.InformClient("clientID", models.ClientResponse{
+			Code:    http.StatusUnauthorized,
+			Message: "Authorization error",
+		})
+		return err
+	}
 
-	// // Phase 1: Prepare Phase
-	// prepareResponses := twophasecommit.SendPrepareMessage(participants)
-	// if twophasecommit.AnyParticipantRespondedNo(prepareResponses) {
-	// 	twophasecommit.SendAbortMessage(participants)
-	// 	return fmt.Errorf("33")
+	// t id
+	_ = utils.StartTransaction()
 
-	// }
+	participants := []models.Transactional{&participants.IDM{IDMClient: s.IDMClient}, &participants.Patient{}, &participants.Doctor{}}
 
-	// // Phase 2: Commit Phase
-	// commitResponses := twophasecommit.SendCommitMessage(participants)
-	// if twophasecommit.AnyParticipantFailed(commitResponses) {
-	// 	twophasecommit.SendRollbackMessage(participants)
-	// 	return fmt.Errorf("33")
-	// }
+	// Phase 1: Prepare Phase
+	prepareResponses, err := twophasecommit.SendPrepareMessage(participants)
+	if err != nil {
+		log.Printf("[2PC] Error in Prepare Phase: %v", err)
+		return err
+	}
+	if twophasecommit.AnyParticipantRespondedNo(prepareResponses) {
+		log.Println("[2PC] Prepare Phase: One or more participants responded with 'NO'")
+		twophasecommit.SendAbortMessage(participants)
+		return fmt.Errorf("prepare phase failed: One or more participants responded with 'NO'")
+	}
 
-	// // Transaction successfully committed
-	// twophasecommit.InformClient("clientID", "Delete operation completed successfully.")
+	// Phase 2: Commit Phase
+	commitResponses, err := twophasecommit.SendCommitMessage(participants, messageData.IDUser)
+	if err != nil {
+		log.Printf("[2PC] Error in Commit Phase: %v", err)
+		return err
+	}
+	if twophasecommit.AnyParticipantFailed(commitResponses) {
+		log.Println("[2PC] Commit Phase: One or more participants failed")
+		twophasecommit.SendRollbackMessage(participants)
+		return fmt.Errorf("commit phase failed: One or more participants failed")
+	}
+
+	// Transaction successfully committed
+	log.Println("[2PC] Transaction successfully committed")
+	twophasecommit.InformClient("clientID", models.ClientResponse{
+		Code:    http.StatusOK,
+		Message: "Delete operation completed successfully.",
+	})
 
 	// Return nil to indicate that the message was successfully processed.
 	return nil

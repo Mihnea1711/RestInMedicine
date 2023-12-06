@@ -58,7 +58,7 @@ func (gc *GatewayController) CreateAppointment(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	// Check the gRPC response status and handle accordingly
+	// Check the response status and handle accordingly
 	switch status {
 	case http.StatusOK:
 		log.Printf("[GATEWAY] CreateAppointment: Request successful with status %d", status)
@@ -91,7 +91,7 @@ func (gc *GatewayController) GetAppointments(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	// Check the gRPC response status and handle accordingly
+	// Check the response status and handle accordingly
 	switch status {
 	case http.StatusOK:
 		log.Printf("[GATEWAY] GetAppointments: Request successful with status %d", status)
@@ -130,7 +130,7 @@ func (gc *GatewayController) GetAppointmentByID(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	// Check the gRPC response status and handle accordingly
+	// Check the response status and handle accordingly
 	switch status {
 	case http.StatusOK:
 		log.Printf("[GATEWAY] GetAppointmentByID: Request successful with status %d", status)
@@ -186,7 +186,7 @@ func (gc *GatewayController) GetAppointmentsByDoctorID(w http.ResponseWriter, r 
 		return
 	}
 
-	// Check the gRPC response status and handle accordingly
+	// Check the response status and handle accordingly
 	switch status {
 	case http.StatusOK:
 		log.Printf("[GATEWAY] GetAppointmentsByDoctorID: Request successful with status %d", status)
@@ -242,7 +242,7 @@ func (gc *GatewayController) GetAppointmentsByPatientID(w http.ResponseWriter, r
 		return
 	}
 
-	// Check the gRPC response status and handle accordingly
+	// Check the response status and handle accordingly
 	switch status {
 	case http.StatusOK:
 		log.Printf("[GATEWAY] GetAppointmentsByPatientID: Request successful with status %d", status)
@@ -278,7 +278,7 @@ func (gc *GatewayController) GetAppointmentsByDate(w http.ResponseWriter, r *htt
 		return
 	}
 
-	// Check the gRPC response status and handle accordingly
+	// Check the response status and handle accordingly
 	switch status {
 	case http.StatusOK:
 		log.Printf("[GATEWAY] GetAppointmentsByDate: Request successful with status %d", status)
@@ -314,7 +314,7 @@ func (gc *GatewayController) GetAppointmentsByStatus(w http.ResponseWriter, r *h
 		return
 	}
 
-	// Check the gRPC response status and handle accordingly
+	// Check the response status and handle accordingly
 	switch status {
 	case http.StatusOK:
 		log.Printf("[GATEWAY] GetAppointmentsByStatus: Request successful with status %d", status)
@@ -386,7 +386,7 @@ func (gc *GatewayController) UpdateAppointmentByID(w http.ResponseWriter, r *htt
 		return
 	}
 
-	// Check the gRPC response status and handle accordingly
+	// Check the response status and handle accordingly
 	switch status {
 	case http.StatusOK:
 		log.Printf("[GATEWAY] UpdateAppointmentByID: Request successful with status %d", status)
@@ -433,7 +433,7 @@ func (gc *GatewayController) DeleteAppointmentByID(w http.ResponseWriter, r *htt
 		return
 	}
 
-	// Check the gRPC response status and handle accordingly
+	// Check the response status and handle accordingly
 	switch status {
 	case http.StatusOK:
 		log.Printf("[GATEWAY] DeleteAppointmentByID: Request successful with status %d", status)

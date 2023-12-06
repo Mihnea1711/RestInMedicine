@@ -23,6 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type IDMClient interface {
+	HealthCheck(ctx context.Context, in *proto_files.HealthCheckRequest, opts ...grpc.CallOption) (*proto_files.HealthCheckResponse, error)
 	DeleteUserByID(ctx context.Context, in *proto_files.UserIDRequest, opts ...grpc.CallOption) (*proto_files.EnhancedInfoResponse, error)
 }
 
@@ -32,6 +33,15 @@ type iDMClient struct {
 
 func NewIDMClient(cc grpc.ClientConnInterface) IDMClient {
 	return &iDMClient{cc}
+}
+
+func (c *iDMClient) HealthCheck(ctx context.Context, in *proto_files.HealthCheckRequest, opts ...grpc.CallOption) (*proto_files.HealthCheckResponse, error) {
+	out := new(proto_files.HealthCheckResponse)
+	err := c.cc.Invoke(ctx, "/IDM/HealthCheck", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *iDMClient) DeleteUserByID(ctx context.Context, in *proto_files.UserIDRequest, opts ...grpc.CallOption) (*proto_files.EnhancedInfoResponse, error) {
@@ -47,6 +57,7 @@ func (c *iDMClient) DeleteUserByID(ctx context.Context, in *proto_files.UserIDRe
 // All implementations must embed UnimplementedIDMServer
 // for forward compatibility
 type IDMServer interface {
+	HealthCheck(context.Context, *proto_files.HealthCheckRequest) (*proto_files.HealthCheckResponse, error)
 	DeleteUserByID(context.Context, *proto_files.UserIDRequest) (*proto_files.EnhancedInfoResponse, error)
 	mustEmbedUnimplementedIDMServer()
 }
@@ -55,6 +66,9 @@ type IDMServer interface {
 type UnimplementedIDMServer struct {
 }
 
+func (UnimplementedIDMServer) HealthCheck(context.Context, *proto_files.HealthCheckRequest) (*proto_files.HealthCheckResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method HealthCheck not implemented")
+}
 func (UnimplementedIDMServer) DeleteUserByID(context.Context, *proto_files.UserIDRequest) (*proto_files.EnhancedInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteUserByID not implemented")
 }
@@ -69,6 +83,24 @@ type UnsafeIDMServer interface {
 
 func RegisterIDMServer(s grpc.ServiceRegistrar, srv IDMServer) {
 	s.RegisterService(&IDM_ServiceDesc, srv)
+}
+
+func _IDM_HealthCheck_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(proto_files.HealthCheckRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IDMServer).HealthCheck(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/IDM/HealthCheck",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IDMServer).HealthCheck(ctx, req.(*proto_files.HealthCheckRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _IDM_DeleteUserByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -96,6 +128,10 @@ var IDM_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "IDM",
 	HandlerType: (*IDMServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "HealthCheck",
+			Handler:    _IDM_HealthCheck_Handler,
+		},
 		{
 			MethodName: "DeleteUserByID",
 			Handler:    _IDM_DeleteUserByID_Handler,

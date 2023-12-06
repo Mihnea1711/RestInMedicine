@@ -60,7 +60,7 @@ func (gc *GatewayController) CreatePatient(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	// Check the gRPC response status and handle accordingly
+	// Check the response status and handle accordingly
 	switch status {
 	case http.StatusOK:
 		log.Printf("[GATEWAY] CreatePatient: Request successful with status %d", status)
@@ -93,7 +93,7 @@ func (gc *GatewayController) GetPatients(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	// Check the gRPC response status and handle accordingly
+	// Check the response status and handle accordingly
 	switch status {
 	case http.StatusOK:
 		log.Printf("[GATEWAY] GetPatients: Request successful with status %d", status)
@@ -132,7 +132,7 @@ func (gc *GatewayController) GetPatientByID(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	// Check the gRPC response status and handle accordingly
+	// Check the response status and handle accordingly
 	switch status {
 	case http.StatusOK:
 		log.Printf("[GATEWAY] GetPatientByID: Request successful with status %d", status)
@@ -168,7 +168,7 @@ func (gc *GatewayController) GetPatientByEmail(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	// Check the gRPC response status and handle accordingly
+	// Check the response status and handle accordingly
 	switch status {
 	case http.StatusOK:
 		log.Printf("[GATEWAY] GetPatientByEmail: Request successful with status %d", status)
@@ -212,7 +212,7 @@ func (gc *GatewayController) GetPatientByUserID(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	// Check the gRPC response status and handle accordingly
+	// Check the response status and handle accordingly
 	switch status {
 	case http.StatusOK:
 		log.Printf("[GATEWAY] GetPatientByUserID: Request successful with status %d", status)
@@ -258,7 +258,7 @@ func (gc *GatewayController) UpdatePatientByID(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	// Check the gRPC response status and handle accordingly
+	// Check the response status and handle accordingly
 	switch status {
 	case http.StatusOK:
 		log.Printf("[GATEWAY] UpdatePatientByID: Request successful with status %d", status)
@@ -305,7 +305,7 @@ func (gc *GatewayController) DeletePatientByID(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	// Check the gRPC response status and handle accordingly
+	// Check the response status and handle accordingly
 	switch status {
 	case http.StatusOK:
 		log.Printf("[GATEWAY] DeletePatientByID: Request successful with status %d", status)

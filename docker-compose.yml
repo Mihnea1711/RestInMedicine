@@ -2,37 +2,37 @@ version: "3.8"
 
 services:  
   # RabbitMQ container #
-  # rabbitmq:
-  #   image: "rabbitmq:3-management"
-  #   container_name: rabbitmq
-  #   ports:
-  #     - "5672:5672"
-  #     - "15672:15672"
-  #   env_file:
-  #     - services/rabbit/.env
-  #   networks:
-  #     - pos_network
+  rabbitmq:
+    image: "rabbitmq:3-management"
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    env_file:
+      - services/rabbit/.env
+    networks:
+      - pos_network
 
-  # # RabbitMQ module #
-  # rabbit_app:
-  #   build:
-  #     context: ./services/rabbit
-  #     dockerfile: docker/api.Dockerfile
-  #   container_name: rabbit_app
-  #   ports:
-  #     - "8090:8090"
-  #   env_file:
-  #     - ./services/rabbit/.env
-  #   depends_on:
-  #     - rabbitmq
-  #   restart: always
-  #   networks:
-  #     - pos_network
-  #   # healthcheck:
-  #   #   test: ["CMD", "curl", "-f", "http://localhost:8090/api/rabbit/health-check"]
-  #   #   interval: 20s
-  #   #   timeout: 5s
-  #   #   retries: 2
+  # RabbitMQ module #
+  rabbit_app:
+    build:
+      context: ./services/rabbit
+      dockerfile: docker/api.Dockerfile
+    container_name: rabbit_app
+    ports:
+      - "8090:8090"
+    env_file:
+      - ./services/rabbit/.env
+    depends_on:
+      - rabbitmq
+    restart: always
+    networks:
+      - pos_network
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost:8090/api/rabbit/health-check"]
+    #   interval: 20s
+    #   timeout: 5s
+    #   retries: 2
   
   # ######################################################################################################################################################
 
@@ -176,34 +176,34 @@ services:
 
   ######################################################################################################################################################
 
-  # appointment_redis:
-  #   image: redis:latest
-  #   container_name: "appointment_redis"
-  #   ports:
-  #     - "6376:6379"
-  #   env_file:
-  #     - services/programari/.env
-  #   networks:
-  #     - pos_network
-  #   command: ["redis-server", "--requirepass", "${APPOINTMENT_REDIS_PASSWORD}"]
+  appointment_redis:
+    image: redis:latest
+    container_name: "appointment_redis"
+    ports:
+      - "6376:6379"
+    env_file:
+      - services/programari/.env
+    networks:
+      - pos_network
+    command: ["redis-server", "--requirepass", "${APPOINTMENT_REDIS_PASSWORD}"]
 
-  # appointment_app:
-  #   container_name: "appointment_app"
-  #   build:
-  #     context: ./services/programari
-  #     dockerfile: docker/api.Dockerfile
-  #   ports:
-  #     - "8084:8084"
-  #   depends_on:
-  #     - pdp_mysql
-  #     - appointment_redis
-  #   env_file:
-  #     - ./services/programari/.env
-  #   environment:
-  #     DATABASE_HOST: pdp_mysql
-  #   restart: always
-  #   networks:
-  #     - pos_network
+  appointment_app:
+    container_name: "appointment_app"
+    build:
+      context: ./services/programari
+      dockerfile: docker/api.Dockerfile
+    ports:
+      - "8084:8084"
+    depends_on:
+      - pdp_mysql
+      - appointment_redis
+    env_file:
+      - ./services/programari/.env
+    environment:
+      DATABASE_HOST: pdp_mysql
+    restart: always
+    networks:
+      - pos_network
     # healthcheck:
     #   test: ["CMD", "curl", "-f", "http://localhost:8084/appointments/health-check"]
     #   interval: 20s
@@ -213,49 +213,49 @@ services:
   ######################################################################################################################################################
 
   # MongoDB container
-  # consultation_mongodb:
-  #   image: mongo:latest
-  #   container_name: consultation_mongodb
-  #   build:
-  #     context: ./services/consultatii
-  #     dockerfile: docker/mongo.Dockerfile
-  #   ports:
-  #     - "27017:27017"
-  #   env_file:
-  #     - ./services/consultatii/.env
-  #   # volumes:
-  #   #   - "./data/mongo/consultation:/data/db"
-  #   networks:
-  #     - pos_network
+  consultation_mongodb:
+    image: mongo:latest
+    container_name: consultation_mongodb
+    build:
+      context: ./services/consultatii
+      dockerfile: docker/mongo.Dockerfile
+    ports:
+      - "27017:27017"
+    env_file:
+      - ./services/consultatii/.env
+    # volumes:
+    #   - "./data/mongo/consultation:/data/db"
+    networks:
+      - pos_network
 
-  # # Redis container for consultation module
-  # consultation_redis:
-  #   image: redis:latest
-  #   container_name: consultation_redis
-  #   ports:
-  #     - "6375:6379"
-  #   env_file:
-  #     - ./services/consultatii/.env
-  #   networks:
-  #     - pos_network
-  #   command: ["redis-server", "--requirepass", "${CONSULTATION_REDIS_PASSWORD}"]
+  # Redis container for consultation module
+  consultation_redis:
+    image: redis:latest
+    container_name: consultation_redis
+    ports:
+      - "6375:6379"
+    env_file:
+      - ./services/consultatii/.env
+    networks:
+      - pos_network
+    command: ["redis-server", "--requirepass", "${CONSULTATION_REDIS_PASSWORD}"]
 
-  # # Consultation module
-  # consultation_app:
-  #   build:
-  #     context: ./services/consultatii
-  #     dockerfile: docker/api.Dockerfile
-  #   container_name: consultation_app
-  #   ports:
-  #     - "8085:8085"
-  #   restart: always
-  #   depends_on:
-  #     - consultation_mongodb
-  #     - consultation_redis
-  #   env_file:
-  #     - ./services/consultatii/.env
-  #   networks:
-  #     - pos_network
+  # Consultation module
+  consultation_app:
+    build:
+      context: ./services/consultatii
+      dockerfile: docker/api.Dockerfile
+    container_name: consultation_app
+    ports:
+      - "8085:8085"
+    restart: always
+    depends_on:
+      - consultation_mongodb
+      - consultation_redis
+    env_file:
+      - ./services/consultatii/.env
+    networks:
+      - pos_network
   #   healthcheck:
   #     test: ["CMD", "curl", "-f", "http://localhost:8085/consultations/health-check"]
   #     interval: 20s

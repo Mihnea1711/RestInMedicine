@@ -25,37 +25,64 @@ func NewPatient(participantID uuid.UUID, participantType models.ParticipantType)
 
 // Implement the Transactional interface methods for Participant
 func (p *Patient) Prepare() (*models.ParticipantResponse, error) {
-	// Implement preparation logic
+	log.Println("[2PC] Sending patient prepare request")
 
 	// Create a context with a timeout
 	ctx, cancel := context.WithTimeout(context.Background(), utils.REQUEST_TIMEOUT_MULTIPLIER*time.Second)
 	defer cancel() // Make sure to call cancel to release resources associated with the context
 
-	response, status, err := utils.MakeRequest(ctx, http.MethodGet, utils.PATIENT_HOST, utils.PATIENT_PORT, utils.PREPARE_PATIENT_ENDPOINT)
+	response, status, err := utils.MakeRequest(ctx, http.MethodGet, utils.PATIENT_HOST, utils.PREPARE_PATIENT_ENDPOINT, utils.PATIENT_PORT, nil)
 	if err != nil {
-		// smth
-		log.Printf("Error making req: %v", err)
+		log.Printf("Error making patient prepare request: %v", err)
+		return nil, err
 	}
 
 	return &models.ParticipantResponse{
-		ID:      response.ID,
 		Code:    status,
 		Message: response.Message,
 	}, nil
 }
 
-func (p *Patient) Commit() (*models.ParticipantResponse, error) {
-	// Implement commit logic
-	return nil, nil
+func (p *Patient) Commit(userID int) (*models.ParticipantResponse, error) {
+	log.Println("[2PC] Sending patient commit request")
+
+	// Create a context with a timeout
+	ctx, cancel := context.WithTimeout(context.Background(), utils.REQUEST_TIMEOUT_MULTIPLIER*time.Second)
+	defer cancel()
+
+	response, status, err := utils.MakeRequest(ctx, http.MethodPatch, utils.PATIENT_HOST, utils.COMMIT_PATIENT_ENDPOINT, utils.PATIENT_PORT, models.ActivityData{
+		IsActive: false,
+		IDUser:   userID,
+	})
+	if err != nil {
+		log.Printf("Error making patient commit request: %v", err)
+		return nil, err
+	}
+
+	return &models.ParticipantResponse{
+		Code:    status,
+		Message: response.Message,
+	}, nil
 }
 
-// Override the Inform method for Patient
 func (p *Patient) Abort() (*models.ParticipantResponse, error) {
-	// Implement IDM-specific inform logic
-	return nil, nil
+	log.Println("[2PC] Sending patient abort request")
+
+	return &models.ParticipantResponse{
+		Code:    http.StatusOK,
+		Message: "Transaction aborted successfully",
+	}, nil
 }
 
 func (p *Patient) Rollback() (*models.ParticipantResponse, error) {
-	// Implement rollback logic
-	return nil, nil
+	log.Println("[2PC] Sending patient rollback request")
+
+	return &models.ParticipantResponse{
+		Code:    http.StatusOK,
+		Message: "Transaction rolled back successfully",
+	}, nil
+}
+
+func (p *Patient) Compensate() error {
+	return nil
 }

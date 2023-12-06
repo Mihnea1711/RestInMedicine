@@ -20,7 +20,7 @@ func AnyParticipantRespondedNo(responses []*models.ParticipantResponse) bool {
 // anyParticipantFailed checks if any participant failed (communication issue, internal error, etc.)
 func AnyParticipantFailed(responses []*models.ParticipantResponse) bool {
 	for _, response := range responses {
-		if response.Code != http.StatusOK {
+		if response.Code != http.StatusOK && response.Code != http.StatusNotFound {
 			// Participant failed (communication issue, internal error, etc.)
 			return true
 		}

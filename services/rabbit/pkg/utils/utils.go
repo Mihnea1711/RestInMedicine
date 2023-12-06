@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -9,12 +10,44 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/mihnea1711/POS_Project/services/rabbit/internal/models"
 )
 
-func MakeRequest(ctx context.Context, methodType, host string, port int, endpoint string) (*models.ParticipantResponse, int, error) {
+// DecodeHTML decodes HTML-encoded JSON to a struct
+func DecodeHTML(s string, v interface{}) error {
+	decoded := html.UnescapeString(s)
+	return json.Unmarshal([]byte(decoded), v)
+}
+
+func DecodeSanitizedResponse(response *http.Response) (*models.ResponseData, error) {
+	// Read the HTML-encoded JSON string from the response body
+	htmlEncodedJSON, err := io.ReadAll(response.Body)
+	if err != nil {
+		log.Printf("[RABBIT] Error reading response body: %v", err)
+		return nil, err
+	}
+
+	// Decode HTML-encoded JSON string to ResponseData
+	var decodedResponse models.ResponseData
+	if err := DecodeHTML(string(htmlEncodedJSON), &decodedResponse); err != nil {
+		log.Printf("[RABBIT] Error decoding HTML-encoded JSON: %v", err)
+		return nil, err
+	}
+
+	return &decodedResponse, nil
+}
+
+func MakeRequest(ctx context.Context, methodType, host, endpoint string, port int, data interface{}) (*models.ResponseData, int, error) {
+	// Convert data to JSON
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		log.Printf("[RABBIT] Error marshaling JSON data: %v", err)
+		return nil, http.StatusInternalServerError, err
+	}
+
 	// Create a new request
-	request, err := http.NewRequestWithContext(ctx, methodType, fmt.Sprintf("http://%s:%v%v", host, port, endpoint), nil)
+	request, err := http.NewRequestWithContext(ctx, methodType, fmt.Sprintf("http://%s:%d%s", host, port, endpoint), bytes.NewBuffer(jsonData))
 	if err != nil {
 		log.Printf("[RABBIT] Error creating HTTP request: %v", err)
 		return nil, http.StatusInternalServerError, err
@@ -47,26 +80,11 @@ func MakeRequest(ctx context.Context, methodType, host string, port int, endpoin
 	return decodedResponse, response.StatusCode, nil
 }
 
-// DecodeHTML decodes HTML-encoded JSON to a struct
-func DecodeHTML(s string, v interface{}) error {
-	decoded := html.UnescapeString(s)
-	return json.Unmarshal([]byte(decoded), v)
-}
+func StartTransaction() string {
+	// Generate a unique transaction ID, e.g., using UUID
+	transactionID := uuid.New().String()
 
-func DecodeSanitizedResponse(response *http.Response) (*models.ParticipantResponse, error) {
-	// Read the HTML-encoded JSON string from the response body
-	htmlEncodedJSON, err := io.ReadAll(response.Body)
-	if err != nil {
-		log.Printf("[RABBIT] Error reading response body: %v", err)
-		return nil, err
-	}
+	// Log or store the transaction ID for future reference
 
-	// Decode HTML-encoded JSON string to ResponseData
-	var decodedResponse models.ParticipantResponse
-	if err := DecodeHTML(string(htmlEncodedJSON), &decodedResponse); err != nil {
-		log.Printf("[RABBIT] Error decoding HTML-encoded JSON: %v", err)
-		return nil, err
-	}
-
-	return &decodedResponse, nil
+	return transactionID
 }

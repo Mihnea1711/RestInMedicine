@@ -78,7 +78,7 @@ func (a *App) Start(ctx context.Context) error {
 	// Store dependencies in the service container
 	serviceContainer := &services.ServiceContainer{
 		IDMClient: a.idmClient,
-		// Add more dependencies as needed
+		JWTConfig: a.config.JWT,
 	}
 
 	// Set up the handlers for the queues with the service container

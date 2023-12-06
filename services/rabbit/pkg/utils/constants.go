@@ -18,21 +18,28 @@ const (
 )
 
 const (
-	// ports
+	IDM_HOST = "idm_app"
 	IDM_PORT = 8081
-	IDM_HOST = "localhost"
 
+	PATIENT_HOST = "patient_app"
 	PATIENT_PORT = 8082
-	PATIENT_HOST = "localhost"
 
+	DOCTOR_HOST = "doctor_app"
 	DOCTOR_PORT = 8083
-	DOCTOR_HOST = "localhost"
 
+	APPOINTMENT_HOST = "appointment_app"
 	APPOINTMENT_PORT = 8084
-	APPOINTMENT_HOST = "localhost"
 
+	CONSULTATION_HOST = "consultation_app"
 	CONSULTATION_PORT = 8085
-	CONSULTATION_HOST = "localhost"
+)
+
+const (
+	POST   = "POST"
+	GET    = "GET"
+	PUT    = "PUT"
+	PATCH  = "PATCH"
+	DELETE = "DELETE"
 )
 
 const (
@@ -54,25 +61,15 @@ const (
 )
 
 const (
-	PREPARE_PATIENT_ENDPOINT  = "/patients/transaction/prepare"
-	COMMIT_PATIENT_ENDPOINT   = "/patients/transaction/commit"
+	PREPARE_PATIENT_ENDPOINT  = "/patients/health-check"
+	COMMIT_PATIENT_ENDPOINT   = "/patients/activity"
 	ABORT_PATIENT_ENDPOINT    = "/patients/transaction/abort"
 	ROLLBACK_PATIENT_ENDPOINT = "/patients/transaction/rollback"
 
-	PREPARE_DOCTOR_ENDPOINT  = "/doctors/transaction/prepare"
-	COMMIT_DOCTOR_ENDPOINT   = "/doctors/transaction/commit"
+	PREPARE_DOCTOR_ENDPOINT  = "/doctors/health-check"
+	COMMIT_DOCTOR_ENDPOINT   = "/doctors/activity"
 	ABORT_DOCTOR_ENDPOINT    = "/doctors/transaction/abort"
 	ROLLBACK_DOCTOR_ENDPOINT = "/doctors/transaction/rollback"
-
-	PREPARE_APPOINTMENT_ENDPOINT  = "/appointments/transaction/prepare"
-	COMMIT_APPOINTMENT_ENDPOINT   = "/appointments/transaction/commit"
-	ABORT_APPOINTMENT_ENDPOINT    = "/appointments/transaction/abort"
-	ROLLBACK_APPOINTMENT_ENDPOINT = "/appointments/transaction/rollback"
-
-	PREPARE_CONSULTATION_ENDPOINT  = "/consultation/transaction/prepare"
-	COMMIT_CONSULTATION_ENDOCTOR   = "/consultation/transaction/commit"
-	ABORT_CONSULTATION_ENDPOINT    = "/consultation/transaction/abort"
-	ROLLBACK_CONSULTATION_ENDPOINT = "/consultation/transaction/rollback"
 )
 
 const (
