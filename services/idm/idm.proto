@@ -14,6 +14,8 @@ service IDM {
     rpc GetUserByID(UserIDRequest) returns (UserResponse);
     rpc UpdateUserByID(UpdateUserRequest) returns (EnhancedInfoResponse);
     rpc DeleteUserByID(UserIDRequest) returns (EnhancedInfoResponse);
+
+    rpc RestoreUserByID(UserIDRequest) returns (EnhancedInfoResponse);     
     
     rpc GetUserRole(UserIDRequest) returns (RoleResponse);
     rpc UpdateUserRole(UpdateRoleRequest) returns (EnhancedInfoResponse);

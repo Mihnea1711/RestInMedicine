@@ -30,8 +30,9 @@ const (
 
 // UserTable and RoleTable are constants for table names
 const (
-	UserTable = "User"
-	RoleTable = "Role"
+	UserTable  = "User"
+	RoleTable  = "Role"
+	TrashTable = "Trash"
 
 	AliasRole = "r"
 	AliasUser = "u"

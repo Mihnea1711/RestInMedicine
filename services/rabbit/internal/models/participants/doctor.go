@@ -18,14 +18,18 @@ type Doctor struct {
 }
 
 func NewDoctor(participantID uuid.UUID, participantType models.ParticipantType) *Doctor {
-	return &Doctor{
+	newDoctor := &Doctor{
 		Participant: *models.NewParticipant(participantID, participantType),
 	}
+
+	log.Printf("New doctor registered - ID: %s\n", participantID.String())
+
+	return newDoctor
 }
 
 // Implement the Transactional interface methods for Participant
 func (d *Doctor) Prepare() (*models.ParticipantResponse, error) {
-	log.Println("[2PC] Sending doctor prepare request")
+	log.Println("[2PC] Sending Doctor prepare request")
 
 	// Create a context with a timeout
 	ctx, cancel := context.WithTimeout(context.Background(), utils.REQUEST_TIMEOUT_MULTIPLIER*time.Second)
@@ -33,9 +37,11 @@ func (d *Doctor) Prepare() (*models.ParticipantResponse, error) {
 
 	response, status, err := utils.MakeRequest(ctx, http.MethodGet, utils.DOCTOR_HOST, utils.PREPARE_DOCTOR_ENDPOINT, utils.DOCTOR_PORT, nil)
 	if err != nil {
-		log.Printf("Error making doctor prepare request: %v", err)
+		log.Printf("Error making Doctor prepare request: %v", err)
 		return nil, err
 	}
+
+	log.Printf("[2PC] Doctor prepare request handled successfully. Status Code: %d", status)
 
 	return &models.ParticipantResponse{
 		Code:    status,
@@ -44,7 +50,7 @@ func (d *Doctor) Prepare() (*models.ParticipantResponse, error) {
 }
 
 func (d *Doctor) Commit(userID int) (*models.ParticipantResponse, error) {
-	log.Println("[2PC] Sending doctor commit request")
+	log.Println("[2PC] Sending Doctor commit request")
 
 	// Create a context with a timeout
 	ctx, cancel := context.WithTimeout(context.Background(), utils.REQUEST_TIMEOUT_MULTIPLIER*time.Second)
@@ -55,9 +61,11 @@ func (d *Doctor) Commit(userID int) (*models.ParticipantResponse, error) {
 		IDUser:   userID,
 	})
 	if err != nil {
-		log.Printf("Error making doctor prepare request: %v", err)
+		log.Printf("Error making Doctor commit request: %v", err)
 		return nil, err
 	}
+
+	log.Printf("[2PC] Doctor commit request handled successfully. Status Code: %d", status)
 
 	return &models.ParticipantResponse{
 		Code:    status,
@@ -66,7 +74,7 @@ func (d *Doctor) Commit(userID int) (*models.ParticipantResponse, error) {
 }
 
 func (d *Doctor) Abort() (*models.ParticipantResponse, error) {
-	log.Println("[2PC] Sending doctor abort request")
+	log.Println("[2PC] Sending Doctor abort request")
 
 	return &models.ParticipantResponse{
 		Code:    http.StatusOK,
@@ -74,15 +82,26 @@ func (d *Doctor) Abort() (*models.ParticipantResponse, error) {
 	}, nil
 }
 
-func (d *Doctor) Rollback() (*models.ParticipantResponse, error) {
-	log.Println("[2PC] Sending doctor rollback request")
+func (d *Doctor) Rollback(userID int) (*models.ParticipantResponse, error) {
+	log.Println("[2PC] Sending Doctor rollback request")
+
+	// Create a context with a timeout
+	ctx, cancel := context.WithTimeout(context.Background(), utils.REQUEST_TIMEOUT_MULTIPLIER*time.Second)
+	defer cancel()
+
+	response, status, err := utils.MakeRequest(ctx, http.MethodPatch, utils.DOCTOR_HOST, utils.COMMIT_DOCTOR_ENDPOINT, utils.DOCTOR_PORT, models.ActivityData{
+		IsActive: true,
+		IDUser:   userID,
+	})
+	if err != nil {
+		log.Printf("Error making Doctor rollback request: %v", err)
+		return nil, err
+	}
+
+	log.Printf("[2PC] Doctor rollback request handled successfully. Status Code: %d", status)
 
 	return &models.ParticipantResponse{
-		Code:    http.StatusOK,
-		Message: "Transaction rolled back successfully",
+		Code:    status,
+		Message: response.Message,
 	}, nil
-}
-
-func (d *Doctor) Compensate() error {
-	return nil
 }

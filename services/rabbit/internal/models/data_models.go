@@ -30,3 +30,9 @@ type ActivityData struct {
 	IsActive bool `json:"is_active"`
 	IDUser   int  `json:"id_user"`
 }
+
+type MessageWrapper struct {
+	JWT           string `json:"jwt"`
+	IDUser        int    `json:"id_user"`
+	TransactionID string `json:"transaction_id"`
+}

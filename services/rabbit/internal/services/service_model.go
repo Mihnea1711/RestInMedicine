@@ -2,6 +2,7 @@ package services
 
 import (
 	"github.com/mihnea1711/POS_Project/services/rabbit/idm"
+	"github.com/mihnea1711/POS_Project/services/rabbit/internal/models"
 	"github.com/mihnea1711/POS_Project/services/rabbit/pkg/config"
 )
 
@@ -12,5 +13,6 @@ type ServiceContainer struct {
 	// Add more dependencies as needed
 
 	// maybe add here list of participants
+	Participants []models.Transactional
 	// have a queue that listens to gateway sending info about current participants
 }

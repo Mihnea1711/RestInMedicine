@@ -7,7 +7,6 @@ import (
 
 	"github.com/mihnea1711/POS_Project/services/rabbit/internal/middleware/authorization"
 	"github.com/mihnea1711/POS_Project/services/rabbit/internal/models"
-	"github.com/mihnea1711/POS_Project/services/rabbit/internal/models/participants"
 	twophasecommit "github.com/mihnea1711/POS_Project/services/rabbit/internal/two_phase_commit"
 	"github.com/mihnea1711/POS_Project/services/rabbit/pkg/utils"
 )
@@ -42,51 +41,87 @@ import (
 func (s *ServiceContainer) DeleteUserMessageHandler(message []byte) error {
 	fmt.Printf("[RABBIT] Handling delete message: %s\n", string(message))
 
+	// t id
+	transactionID := utils.StartTransaction()
+	messageWrapper := models.MessageWrapper{
+		TransactionID: transactionID,
+	}
+
 	// parse jwt and roles
 	// Authorize the client based on the JWT in the message
 	messageData, err := authorization.AuthorizeClient(message, s.JWTConfig)
 	if err != nil {
 		// Log the authorization error
 		log.Printf("[RABBIT] Authorization error while deleting user: %v", err)
-		twophasecommit.InformClient("clientID", models.ClientResponse{
+		twophasecommit.InformClient("clientID", messageWrapper, models.ClientResponse{
 			Code:    http.StatusUnauthorized,
 			Message: "Authorization error",
 		})
 		return err
 	}
 
-	// t id
-	_ = utils.StartTransaction()
+	// get the rest of fields
+	messageWrapper.JWT = messageData.JWT
+	messageWrapper.IDUser = messageData.IDUser
 
-	participants := []models.Transactional{&participants.IDM{IDMClient: s.IDMClient}, &participants.Patient{}, &participants.Doctor{}}
+	// hardcoded list of participants
+	// participants := []models.Transactional{&participants.IDM{IDMClient: s.IDMClient}, &participants.Patient{}, &participants.Doctor{}}
 
 	// Phase 1: Prepare Phase
-	prepareResponses, err := twophasecommit.SendPrepareMessage(participants)
+	prepareResponses, err := twophasecommit.SendPrepareMessage(s.Participants, messageWrapper)
 	if err != nil {
-		log.Printf("[2PC] Error in Prepare Phase: %v", err)
+		log.Printf("[2PC] Error in Prepare Phase. Transaction ID: %s, Error: %v", transactionID, err)
+
+		// Inform client about the error
+		twophasecommit.InformClient("clientID", messageWrapper, models.ClientResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Internal Server Error during transaction preparation.",
+		})
+
 		return err
 	}
-	if twophasecommit.AnyParticipantRespondedNo(prepareResponses) {
+	if twophasecommit.AnyParticipantRespondedNo(prepareResponses, messageWrapper) {
 		log.Println("[2PC] Prepare Phase: One or more participants responded with 'NO'")
-		twophasecommit.SendAbortMessage(participants)
+		twophasecommit.SendAbortMessage(s.Participants, messageWrapper)
+
+		// Inform client about the error
+		twophasecommit.InformClient("clientID", messageWrapper, models.ClientResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Transaction aborted due to participant response with 'NO'.",
+		})
+
 		return fmt.Errorf("prepare phase failed: One or more participants responded with 'NO'")
 	}
 
 	// Phase 2: Commit Phase
-	commitResponses, err := twophasecommit.SendCommitMessage(participants, messageData.IDUser)
+	commitResponses, err := twophasecommit.SendCommitMessage(s.Participants, messageWrapper)
 	if err != nil {
-		log.Printf("[2PC] Error in Commit Phase: %v", err)
+		log.Printf("[2PC] Error in Commit Phase. Transaction ID: %s, Error: %v", transactionID, err)
+
+		// Inform client about the error
+		twophasecommit.InformClient("clientID", messageWrapper, models.ClientResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Internal Server Error during transaction commit.",
+		})
+
 		return err
 	}
-	if twophasecommit.AnyParticipantFailed(commitResponses) {
+	if twophasecommit.AnyParticipantFailed(commitResponses, messageWrapper) {
 		log.Println("[2PC] Commit Phase: One or more participants failed")
-		twophasecommit.SendRollbackMessage(participants)
+		twophasecommit.SendRollbackMessage(s.Participants, messageWrapper)
+
+		// Inform client about the error
+		twophasecommit.InformClient("clientID", messageWrapper, models.ClientResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Transaction rolled back due to participant failure.",
+		})
+
 		return fmt.Errorf("commit phase failed: One or more participants failed")
 	}
 
 	// Transaction successfully committed
-	log.Println("[2PC] Transaction successfully committed")
-	twophasecommit.InformClient("clientID", models.ClientResponse{
+	log.Printf("[2PC] Transaction successfully committed. Transaction ID: %s", transactionID)
+	twophasecommit.InformClient("clientID", messageWrapper, models.ClientResponse{
 		Code:    http.StatusOK,
 		Message: "Delete operation completed successfully.",
 	})

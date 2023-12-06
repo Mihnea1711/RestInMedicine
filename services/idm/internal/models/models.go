@@ -34,3 +34,10 @@ type ResponseData struct {
 	Error   string      `json:"error"`
 	Payload interface{} `json:"payload"`
 }
+
+type TrashData struct {
+	IDUser   int    `json:"id_user"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Role     string `json:"role"`
+}

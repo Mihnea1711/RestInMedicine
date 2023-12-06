@@ -7,5 +7,9 @@ import "proto_files/user.proto";
 // SERVICE METHODS 
 service IDM {
     rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
-    rpc DeleteUserByID(UserIDRequest) returns (EnhancedInfoResponse);    
+    
+    // rpc GetUserByID(UserIDRequest) returns (UserResponse);
+
+    rpc DeleteUserByID(UserIDRequest) returns (EnhancedInfoResponse);   
+    rpc RestoreUserByID(UserIDRequest) returns (EnhancedInfoResponse);     
 }

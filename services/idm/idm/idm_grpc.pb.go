@@ -29,6 +29,7 @@ type IDMClient interface {
 	GetUserByID(ctx context.Context, in *proto_files.UserIDRequest, opts ...grpc.CallOption) (*proto_files.UserResponse, error)
 	UpdateUserByID(ctx context.Context, in *proto_files.UpdateUserRequest, opts ...grpc.CallOption) (*proto_files.EnhancedInfoResponse, error)
 	DeleteUserByID(ctx context.Context, in *proto_files.UserIDRequest, opts ...grpc.CallOption) (*proto_files.EnhancedInfoResponse, error)
+	RestoreUserByID(ctx context.Context, in *proto_files.UserIDRequest, opts ...grpc.CallOption) (*proto_files.EnhancedInfoResponse, error)
 	GetUserRole(ctx context.Context, in *proto_files.UserIDRequest, opts ...grpc.CallOption) (*proto_files.RoleResponse, error)
 	UpdateUserRole(ctx context.Context, in *proto_files.UpdateRoleRequest, opts ...grpc.CallOption) (*proto_files.EnhancedInfoResponse, error)
 	GetUserPassword(ctx context.Context, in *proto_files.UsernameRequest, opts ...grpc.CallOption) (*proto_files.PasswordResponse, error)
@@ -95,6 +96,15 @@ func (c *iDMClient) UpdateUserByID(ctx context.Context, in *proto_files.UpdateUs
 func (c *iDMClient) DeleteUserByID(ctx context.Context, in *proto_files.UserIDRequest, opts ...grpc.CallOption) (*proto_files.EnhancedInfoResponse, error) {
 	out := new(proto_files.EnhancedInfoResponse)
 	err := c.cc.Invoke(ctx, "/IDM/DeleteUserByID", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *iDMClient) RestoreUserByID(ctx context.Context, in *proto_files.UserIDRequest, opts ...grpc.CallOption) (*proto_files.EnhancedInfoResponse, error) {
+	out := new(proto_files.EnhancedInfoResponse)
+	err := c.cc.Invoke(ctx, "/IDM/RestoreUserByID", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -183,6 +193,7 @@ type IDMServer interface {
 	GetUserByID(context.Context, *proto_files.UserIDRequest) (*proto_files.UserResponse, error)
 	UpdateUserByID(context.Context, *proto_files.UpdateUserRequest) (*proto_files.EnhancedInfoResponse, error)
 	DeleteUserByID(context.Context, *proto_files.UserIDRequest) (*proto_files.EnhancedInfoResponse, error)
+	RestoreUserByID(context.Context, *proto_files.UserIDRequest) (*proto_files.EnhancedInfoResponse, error)
 	GetUserRole(context.Context, *proto_files.UserIDRequest) (*proto_files.RoleResponse, error)
 	UpdateUserRole(context.Context, *proto_files.UpdateRoleRequest) (*proto_files.EnhancedInfoResponse, error)
 	GetUserPassword(context.Context, *proto_files.UsernameRequest) (*proto_files.PasswordResponse, error)
@@ -215,6 +226,9 @@ func (UnimplementedIDMServer) UpdateUserByID(context.Context, *proto_files.Updat
 }
 func (UnimplementedIDMServer) DeleteUserByID(context.Context, *proto_files.UserIDRequest) (*proto_files.EnhancedInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteUserByID not implemented")
+}
+func (UnimplementedIDMServer) RestoreUserByID(context.Context, *proto_files.UserIDRequest) (*proto_files.EnhancedInfoResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RestoreUserByID not implemented")
 }
 func (UnimplementedIDMServer) GetUserRole(context.Context, *proto_files.UserIDRequest) (*proto_files.RoleResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserRole not implemented")
@@ -357,6 +371,24 @@ func _IDM_DeleteUserByID_Handler(srv interface{}, ctx context.Context, dec func(
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(IDMServer).DeleteUserByID(ctx, req.(*proto_files.UserIDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _IDM_RestoreUserByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(proto_files.UserIDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IDMServer).RestoreUserByID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/IDM/RestoreUserByID",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IDMServer).RestoreUserByID(ctx, req.(*proto_files.UserIDRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -535,6 +567,10 @@ var IDM_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteUserByID",
 			Handler:    _IDM_DeleteUserByID_Handler,
+		},
+		{
+			MethodName: "RestoreUserByID",
+			Handler:    _IDM_RestoreUserByID_Handler,
 		},
 		{
 			MethodName: "GetUserRole",

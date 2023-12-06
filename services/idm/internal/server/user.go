@@ -186,6 +186,54 @@ func (s *MyIDMServer) DeleteUserByID(ctx context.Context, req *proto_files.UserI
 
 	log.Printf("[IDM] Received request to delete user by ID: %d", userID)
 
+	user, err := s.DbConn.GetUserByID(ctx, int(userID))
+	if err != nil {
+		// Check if the error is due to no rows found
+		if err == sql.ErrNoRows {
+			log.Printf("[IDM] User not found in DB")
+			return &proto_files.EnhancedInfoResponse{
+				Info: &proto_files.Info{
+					Message: "User not found",
+					Status:  http.StatusNotFound,
+				},
+			}, nil
+		}
+		log.Printf("[IDM] Error getting user by ID: %v", err)
+		return nil, fmt.Errorf("error getting user by ID. %v", err)
+	}
+
+	userPassword, err := s.DbConn.GetUserPasswordByUsername(ctx, user.Username)
+	if err != nil {
+		// Check if the error is due to no rows found
+		if err == sql.ErrNoRows {
+			log.Printf("[IDM] User not found in DB")
+			return &proto_files.EnhancedInfoResponse{
+				Info: &proto_files.Info{
+					Message: "User not found",
+					Status:  http.StatusNotFound,
+				},
+			}, nil
+		}
+		log.Printf("[IDM] Error getting user's password: %v", err)
+		return nil, err
+	}
+
+	userRole, err := s.DbConn.GetUserRoleByUsername(ctx, user.Username)
+	if err != nil {
+		// Check if the error is due to no rows found
+		if err == sql.ErrNoRows {
+			log.Printf("[IDM] User not found in DB")
+			return &proto_files.EnhancedInfoResponse{
+				Info: &proto_files.Info{
+					Message: "User not found",
+					Status:  http.StatusNotFound,
+				},
+			}, nil
+		}
+		log.Printf("[IDM] Error getting user's role: %v", err)
+		return nil, err
+	}
+
 	// Call the database method to delete the user by ID
 	rowsAffected, err := s.DbConn.DeleteUserByID(childCtx, int(userID))
 	if err != nil {
@@ -202,6 +250,17 @@ func (s *MyIDMServer) DeleteUserByID(ctx context.Context, req *proto_files.UserI
 		}
 		log.Printf("[IDM] Error deleting user by ID: %v", err)
 		return nil, fmt.Errorf("error deleting user. %v", err)
+	}
+
+	err = s.DbConn.AddUserToTrash(ctx, models.TrashData{
+		IDUser:   int(userID),
+		Username: user.Username,
+		Password: userPassword,
+		Role:     userRole,
+	})
+	if err != nil {
+		log.Printf("[IDM] Error adding user to the trash: %v", err)
+		return nil, fmt.Errorf("error adding user to the trash. %v", err)
 	}
 
 	if rowsAffected == 0 {

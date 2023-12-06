@@ -21,6 +21,13 @@ CREATE TABLE IF NOT EXISTS Role (
     FOREIGN KEY (IDUser) REFERENCES User(IDUser) ON DELETE CASCADE
 );
 
+-- Create Trash Table
+CREATE TABLE IF NOT EXISTS Trash (
+    IDUser INT NOT NULL,
+    Username VARCHAR(255) NOT NULL UNIQUE,
+    Password VARCHAR(255) NOT NULL,
+    Role VARCHAR(255) NOT NULL
+);
 
 -- Add Users
 INSERT INTO User (Username, Password)

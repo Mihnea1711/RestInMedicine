@@ -8,12 +8,9 @@ type Transactional interface {
 	// Commit is called to commit the changes made during the transaction
 	Commit(userId int) (*ParticipantResponse, error)
 
+	// Abort is called to abort the current transaction
+	Abort() (*ParticipantResponse, error)
+
 	// Rollback is called to undo the changes made during the transaction
-	Rollback() (*ParticipantResponse, error)
-
-	// Inform is called to inform the participant about the outcome of the transaction
-	Inform(commit bool) (*ParticipantResponse, error)
-
-	// Compensate is called to undo changes made during the transaction
-	Compensate() error
+	Rollback(userId int) (*ParticipantResponse, error)
 }

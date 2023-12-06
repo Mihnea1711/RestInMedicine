@@ -26,6 +26,10 @@ type Database interface {
 
 	UpdateUserPasswordByUserID(ctx context.Context, userID int, newPassword string) (int, error)
 
+	AddUserToTrash(ctx context.Context, userData models.TrashData) error
+	GetDataFromTrashByUserID(ctx context.Context, userID int) (*models.TrashData, error)
+	RemoveUserFromTrash(ctx context.Context, userID int) (int, error)
+
 	GetDB() *sql.DB
 	Close() error
 }

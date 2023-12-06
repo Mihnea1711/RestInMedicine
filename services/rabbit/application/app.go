@@ -7,7 +7,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/mihnea1711/POS_Project/services/rabbit/idm"
+	"github.com/mihnea1711/POS_Project/services/rabbit/internal/models"
+	"github.com/mihnea1711/POS_Project/services/rabbit/internal/models/participants"
 	"github.com/mihnea1711/POS_Project/services/rabbit/internal/rabbitmq"
 	"github.com/mihnea1711/POS_Project/services/rabbit/internal/routes"
 	"github.com/mihnea1711/POS_Project/services/rabbit/internal/services"
@@ -75,10 +78,17 @@ func (a *App) Start(ctx context.Context) error {
 		return err
 	}
 
+	// the list should be dynamically loaded and should have the associated services unique uuids
+	participantList := []models.Transactional{
+		participants.NewIDM(uuid.New(), utils.IDM, a.idmClient),
+		participants.NewPatient(uuid.New(), utils.PATIENT),
+		participants.NewDoctor(uuid.New(), utils.DOCTOR),
+	}
 	// Store dependencies in the service container
 	serviceContainer := &services.ServiceContainer{
-		IDMClient: a.idmClient,
-		JWTConfig: a.config.JWT,
+		IDMClient:    a.idmClient,
+		JWTConfig:    a.config.JWT,
+		Participants: participantList,
 	}
 
 	// Set up the handlers for the queues with the service container

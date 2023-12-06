@@ -24,7 +24,9 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type IDMClient interface {
 	HealthCheck(ctx context.Context, in *proto_files.HealthCheckRequest, opts ...grpc.CallOption) (*proto_files.HealthCheckResponse, error)
+	GetUserByID(ctx context.Context, in *proto_files.UserIDRequest, opts ...grpc.CallOption) (*proto_files.UserResponse, error)
 	DeleteUserByID(ctx context.Context, in *proto_files.UserIDRequest, opts ...grpc.CallOption) (*proto_files.EnhancedInfoResponse, error)
+	RestoreUserByID(ctx context.Context, in *proto_files.UserIDRequest, opts ...grpc.CallOption) (*proto_files.EnhancedInfoResponse, error)
 }
 
 type iDMClient struct {
@@ -44,9 +46,27 @@ func (c *iDMClient) HealthCheck(ctx context.Context, in *proto_files.HealthCheck
 	return out, nil
 }
 
+func (c *iDMClient) GetUserByID(ctx context.Context, in *proto_files.UserIDRequest, opts ...grpc.CallOption) (*proto_files.UserResponse, error) {
+	out := new(proto_files.UserResponse)
+	err := c.cc.Invoke(ctx, "/IDM/GetUserByID", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *iDMClient) DeleteUserByID(ctx context.Context, in *proto_files.UserIDRequest, opts ...grpc.CallOption) (*proto_files.EnhancedInfoResponse, error) {
 	out := new(proto_files.EnhancedInfoResponse)
 	err := c.cc.Invoke(ctx, "/IDM/DeleteUserByID", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *iDMClient) RestoreUserByID(ctx context.Context, in *proto_files.UserIDRequest, opts ...grpc.CallOption) (*proto_files.EnhancedInfoResponse, error) {
+	out := new(proto_files.EnhancedInfoResponse)
+	err := c.cc.Invoke(ctx, "/IDM/RestoreUserByID", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +78,9 @@ func (c *iDMClient) DeleteUserByID(ctx context.Context, in *proto_files.UserIDRe
 // for forward compatibility
 type IDMServer interface {
 	HealthCheck(context.Context, *proto_files.HealthCheckRequest) (*proto_files.HealthCheckResponse, error)
+	GetUserByID(context.Context, *proto_files.UserIDRequest) (*proto_files.UserResponse, error)
 	DeleteUserByID(context.Context, *proto_files.UserIDRequest) (*proto_files.EnhancedInfoResponse, error)
+	RestoreUserByID(context.Context, *proto_files.UserIDRequest) (*proto_files.EnhancedInfoResponse, error)
 	mustEmbedUnimplementedIDMServer()
 }
 
@@ -69,8 +91,14 @@ type UnimplementedIDMServer struct {
 func (UnimplementedIDMServer) HealthCheck(context.Context, *proto_files.HealthCheckRequest) (*proto_files.HealthCheckResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method HealthCheck not implemented")
 }
+func (UnimplementedIDMServer) GetUserByID(context.Context, *proto_files.UserIDRequest) (*proto_files.UserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserByID not implemented")
+}
 func (UnimplementedIDMServer) DeleteUserByID(context.Context, *proto_files.UserIDRequest) (*proto_files.EnhancedInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteUserByID not implemented")
+}
+func (UnimplementedIDMServer) RestoreUserByID(context.Context, *proto_files.UserIDRequest) (*proto_files.EnhancedInfoResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RestoreUserByID not implemented")
 }
 func (UnimplementedIDMServer) mustEmbedUnimplementedIDMServer() {}
 
@@ -103,6 +131,24 @@ func _IDM_HealthCheck_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _IDM_GetUserByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(proto_files.UserIDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IDMServer).GetUserByID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/IDM/GetUserByID",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IDMServer).GetUserByID(ctx, req.(*proto_files.UserIDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _IDM_DeleteUserByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(proto_files.UserIDRequest)
 	if err := dec(in); err != nil {
@@ -121,6 +167,24 @@ func _IDM_DeleteUserByID_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _IDM_RestoreUserByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(proto_files.UserIDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IDMServer).RestoreUserByID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/IDM/RestoreUserByID",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IDMServer).RestoreUserByID(ctx, req.(*proto_files.UserIDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // IDM_ServiceDesc is the grpc.ServiceDesc for IDM service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -133,8 +197,16 @@ var IDM_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _IDM_HealthCheck_Handler,
 		},
 		{
+			MethodName: "GetUserByID",
+			Handler:    _IDM_GetUserByID_Handler,
+		},
+		{
 			MethodName: "DeleteUserByID",
 			Handler:    _IDM_DeleteUserByID_Handler,
+		},
+		{
+			MethodName: "RestoreUserByID",
+			Handler:    _IDM_RestoreUserByID_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

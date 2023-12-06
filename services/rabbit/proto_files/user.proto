@@ -1,6 +1,8 @@
 syntax = "proto3";
 option go_package = "github.com/mihnea1711/POS_Project/services/rabbit/idm/proto_files";
 
+import "proto_files/helper.proto";
+
 message UserID {
     int64 ID = 1;
 }
@@ -9,3 +11,14 @@ message UserIDRequest {
     UserID UserID = 1;
 }
 
+message UserData {
+    UserID IDUser = 1;
+    string Username = 2;
+    // Omitting Password field, as I don't want to expose it
+    // other fields if any
+}
+
+message UserResponse {
+    UserData User = 1;
+    Info Info = 2;
+}

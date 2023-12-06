@@ -7,67 +7,71 @@ import (
 	"github.com/mihnea1711/POS_Project/services/rabbit/internal/models"
 )
 
-func SendPrepareMessage(participants []models.Transactional) ([]*models.ParticipantResponse, error) {
+func SendPrepareMessage(participants []models.Transactional, msgWrapper models.MessageWrapper) ([]*models.ParticipantResponse, error) {
 	var prepareResponses []*models.ParticipantResponse
 
 	for _, participant := range participants {
 		response, err := sendMessage(participant, "PREPARE", nil)
 		if err != nil {
-			log.Printf("[2PC] Error sending PREPARE message to participant %T: %v\n", participant, err)
+			log.Printf("[2PC] Error sending PREPARE message to participant %T for Transaction ID %s: %v\n", participant, msgWrapper.TransactionID, err)
 			continue
 		}
+		log.Printf("[2PC] Participant %T responded to PREPARE with Status Code %d for Transaction ID %s\n", participant, response.Code, msgWrapper.TransactionID)
 		prepareResponses = append(prepareResponses, response)
 	}
 
-	log.Println("[2PC] Sent PREPARE messages to all participants")
+	log.Printf("[2PC] Sent PREPARE messages to all participants for Transaction ID %s\n", msgWrapper.TransactionID)
 	return prepareResponses, nil
 }
 
-func SendAbortMessage(participants []models.Transactional) ([]*models.ParticipantResponse, error) {
+func SendAbortMessage(participants []models.Transactional, msgWrapper models.MessageWrapper) ([]*models.ParticipantResponse, error) {
 	var abortResponses []*models.ParticipantResponse
 
 	for _, participant := range participants {
 		response, err := sendMessage(participant, "ABORT", nil)
 		if err != nil {
-			log.Printf("[2PC] Error sending ABORT message to participant %T: %v\n", participant, err)
+			log.Printf("[2PC] Error sending ABORT message to participant %T for Transaction ID %s: %v\n", participant, msgWrapper.TransactionID, err)
 			continue
 		}
+		log.Printf("[2PC] Participant %T responded to ABORT with Status Code %d for Transaction ID %s\n", participant, response.Code, msgWrapper.TransactionID)
 		abortResponses = append(abortResponses, response)
 	}
 
-	log.Println("[2PC] Sent ABORT messages to all participants")
+	log.Printf("[2PC] Sent ABORT messages to all participants for Transaction ID %s\n", msgWrapper.TransactionID)
 	return abortResponses, nil
 }
 
-func SendCommitMessage(participants []models.Transactional, userID int) ([]*models.ParticipantResponse, error) {
+func SendCommitMessage(participants []models.Transactional, msgWrapper models.MessageWrapper) ([]*models.ParticipantResponse, error) {
 	var commitResponses []*models.ParticipantResponse
 
 	for _, participant := range participants {
-		response, err := sendMessage(participant, "COMMIT", userID)
+		response, err := sendMessage(participant, "COMMIT", msgWrapper.IDUser)
 		if err != nil {
-			log.Printf("[2PC] Error sending COMMIT message to participant %T: %v\n", participant, err)
+			log.Printf("[2PC] Error sending COMMIT message to participant %T for Transaction ID %s: %v\n", participant, msgWrapper.TransactionID, err)
 			continue
 		}
+		log.Printf("[2PC] Participant %T responded to COMMIT with Status Code %d for Transaction ID %s\n", participant, response.Code, msgWrapper.TransactionID)
 		commitResponses = append(commitResponses, response)
 	}
 
-	log.Println("[2PC] Sent COMMIT messages to all participants")
+	log.Printf("[2PC] Sent COMMIT messages to all participants for Transaction ID %s\n", msgWrapper.TransactionID)
 	return commitResponses, nil
 }
 
-func SendRollbackMessage(participants []models.Transactional) ([]*models.ParticipantResponse, error) {
+func SendRollbackMessage(participants []models.Transactional, msgWrapper models.MessageWrapper) ([]*models.ParticipantResponse, error) {
 	var rollbackResponses []*models.ParticipantResponse
 
 	for _, participant := range participants {
-		response, err := sendMessage(participant, "ROLLBACK", nil)
+		response, err := sendMessage(participant, "ROLLBACK", msgWrapper.IDUser)
 		if err != nil {
-			log.Printf("[2PC] Error sending ROLLBACK message to participant %T: %v\n", participant, err)
+			log.Printf("[2PC] Error sending ROLLBACK message to participant %T for Transaction ID %s: %v\n", participant, msgWrapper.TransactionID, err)
 			continue
 		}
+		log.Printf("[2PC] Participant %T responded to ROLLBACK with Status Code %d for Transaction ID %s\n", participant, response.Code, msgWrapper.TransactionID)
 		rollbackResponses = append(rollbackResponses, response)
 	}
 
-	log.Println("[2PC] Sent ROLLBACK messages to all participants.")
+	log.Printf("[2PC] Sent ROLLBACK messages to all participants for Transaction ID %s\n", msgWrapper.TransactionID)
 	return rollbackResponses, nil
 }
 
@@ -81,8 +85,10 @@ func sendMessage(participant models.Transactional, messageType string, payload i
 		response, err = participant.Prepare()
 	case "COMMIT":
 		response, err = participant.Commit(payload.(int))
-	case "ROLLBACK", "ABORT":
-		response, err = participant.Rollback()
+	case "ABORT":
+		response, err = participant.Abort()
+	case "ROLLBACK":
+		response, err = participant.Rollback(payload.(int))
 	default:
 		err = fmt.Errorf("unsupported message type: %s", messageType)
 	}
