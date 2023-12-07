@@ -32,6 +32,8 @@ func SetupRoutes(idmClient idm.IDMClient, jwtConfig config.JWTConfig) *mux.Route
 
 	loadRoutes(router, gatewayController, jwtConfig)
 
+	router.Use(middleware.AddPathAndMethodToResponse)
+
 	log.Println("[GATEWAY] Routes setup completed.")
 	return router
 }

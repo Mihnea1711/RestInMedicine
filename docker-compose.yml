@@ -168,13 +168,13 @@ services:
     restart: always
     networks:
       - pos_network
-    # healthcheck:
-    #   test: ["CMD", "curl", "-f", "http://localhost:8083/doctors/health-check"]
-    #   interval: 20s
-    #   timeout: 5s
-    #   retries: 2
+  #   # healthcheck:
+  #   #   test: ["CMD", "curl", "-f", "http://localhost:8083/doctors/health-check"]
+  #   #   interval: 20s
+  #   #   timeout: 5s
+  #   #   retries: 2
 
-  ######################################################################################################################################################
+  # ######################################################################################################################################################
 
   appointment_redis:
     image: redis:latest
