@@ -24,6 +24,7 @@ func RoleMiddleware(allowedRoles []string, jwtConfig config.JWTConfig, next http
 			return
 		}
 
+		// Get the claims from the jwt
 		claims, err := ParseJWT(tokenString, jwtConfig)
 		if err != nil {
 			log.Printf("[GATEWAY_AUTH] An unexpected error occurred while trying to parse the token: %v", err)
@@ -84,6 +85,8 @@ func AdminAndPatientMiddleware(jwtConfig config.JWTConfig, next http.Handler) ht
 			})
 			return
 		}
+
+		// Get the claims from the jwt
 		claims, err := ParseJWT(tokenString, jwtConfig)
 		if err != nil {
 			log.Printf("[GATEWAY_AUTH] An unexpected error occurred while trying to parse the token: %v", err)
@@ -122,6 +125,8 @@ func AdminAndDoctorMiddleware(jwtConfig config.JWTConfig, next http.Handler) htt
 			})
 			return
 		}
+
+		// Get the claims from the jwt
 		claims, err := ParseJWT(tokenString, jwtConfig)
 		if err != nil {
 			log.Printf("[GATEWAY_AUTH] An unexpected error occurred while trying to parse the token: %v", err)
