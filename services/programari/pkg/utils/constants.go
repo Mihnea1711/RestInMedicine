@@ -5,14 +5,14 @@ import "github.com/mihnea1711/POS_Project/services/programari/internal/models"
 type contextKey string
 
 const (
-	StatusProgramata   models.StatusProgramare = "programata"
-	StatusConfirmata   models.StatusProgramare = "confirmata"
-	StatusNeprezentata models.StatusProgramare = "neprezentata"
-	StatusAnulata      models.StatusProgramare = "anulata"
-	StatusOnorata      models.StatusProgramare = "onorata"
+	StatusScheduled  models.StatusProgramare = "scheduled"
+	StatusConfirmed  models.StatusProgramare = "confirmed"
+	StatusNotPresent models.StatusProgramare = "not_present"
+	StatusCanceled   models.StatusProgramare = "canceled"
+	StatusHonored    models.StatusProgramare = "honored"
 )
 
-var ValidStatus = [...]models.StatusProgramare{StatusOnorata, StatusNeprezentata, StatusAnulata, StatusProgramata, StatusConfirmata}
+var ValidStatus = [...]models.StatusProgramare{StatusScheduled, StatusConfirmed, StatusNotPresent, StatusCanceled, StatusHonored}
 
 const CONFIG_PATH = "configs/config.yaml"
 
@@ -36,35 +36,34 @@ const TIME_PARSE_SYNTAX = "2006-01-02"
 
 const (
 	// Endpoints
-	CREATE_APPOINTMENT_ENDPOINT               = "/appointments"                                                               // POST
-	FETCH_ALL_APPOINTMENTS_ENDPOINT           = "/appointments"                                                               // GET
-	FETCH_APPOINTMENT_BY_ID_ENDPOINT          = "/appointments/{" + FETCH_APPOINTMENT_BY_ID_PARAMETER + "}"                   // GET
-	FETCH_APPOINTMENTS_BY_DOCTOR_ID_ENDPOINT  = "/appointments/doctors/{" + FETCH_APPOINTMENTS_BY_DOCTOR_ID_PARAMETER + "}"   // GET
-	FETCH_APPOINTMENTS_BY_PACIENT_ID_ENDPOINT = "/appointments/patients/{" + FETCH_APPOINTMENTS_BY_PACIENT_ID_PARAMETER + "}" // GET
-	FETCH_APPOINTMENTS_BY_DATE_ENDPOINT       = "/appointments/date/{" + FETCH_APPOINTMENTS_BY_DATE_PARAMETER + "}"           // GET
-	FETCH_APPOINTMENTS_BY_STATUS_ENDPOINT     = "/appointments/status/{" + FETCH_APPOINTMENTS_BY_STATUS_PARAMETER + "}"       // GET
-	UPDATE_APPOINTMENT_BY_ID_ENDPOINT         = "/appointments/{" + UPDATE_APPOINTMENT_BY_ID_PARAMETER + "}"                  // PUT
-	DELETE_APPOINTMENT_BY_ID_ENDPOINT         = "/appointments/{" + DELETE_APPOINTMENT_BY_ID_PARAMETER + "}"                  // DELETE
+	CREATE_APPOINTMENT_ENDPOINT       = "/appointments"
+	FETCH_ALL_APPOINTMENTS_ENDPOINT   = "/appointments"
+	FETCH_APPOINTMENT_BY_ID_ENDPOINT  = "/appointments/{" + FETCH_APPOINTMENT_BY_ID_PARAMETER + "}"
+	UPDATE_APPOINTMENT_BY_ID_ENDPOINT = "/appointments/{" + UPDATE_APPOINTMENT_BY_ID_PARAMETER + "}"
+	DELETE_APPOINTMENT_BY_ID_ENDPOINT = "/appointments/{" + DELETE_APPOINTMENT_BY_ID_PARAMETER + "}"
 
 	HEALTH_CHECK_ENDPOINT = "/appointments/health-check"
 )
 
-// Parameters
 const (
-	FETCH_APPOINTMENT_BY_ID_PARAMETER          = "appointment_id"
-	FETCH_APPOINTMENTS_BY_DOCTOR_ID_PARAMETER  = "doctor_id"
-	FETCH_APPOINTMENTS_BY_PACIENT_ID_PARAMETER = "pacient_id"
-	FETCH_APPOINTMENTS_BY_DATE_PARAMETER       = "appointment_date"
-	FETCH_APPOINTMENTS_BY_STATUS_PARAMETER     = "appointment_status"
-	UPDATE_APPOINTMENT_BY_ID_PARAMETER         = "appointment_id"
-	DELETE_APPOINTMENT_BY_ID_PARAMETER         = "appointment_id"
+	// Parameters
+	FETCH_APPOINTMENT_BY_ID_PARAMETER  = "appointmentID"
+	UPDATE_APPOINTMENT_BY_ID_PARAMETER = "appointmentID"
+	DELETE_APPOINTMENT_BY_ID_PARAMETER = "appointmentID"
+
+	QUERY_PATIENT_ID = "patientID"
+	QUERY_DOCTOR_ID  = "doctorID"
+	QUERY_DATE       = "date"
+	QUERY_STATUS     = "status"
+	QUERY_PAGE       = "page"
+	QUERY_LIMIT      = "limit"
 )
 
 const (
 	DatabaseName         = "pdp_db"
 	AppointmentTableName = "appointment"
-	ColumnIDProgramare   = "id_programare"
-	ColumnIDPacient      = "id_patient"
+	ColumnIDProgramare   = "id_appointment"
+	ColumnIDPatient      = "id_patient"
 	ColumnIDDoctor       = "id_doctor"
 	ColumnDate           = "date"
 	ColumnStatus         = "status"

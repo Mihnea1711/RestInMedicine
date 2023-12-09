@@ -8,7 +8,7 @@ type StatusProgramare string
 
 type Appointment struct {
 	IDProgramare int              `db:"id_programare" json:"idProgramare"`
-	IDPacient    int              `db:"id_pacient" json:"idPacient"`
+	IDPatient    int              `db:"id_pacient" json:"idPatient"`
 	IDDoctor     int              `db:"id_doctor" json:"idDoctor"`
 	Date         time.Time        `db:"date" json:"date"`
 	Status       StatusProgramare `db:"status" json:"status"`

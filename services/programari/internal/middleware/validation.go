@@ -36,10 +36,10 @@ func ValidateAppointmentInfo(next http.Handler) http.Handler {
 			return
 		}
 
-		// Validate the IDPacient (assuming it should be greater than 0)
-		if appointment.IDPacient <= 0 {
-			log.Println("[MIDDLEWARE] Invalid IDPacient")
-			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: "Invalid IDPacient", Message: "Validation failed due to patient id"})
+		// Validate the IDPatient (assuming it should be greater than 0)
+		if appointment.IDPatient <= 0 {
+			log.Println("[MIDDLEWARE] Invalid IDPatient")
+			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: "Invalid IDPatient", Message: "Validation failed due to patient id"})
 			return
 		}
 

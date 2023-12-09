@@ -14,7 +14,7 @@ func (db *MySQLDatabase) SaveAppointment(ctx context.Context, appointment *model
 	query := fmt.Sprintf(
 		"INSERT INTO %s (%s, %s, %s, %s) VALUES (?, ?, ?, ?)",
 		utils.AppointmentTableName,
-		utils.ColumnIDPacient,
+		utils.ColumnIDPatient,
 		utils.ColumnIDDoctor,
 		utils.ColumnDate,
 		utils.ColumnStatus,
@@ -23,7 +23,7 @@ func (db *MySQLDatabase) SaveAppointment(ctx context.Context, appointment *model
 	log.Println("[APPOINTMENT] Attempting to save appointment")
 
 	// Execute the SQL statement
-	result, err := db.ExecContext(ctx, query, appointment.IDPacient, appointment.IDDoctor, appointment.Date, appointment.Status)
+	result, err := db.ExecContext(ctx, query, appointment.IDPatient, appointment.IDDoctor, appointment.Date, appointment.Status)
 	if err != nil {
 		log.Printf("[APPOINTMENT] Error executing query to save appointment: %v", err)
 		return 0, err

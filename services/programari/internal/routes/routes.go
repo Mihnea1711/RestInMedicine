@@ -45,36 +45,26 @@ func SetupRoutes(ctx context.Context, dbConn database.Database, rdb *redis.Redis
 func loadCrudRoutes(router *mux.Router, appointmentController *controllers.AppointmentController) {
 	log.Println("[APPOINTMENT] Loading CRUD routes for Appointment entity...")
 
+	// ---------------------------------------------------------- Health --------------------------------------------------------------
+
+	healthCheckHandler := http.HandlerFunc(appointmentController.HealthCheck)
+	router.Handle(utils.HEALTH_CHECK_ENDPOINT, healthCheckHandler).Methods("GET")
+	log.Println("[APPOINTMENT] Route GET", utils.HEALTH_CHECK_ENDPOINT, "registered.")
+
 	// ---------------------------------------------------------- Create --------------------------------------------------------------
 	appointmentCreationHandler := http.HandlerFunc(appointmentController.CreateAppointment)
 	router.Handle(utils.CREATE_APPOINTMENT_ENDPOINT, middleware.ValidateAppointmentInfo(appointmentCreationHandler)).Methods("POST") // Creates a new appointment
 	log.Println("[APPOINTMENT] Route POST", utils.CREATE_APPOINTMENT_ENDPOINT, "registered.")
 
 	// ---------------------------------------------------------- Retrieve --------------------------------------------------------------
-	// implement pagination for these
-	appointmentFetchAllHandler := http.HandlerFunc(appointmentController.GetAppointments)
+	// // implement pagination for these
+	// appointmentFetchAllHandler := http.HandlerFunc(appointmentController.GetAppointments)
+	// router.HandleFunc(utils.FETCH_ALL_APPOINTMENTS_ENDPOINT, appointmentFetchAllHandler).Methods("GET") // Lists all appointments
+	// log.Println("[APPOINTMENT] Route GET", utils.FETCH_ALL_APPOINTMENTS_ENDPOINT, "registered.")
+
+	appointmentFetchAllHandler := http.HandlerFunc(appointmentController.GetAppointmentsByFilter)
 	router.HandleFunc(utils.FETCH_ALL_APPOINTMENTS_ENDPOINT, appointmentFetchAllHandler).Methods("GET") // Lists all appointments
 	log.Println("[APPOINTMENT] Route GET", utils.FETCH_ALL_APPOINTMENTS_ENDPOINT, "registered.")
-
-	appointmentFetchByDoctorIDHandler := http.HandlerFunc(appointmentController.GetAppointmentsByDoctorID)
-	router.HandleFunc(utils.FETCH_APPOINTMENTS_BY_DOCTOR_ID_ENDPOINT, appointmentFetchByDoctorIDHandler).Methods("GET") // Get appointments by doctor ID
-	log.Println("[APPOINTMENT] Route GET", utils.FETCH_APPOINTMENTS_BY_DOCTOR_ID_ENDPOINT, "registered.")
-
-	appointmentFetchByPatientIDHandler := http.HandlerFunc(appointmentController.GetAppointmentsByPatientID)
-	router.HandleFunc(utils.FETCH_APPOINTMENTS_BY_PACIENT_ID_ENDPOINT, appointmentFetchByPatientIDHandler).Methods("GET") // Get appointments by pacient ID
-	log.Println("[APPOINTMENT] Route GET", utils.FETCH_APPOINTMENTS_BY_PACIENT_ID_ENDPOINT, "registered.")
-
-	appointmentFetchByDateHandler := http.HandlerFunc(appointmentController.GetAppointmentsByDate)
-	router.HandleFunc(utils.FETCH_APPOINTMENTS_BY_DATE_ENDPOINT, appointmentFetchByDateHandler).Methods("GET") // Get appointments by date
-	log.Println("[APPOINTMENT] Route GET", utils.FETCH_APPOINTMENTS_BY_DATE_ENDPOINT, "registered.")
-
-	appointmentFetchByStatusHandler := http.HandlerFunc(appointmentController.GetAppointmentsByStatus)
-	router.HandleFunc(utils.FETCH_APPOINTMENTS_BY_STATUS_ENDPOINT, appointmentFetchByStatusHandler).Methods("GET") // Get appointments by status
-	log.Println("[APPOINTMENT] Route GET", utils.FETCH_APPOINTMENTS_BY_STATUS_ENDPOINT, "registered.")
-
-	healthCheckHandler := http.HandlerFunc(appointmentController.HealthCheck)
-	router.Handle(utils.HEALTH_CHECK_ENDPOINT, healthCheckHandler).Methods("GET")
-	log.Println("[APPOINTMENT] Route GET", utils.HEALTH_CHECK_ENDPOINT, "registered.")
 
 	appointmentFetchByIDHandler := http.HandlerFunc(appointmentController.GetAppointmentByID)
 	router.HandleFunc(utils.FETCH_APPOINTMENT_BY_ID_ENDPOINT, appointmentFetchByIDHandler).Methods("GET") // Get a specific appointment by ID

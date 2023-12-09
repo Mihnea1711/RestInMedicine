@@ -14,7 +14,7 @@ func (db *MySQLDatabase) UpdateAppointmentByID(ctx context.Context, appointment 
 	query := fmt.Sprintf(
 		"UPDATE %s SET %s = ?, %s = ?, %s = ?, %s = ? WHERE %s = ?",
 		utils.AppointmentTableName,
-		utils.ColumnIDPacient,
+		utils.ColumnIDPatient,
 		utils.ColumnIDDoctor,
 		utils.ColumnDate,
 		utils.ColumnStatus,
@@ -24,7 +24,7 @@ func (db *MySQLDatabase) UpdateAppointmentByID(ctx context.Context, appointment 
 	log.Println("[APPOINTMENT] Attempting to update appointment")
 
 	// Execute the SQL statement
-	res, err := db.ExecContext(ctx, query, appointment.IDPacient, appointment.IDDoctor, appointment.Date, appointment.Status, appointment.IDProgramare)
+	res, err := db.ExecContext(ctx, query, appointment.IDPatient, appointment.IDDoctor, appointment.Date, appointment.Status, appointment.IDProgramare)
 	if err != nil {
 		log.Printf("[APPOINTMENT] Error executing query to update appointment: %v", err)
 		return 0, err
