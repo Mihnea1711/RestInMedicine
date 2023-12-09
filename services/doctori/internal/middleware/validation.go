@@ -32,14 +32,14 @@ func ValidateDoctorInfo(next http.Handler) http.Handler {
 		}
 
 		// Basic validation for each field
-		if doctor.Nume == "" || len(doctor.Nume) > 255 {
+		if doctor.FirstName == "" || len(doctor.FirstName) > 255 {
 			errMsg := "Invalid or missing Nume"
 			log.Printf("[DOCTOR_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
 			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Doctor validation failed due to first name"})
 			return
 		}
 
-		if doctor.Prenume == "" || len(doctor.Prenume) > 255 {
+		if doctor.SecondName == "" || len(doctor.SecondName) > 255 {
 			errMsg := "Invalid or missing Prenume"
 			log.Printf("[DOCTOR_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
 			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Doctor validation failed due to second name"})
@@ -55,14 +55,14 @@ func ValidateDoctorInfo(next http.Handler) http.Handler {
 		}
 
 		// Validate Romanian phone number format
-		if !utils.PhoneRegex.MatchString(doctor.Telefon) || len(doctor.Telefon) != 10 {
+		if !utils.PhoneRegex.MatchString(doctor.PhoneNumber) || len(doctor.PhoneNumber) != 10 {
 			errMsg := "Invalid or missing Telefon"
 			log.Printf("[DOCTOR_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
 			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Doctor validation failed due to phone nr"})
 			return
 		}
 
-		if !isValidSpecializare(models.Specializare(doctor.Specializare)) {
+		if !isValidSpecializare(models.Specialization(doctor.Specialization)) {
 			errMsg := "Invalid Specializare in request"
 			log.Printf("[DOCTOR_VALIDATION] %s: %s", errMsg, r.RequestURI)
 			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Doctor validation failed due to specialization"})
@@ -77,9 +77,9 @@ func ValidateDoctorInfo(next http.Handler) http.Handler {
 	})
 }
 
-func isValidSpecializare(specializare models.Specializare) bool {
+func isValidSpecializare(specializare models.Specialization) bool {
 	log.Printf("[DOCTOR_VALIDATION] Checking validity of specializare: %v...", specializare)
-	for _, validSpec := range utils.ValidSpecializari {
+	for _, validSpec := range utils.ValidSpecializations {
 		if specializare == validSpec {
 			return true
 		}

@@ -17,16 +17,33 @@ import (
 func (dController *DoctorController) GetDoctors(w http.ResponseWriter, r *http.Request) {
 	log.Println("[DOCTOR] Fetching all doctors...")
 
+	// Extract query params from request
+	filters, err := utils.ExtractFiltersFromRequest(r)
+	if err != nil {
+		errMsg := fmt.Sprintf("bad request: %s", err)
+		log.Printf("[DOCTOR] GetDoctors: Failed to extract filters: %s", errMsg)
+
+		// Respond with a bad request error
+		response := models.ResponseData{
+			Error:   errMsg,
+			Message: "Failed to extract filters",
+		}
+		utils.RespondWithJSON(w, http.StatusBadRequest, response)
+		return
+	}
+
+	fmt.Println(filters)
+
 	// Extract the limit and page query parameters from the request
 	limit, page := utils.ExtractPaginationParams(r)
+
+	log.Printf("[DOCTOR] Fetching doctors with limit: %d, page: %d", limit, page)
 
 	// Ensure a database operation doesn't take longer than 5 seconds
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
-	log.Printf("[DOCTOR] Fetching doctors with limit: %d, page: %d", limit, page)
-
-	doctors, err := dController.DbConn.FetchActiveDoctors(ctx, page, limit)
+	doctors, err := dController.DbConn.FetchDoctors(ctx, filters, page, limit)
 	if err != nil {
 		errMsg := fmt.Sprintf("internal server error: %s", err)
 		log.Printf("[DOCTOR] Error fetching doctors: %s", errMsg)

@@ -14,18 +14,18 @@ func (db *MySQLDatabase) SaveDoctor(ctx context.Context, doctor *models.Doctor) 
 	query := fmt.Sprintf("INSERT INTO %s (%s, %s, %s, %s, %s, %s, %s) VALUES (?, ?, ?, ?, ?, ?, ?)",
 		utils.DoctorTableName,
 		utils.ColumnIDUser,
-		utils.ColumnNume,
-		utils.ColumnPrenume,
+		utils.ColumnFirstName,
+		utils.ColumnSecondName,
 		utils.ColumnEmail,
-		utils.ColumnTelefon,
-		utils.ColumnSpecializare,
+		utils.ColumnPhoneNumber,
+		utils.ColumnSpecialization,
 		utils.ColumnIsActive,
 	)
 
 	log.Println("[PATIENT] Attempting to save doctor")
 
 	// Execute the SQL statement
-	result, err := db.ExecContext(ctx, query, doctor.IDUser, doctor.Nume, doctor.Prenume, doctor.Email, doctor.Telefon, doctor.Specializare, doctor.IsActive)
+	result, err := db.ExecContext(ctx, query, doctor.IDUser, doctor.FirstName, doctor.SecondName, doctor.Email, doctor.PhoneNumber, doctor.Specialization, doctor.IsActive)
 	if err != nil {
 		log.Printf("[DOCTOR] Error executing query to save doctor: %v", err)
 		return 0, fmt.Errorf("failed to save doctor: %w", err)

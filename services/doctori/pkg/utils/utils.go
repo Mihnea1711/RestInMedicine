@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"regexp"
@@ -79,4 +80,65 @@ func ExtractPaginationParams(r *http.Request) (int, int) {
 	}
 
 	return limit, page
+}
+
+// ExtractFiltersFromRequest extracts query parameters from the request and constructs a map of filters.
+func ExtractFiltersFromRequest(r *http.Request) (map[string]interface{}, error) {
+	filters := make(map[string]interface{})
+
+	// Check for unknown filters
+	for key := range r.URL.Query() {
+		if !isExpectedFilter(key) {
+			log.Printf("[DOCTOR] ExtractFiltersFromRequest: Unknown filter: %s", key)
+			return nil, fmt.Errorf("unknown filter: %s", key)
+		}
+	}
+
+	// Parse query parameters
+	isActiveStr := r.URL.Query().Get(QUERY_IS_ACIVE)
+	firstName := r.URL.Query().Get(QUERY_FIRST_NAME)
+	specialization := r.URL.Query().Get(QUERY_SPECIALIZATION)
+
+	if isActiveStr != "" {
+		isActive, err := strconv.ParseBool(isActiveStr)
+		if err != nil {
+			log.Printf("[DOCTOR] ExtractFiltersFromRequest: Failed to parse isActive: %v", err)
+			return nil, fmt.Errorf("invalid isActive: %v", err)
+		}
+		filters[ColumnIsActive] = isActive
+	}
+	if firstName != "" {
+		filters[ColumnFirstName] = firstName
+	}
+	if specialization != "" {
+		// Check if the provided status is valid
+		found := false
+		for _, validSpecialization := range ValidSpecializations {
+			if string(validSpecialization) == specialization {
+				filters[ColumnSpecialization] = validSpecialization
+				found = true
+				break
+			}
+		}
+		if !found {
+			log.Printf("[APPOINTMENT] ExtractFiltersFromRequest: Invalid specialization: %s", specialization)
+			return nil, fmt.Errorf("invalid specialization: %s", specialization)
+		}
+	}
+
+	return filters, nil
+}
+
+// isExpectedFilter checks if a filter name is one of the expected names.
+func isExpectedFilter(filterName string) bool {
+	expectedFilters := map[string]struct{}{
+		QUERY_IS_ACIVE:       {},
+		QUERY_FIRST_NAME:     {},
+		QUERY_SPECIALIZATION: {},
+		QUERY_PAGE:           {},
+		QUERY_LIMIT:          {},
+	}
+
+	_, ok := expectedFilters[filterName]
+	return ok
 }

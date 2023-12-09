@@ -59,7 +59,7 @@ func (dController *DoctorController) CreateDoctor(w http.ResponseWriter, r *http
 
 	log.Printf("[DOCTOR] Successfully created doctor %d", lastInsertID)
 	// Use RespondWithJSON for success response
-	utils.RespondWithJSON(w, http.StatusOK, models.ResponseData{
+	utils.RespondWithJSON(w, http.StatusCreated, models.ResponseData{
 		Message: "Doctor created successfully",
 		Payload: models.LastInsertedID{
 			LastInsertedID: lastInsertID,

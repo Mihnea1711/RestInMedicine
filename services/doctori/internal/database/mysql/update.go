@@ -16,11 +16,11 @@ func (db *MySQLDatabase) UpdateDoctorByID(ctx context.Context, doctor *models.Do
 	SET %s = ?, %s = ?, %s = ?, %s = ?, %s = ?, %s = ? 
 	WHERE %s = ?`,
 		utils.DoctorTableName,
-		utils.ColumnNume,
-		utils.ColumnPrenume,
+		utils.ColumnFirstName,
+		utils.ColumnSecondName,
 		utils.ColumnEmail,
-		utils.ColumnTelefon,
-		utils.ColumnSpecializare,
+		utils.ColumnPhoneNumber,
+		utils.ColumnSpecialization,
 		utils.ColumnIsActive,
 		utils.ColumnIDDoctor,
 	)
@@ -28,7 +28,7 @@ func (db *MySQLDatabase) UpdateDoctorByID(ctx context.Context, doctor *models.Do
 	log.Printf("[DOCTOR] Attempting to update doctor with ID %d...", doctor.IDDoctor)
 
 	// Execute the SQL statement
-	result, err := db.ExecContext(ctx, query, doctor.Nume, doctor.Prenume, doctor.Email, doctor.Telefon, doctor.Specializare, doctor.IsActive, doctor.IDDoctor)
+	result, err := db.ExecContext(ctx, query, doctor.FirstName, doctor.SecondName, doctor.Email, doctor.PhoneNumber, doctor.Specialization, doctor.IsActive, doctor.IDDoctor)
 	if err != nil {
 		log.Printf("[DOCTOR] Error executing query to update doctor with ID %d: %v", doctor.IDDoctor, err)
 		return 0, err

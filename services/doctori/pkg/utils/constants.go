@@ -7,16 +7,16 @@ import (
 type contextKey string
 
 const (
-	Cardiologie  models.Specializare = "Cardiologie"
-	Neurologie   models.Specializare = "Neurologie"
-	Ortopedie    models.Specializare = "Ortopedie"
-	Pediatrie    models.Specializare = "Pediatrie"
-	Dermatologie models.Specializare = "Dermatologie"
-	Radiologie   models.Specializare = "Radiologie"
-	Chirurgie    models.Specializare = "Chirurgie"
+	Cardiology  models.Specialization = "Cardiology"
+	Neurology   models.Specialization = "Neurology"
+	Orthopedics models.Specialization = "Orthopedics"
+	Pediatrics  models.Specialization = "Pediatrics"
+	Dermatology models.Specialization = "Dermatology"
+	Radiology   models.Specialization = "Radiology"
+	Surgery     models.Specialization = "Surgery"
 )
 
-var ValidSpecializari = [...]models.Specializare{Cardiologie, Neurologie, Ortopedie, Pediatrie, Dermatologie, Radiologie, Chirurgie}
+var ValidSpecializations = [...]models.Specialization{Cardiology, Neurology, Orthopedics, Pediatrics, Dermatology, Radiology, Surgery}
 
 const CONFIG_PATH = "configs/config.yaml"
 
@@ -61,19 +61,25 @@ const (
 	UPDATE_DOCTOR_BY_ID_PARAMETER      = "doctor_id"
 	DELETE_DOCTOR_BY_ID_PARAMETER      = "doctor_id"
 	DELETE_DOCTOR_BY_USER_ID_PARAMETER = "doctor_user_id"
+
+	QUERY_IS_ACIVE       = "isActive"
+	QUERY_FIRST_NAME     = "firstName"
+	QUERY_SPECIALIZATION = "specialization"
+	QUERY_PAGE           = "page"
+	QUERY_LIMIT          = "limit"
 )
 
 const (
-	DatabaseName       = "pdp_db"
-	DoctorTableName    = "doctor"
-	ColumnIDDoctor     = "id_doctor"
-	ColumnIDUser       = "id_user"
-	ColumnNume         = "nume"
-	ColumnPrenume      = "prenume"
-	ColumnEmail        = "email"
-	ColumnTelefon      = "telefon"
-	ColumnSpecializare = "specializare"
-	ColumnIsActive     = "is_active"
+	DatabaseName         = "pdp_db"
+	DoctorTableName      = "doctor"
+	ColumnIDDoctor       = "id_doctor"
+	ColumnIDUser         = "id_user"
+	ColumnFirstName      = "first_name"
+	ColumnSecondName     = "second_prenume"
+	ColumnEmail          = "email"
+	ColumnPhoneNumber    = "phone_number"
+	ColumnSpecialization = "specialization"
+	ColumnIsActive       = "is_active"
 )
 
 const MySQLDuplicateEntryErrorCode = 1062
