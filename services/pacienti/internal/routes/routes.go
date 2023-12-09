@@ -45,10 +45,17 @@ func SetupRoutes(parentCtx context.Context, dbConn database.Database, rdb *redis
 func loadCrudRoutes(router *mux.Router, pacientController *controllers.PatientController) {
 	log.Println("[PATIENT] Loading CRUD routes for Pacient entity...")
 
+	// ---------------------------------------------------------- Health --------------------------------------------------------------
+	healthCheckHandler := http.HandlerFunc(pacientController.HealthCheck)
+	router.Handle(utils.HEALTH_CHECK_ENDPOINT, healthCheckHandler).Methods("GET")
+	log.Println("[PATIENT] Route GET", utils.HEALTH_CHECK_ENDPOINT, "registered.")
+
+	// ---------------------------------------------------------- Create --------------------------------------------------------------
 	pacientCreationHandler := http.HandlerFunc(pacientController.CreatePatient)
 	router.Handle(utils.CREATE_PATIENT_ENDPOINT, middleware.ValidatePacientInfo(pacientCreationHandler)).Methods("POST")
 	log.Println("[PATIENT] Route POST", utils.CREATE_PATIENT_ENDPOINT, "registered.")
 
+	// ---------------------------------------------------------- Retrieve --------------------------------------------------------------
 	pacientFetchAllHandler := http.HandlerFunc(pacientController.GetPatients)
 	router.HandleFunc(utils.FETCH_ALL_PATIENTS_ENDPOINT, pacientFetchAllHandler).Methods("GET")
 	log.Println("[PATIENT] Route GET", utils.FETCH_ALL_PATIENTS_ENDPOINT, "registered.")
@@ -61,14 +68,11 @@ func loadCrudRoutes(router *mux.Router, pacientController *controllers.PatientCo
 	router.HandleFunc(utils.FETCH_PATIENT_BY_USER_ID_ENDPOINT, pacientFetchByUserIDHandler).Methods("GET")
 	log.Println("[PATIENT] Route GET", utils.FETCH_PATIENT_BY_USER_ID_ENDPOINT, "registered.")
 
-	healthCheckHandler := http.HandlerFunc(pacientController.HealthCheck)
-	router.Handle(utils.HEALTH_CHECK_ENDPOINT, healthCheckHandler).Methods("GET")
-	log.Println("[PATIENT] Route GET", utils.HEALTH_CHECK_ENDPOINT, "registered.")
-
 	pacientFetchByIDHandler := http.HandlerFunc(pacientController.GetPatientByID)
 	router.HandleFunc(utils.FETCH_PATIENT_BY_ID_ENDPOINT, pacientFetchByIDHandler).Methods("GET")
 	log.Println("[PATIENT] Route GET", utils.FETCH_PATIENT_BY_ID_ENDPOINT, "registered.")
 
+	// ---------------------------------------------------------- Update --------------------------------------------------------------
 	pacientUpdateByIDHandler := http.HandlerFunc(pacientController.UpdatePatientByID)
 	router.Handle(utils.UPDATE_PATIENT_BY_ID_ENDPOINT, middleware.ValidatePacientInfo(pacientUpdateByIDHandler)).Methods("PUT")
 	log.Println("[PATIENT] Route PUT", utils.UPDATE_PATIENT_BY_ID_ENDPOINT, "registered.")
@@ -77,6 +81,7 @@ func loadCrudRoutes(router *mux.Router, pacientController *controllers.PatientCo
 	router.Handle(utils.TOGGLE_PATIENT_ACTIVITY_ENDPOINT, middleware.ValidatePatientActivityInfo(toggleActivityHandler)).Methods("PATCH")
 	log.Println("[PATIENT] Route POST", utils.TOGGLE_PATIENT_ACTIVITY_ENDPOINT, "registered.")
 
+	// ---------------------------------------------------------- Delete --------------------------------------------------------------
 	pacientDeleteByUserIDHandler := http.HandlerFunc(pacientController.DeletePatientByUserID)
 	router.Handle(utils.DELETE_PATIENT_BY_USER_ID_ENDPOINT, pacientDeleteByUserIDHandler).Methods("DELETE")
 	log.Println("[PATIENT] Route DELETE", utils.DELETE_PATIENT_BY_USER_ID_ENDPOINT, "registered.")

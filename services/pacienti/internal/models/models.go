@@ -4,16 +4,16 @@ import (
 	"time"
 )
 
-type Pacient struct {
-	IDPacient    int       `db:"id_patient" json:"idPatient" sql:"type:int primary key"`
-	IDUser       int       `db:"id_user" json:"id_user" sql:"type:int"`
-	Nume         string    `db:"nume" json:"nume" sql:"type:varchar(50)"`
-	Prenume      string    `db:"prenume" json:"prenume" sql:"type:varchar(50)"`
-	Email        string    `db:"email" json:"email" sql:"type:varchar(70) unique"`
-	Telefon      string    `db:"telefon" json:"telefon" sql:"type:char(10) check (telefon ~ '^[0-9]{10}$')"`
-	CNP          string    `db:"cnp" json:"cnp" sql:"type:char(13) unique"`
-	DataNasterii time.Time `db:"data_nasterii" json:"data_nasterii" sql:"type:date"`
-	IsActive     bool      `db:"is_active" json:"is_active"`
+type Patient struct {
+	IDPatient   int       `db:"id_patient" json:"idPatient" sql:"type:int primary key"`
+	IDUser      int       `db:"id_user" json:"idUser" sql:"type:int"`
+	FirstName   string    `db:"first_name" json:"firstName" sql:"type:varchar(50)"`
+	SecondName  string    `db:"second_name" json:"secondName" sql:"type:varchar(50)"`
+	Email       string    `db:"email" json:"email" sql:"type:varchar(70) unique"`
+	PhoneNumber string    `db:"phone_number" json:"phoneNumber" sql:"type:char(10) check (phone_number ~ '^[0-9]{10}$')"`
+	CNP         string    `db:"cnp" json:"cnp" sql:"type:char(13) unique"`
+	BirthDay    time.Time `db:"birth_day" json:"birthDay" sql:"type:date"`
+	IsActive    bool      `db:"is_active" json:"isActive"`
 }
 
 type ResponseData struct {
@@ -23,19 +23,19 @@ type ResponseData struct {
 }
 
 type RowsAffected struct {
-	RowsAffected int `json:"rows_affected"`
+	RowsAffected int `json:"rowsAffected"`
 }
 
 type LastInsertedID struct {
-	LastInsertedID int `json:"last_inserted_id"`
+	LastInsertedID int `json:"lastInsertedID"`
 }
 
 type ComplexResponse struct {
-	RowsAffected int `json:"rows_affected"`
-	DeletedID    int `json:"deleted_id"`
+	RowsAffected int `json:"rowsAffected"`
+	DeletedID    int `json:"deletedID"`
 }
 
 type ActivityData struct {
-	IsActive bool `json:"is_active"`
-	IDUser   int  `json:"id_user"`
+	IsActive bool `json:"isActive"`
+	IDUser   int  `json:"idUser"`
 }

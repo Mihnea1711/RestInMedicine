@@ -17,6 +17,21 @@ import (
 func (pController *PatientController) GetPatients(w http.ResponseWriter, r *http.Request) {
 	log.Println("[PATIENT] Fetching all patients...")
 
+	// Extract query params from request
+	filters, err := utils.ExtractFiltersFromRequest(r)
+	if err != nil {
+		errMsg := fmt.Sprintf("bad request: %s", err)
+		log.Printf("[DOCTOR] GetDoctors: Failed to extract filters: %s", errMsg)
+
+		// Respond with a bad request error
+		response := models.ResponseData{
+			Error:   errMsg,
+			Message: "Failed to extract filters",
+		}
+		utils.RespondWithJSON(w, http.StatusBadRequest, response)
+		return
+	}
+
 	// Extract the limit and page query parameters from the request
 	limit, page := utils.ExtractPaginationParams(r)
 
@@ -26,7 +41,7 @@ func (pController *PatientController) GetPatients(w http.ResponseWriter, r *http
 
 	log.Printf("[PATIENT] Fetching active patients with limit: %d, page: %d", limit, page)
 
-	patients, err := pController.DbConn.FetchActivePatients(ctx, page, limit)
+	patients, err := pController.DbConn.FetchPatients(ctx, filters, page, limit)
 	if err != nil {
 		errMsg := fmt.Sprintf("Internal server error: %s", err)
 		log.Printf("[PATIENT] %s", errMsg)

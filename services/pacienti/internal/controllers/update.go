@@ -19,7 +19,7 @@ func (pController *PatientController) UpdatePatientByID(w http.ResponseWriter, r
 	log.Println("[PATIENT] Attempting to update a patient.")
 
 	// Decode the patient details from the context
-	patient := r.Context().Value(utils.DECODED_PATIENT).(*models.Pacient)
+	patient := r.Context().Value(utils.DECODED_PATIENT).(*models.Patient)
 
 	// Get the patient ID from the request path
 	vars := mux.Vars(r)
@@ -35,7 +35,7 @@ func (pController *PatientController) UpdatePatientByID(w http.ResponseWriter, r
 	}
 
 	// Assign the ID to the patient object
-	patient.IDPacient = patientID
+	patient.IDPatient = patientID
 
 	// Ensure a database operation doesn't take longer than 5 seconds
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
@@ -72,7 +72,7 @@ func (pController *PatientController) UpdatePatientByID(w http.ResponseWriter, r
 
 	// Check if any rows were updated
 	if rowsAffected == 0 {
-		errMsg := fmt.Sprintf("Patient with ID: %d not modified", patient.IDPacient)
+		errMsg := fmt.Sprintf("Patient with ID: %d not modified", patient.IDPatient)
 		log.Printf("[PATIENT] %s", errMsg)
 
 		// Create an error response using ResponseData
@@ -80,7 +80,7 @@ func (pController *PatientController) UpdatePatientByID(w http.ResponseWriter, r
 		return
 	}
 
-	log.Printf("[PATIENT] Successfully updated patient with ID %d", patient.IDPacient)
+	log.Printf("[PATIENT] Successfully updated patient with ID %d", patient.IDPatient)
 	// Create a success response using ResponseData
 	utils.RespondWithJSON(w, http.StatusOK, models.ResponseData{
 		Message: fmt.Sprintf("Patient with ID %d updated successfully", patientID),

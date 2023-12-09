@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"regexp"
@@ -52,8 +53,8 @@ func writeJSONResponse(w http.ResponseWriter, status int, response []byte) {
 
 // Extract pagination parameters from the request
 func ExtractPaginationParams(r *http.Request) (int, int) {
-	limitStr := r.URL.Query().Get("limit")
-	pageStr := r.URL.Query().Get("page")
+	limitStr := r.URL.Query().Get(QUERY_LIMIT)
+	pageStr := r.URL.Query().Get(QUERY_PAGE)
 
 	var limit, page int
 	var err error
@@ -79,4 +80,42 @@ func ExtractPaginationParams(r *http.Request) (int, int) {
 	}
 
 	return limit, page
+}
+
+// ExtractFiltersFromRequest extracts query parameters from the request and constructs a map of filters.
+func ExtractFiltersFromRequest(r *http.Request) (map[string]interface{}, error) {
+	filters := make(map[string]interface{})
+
+	// Check for unknown filters
+	for key := range r.URL.Query() {
+		if !isExpectedFilter(key) {
+			log.Printf("[DOCTOR] ExtractFiltersFromRequest: Unknown filter: %s", key)
+			return nil, fmt.Errorf("unknown filter: %s", key)
+		}
+	}
+
+	// Parse query parameters
+	isActiveStr := r.URL.Query().Get(QUERY_IS_ACIVE)
+	if isActiveStr != "" {
+		isActive, err := strconv.ParseBool(isActiveStr)
+		if err != nil {
+			log.Printf("[DOCTOR] ExtractFiltersFromRequest: Failed to parse isActive: %v", err)
+			return nil, fmt.Errorf("invalid isActive: %v", err)
+		}
+		filters[ColumnIsActive] = isActive
+	}
+
+	return filters, nil
+}
+
+// isExpectedFilter checks if a filter name is one of the expected names.
+func isExpectedFilter(filterName string) bool {
+	expectedFilters := map[string]struct{}{
+		QUERY_IS_ACIVE: {},
+		QUERY_PAGE:     {},
+		QUERY_LIMIT:    {},
+	}
+
+	_, ok := expectedFilters[filterName]
+	return ok
 }

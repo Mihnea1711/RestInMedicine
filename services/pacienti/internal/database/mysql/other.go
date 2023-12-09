@@ -11,7 +11,7 @@ import (
 func (db *MySQLDatabase) SetPatientActivityByUserID(ctx context.Context, isActive bool, userID int) (int, error) {
 	// Construct the SQL update query
 	query := fmt.Sprintf("UPDATE %s SET %s=? WHERE %s=?",
-		utils.TableName,
+		utils.PatientTableName,
 		utils.ColumnIsActive,
 		utils.ColumnIDUser,
 	)

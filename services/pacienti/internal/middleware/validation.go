@@ -19,7 +19,7 @@ import (
 
 func ValidatePacientInfo(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var patient models.Pacient
+		var patient models.Patient
 
 		dec := json.NewDecoder(r.Body)
 		dec.DisallowUnknownFields()
@@ -33,14 +33,14 @@ func ValidatePacientInfo(next http.Handler) http.Handler {
 		}
 
 		// Basic validation for each field
-		if patient.Nume == "" || len(patient.Nume) > 255 {
+		if patient.FirstName == "" || len(patient.FirstName) > 255 {
 			errMsg := "Invalid or missing Nume"
 			log.Printf("[PATIENT_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
 			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Patient validation failed due to first name"})
 			return
 		}
 
-		if patient.Prenume == "" || len(patient.Prenume) > 255 {
+		if patient.SecondName == "" || len(patient.SecondName) > 255 {
 			errMsg := "Invalid or missing Prenume"
 			log.Printf("[PATIENT_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
 			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Patient validation failed due to second name"})
@@ -56,7 +56,7 @@ func ValidatePacientInfo(next http.Handler) http.Handler {
 		}
 
 		// Validate Romanian phone number format
-		if !utils.PhoneRegex.MatchString(patient.Telefon) || len(patient.Telefon) != 10 {
+		if !utils.PhoneRegex.MatchString(patient.PhoneNumber) || len(patient.PhoneNumber) != 10 {
 			errMsg := "Invalid or missing Telefon"
 			log.Printf("[PATIENT_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
 			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Patient validation failed due to phone nr"})
@@ -65,7 +65,7 @@ func ValidatePacientInfo(next http.Handler) http.Handler {
 
 		// Check if DataNasterii is valid (18 years in the past)
 		minimumBirthDate := time.Now().AddDate(-18, 0, 0)
-		if patient.DataNasterii.After(minimumBirthDate) {
+		if patient.BirthDay.After(minimumBirthDate) {
 			errMsg := "Invalid DataNasterii (must be at least 18 years ago)"
 			log.Printf("[PATIENT_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
 			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Patient validation failed due to birthdate"})
@@ -73,7 +73,7 @@ func ValidatePacientInfo(next http.Handler) http.Handler {
 		}
 
 		// In your ValidatePacientInfo middleware
-		if ok, errMsg := validateCNPBirthdate(patient.CNP, patient.DataNasterii); !ok {
+		if ok, errMsg := validateCNPBirthdate(patient.CNP, patient.BirthDay); !ok {
 			log.Printf("[PATIENT_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
 			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Patient validation failed due to cnp"})
 			return

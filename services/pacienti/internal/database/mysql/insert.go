@@ -9,24 +9,24 @@ import (
 	"github.com/mihnea1711/POS_Project/services/pacienti/pkg/utils"
 )
 
-func (db *MySQLDatabase) SavePatient(ctx context.Context, pacient *models.Pacient) (int, error) {
+func (db *MySQLDatabase) SavePatient(ctx context.Context, pacient *models.Patient) (int, error) {
 	// Construct the SQL insert query
 	query := fmt.Sprintf("INSERT INTO %s (%s, %s, %s, %s, %s, %s, %s, %s) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-		utils.TableName,
+		utils.PatientTableName,
 		utils.ColumnIDUser,
-		utils.ColumnNume,
-		utils.ColumnPrenume,
+		utils.ColumnFirstName,
+		utils.ColumnSecondName,
 		utils.ColumnEmail,
-		utils.ColumnTelefon,
+		utils.ColumnPhoneNumber,
 		utils.ColumnCNP,
-		utils.ColumnDataNasterii,
+		utils.ColumnBirthDay,
 		utils.ColumnIsActive,
 	)
 
 	log.Println("[PATIENT] Attempting to save patient")
 
 	// Execute the SQL statement
-	result, err := db.ExecContext(ctx, query, pacient.IDUser, pacient.Nume, pacient.Prenume, pacient.Email, pacient.Telefon, pacient.CNP, pacient.DataNasterii, pacient.IsActive)
+	result, err := db.ExecContext(ctx, query, pacient.IDUser, pacient.FirstName, pacient.SecondName, pacient.Email, pacient.PhoneNumber, pacient.CNP, pacient.BirthDay, pacient.IsActive)
 	if err != nil {
 		log.Printf("[PATIENT] Error executing query to save patient: %v", err)
 		return 0, err

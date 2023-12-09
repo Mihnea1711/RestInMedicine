@@ -10,7 +10,7 @@ import (
 
 func (db *MySQLDatabase) DeletePatientByID(ctx context.Context, patientID int) (int, error) {
 	// Construct the SQL delete query
-	query := fmt.Sprintf("DELETE FROM %s WHERE %s = ?", utils.TableName, utils.ColumnIDPacient)
+	query := fmt.Sprintf("DELETE FROM %s WHERE %s = ?", utils.PatientTableName, utils.ColumnIDPatient)
 
 	log.Printf("[PATIENT] Attempting to delete patient with ID %d", patientID)
 
@@ -39,7 +39,7 @@ func (db *MySQLDatabase) DeletePatientByID(ctx context.Context, patientID int) (
 
 func (db *MySQLDatabase) DeletePatientByUserID(ctx context.Context, patientUserID int) (int, error) {
 	// Construct the SQL delete query
-	query := fmt.Sprintf("DELETE FROM %s WHERE %s = ?", utils.TableName, utils.ColumnIDUser)
+	query := fmt.Sprintf("DELETE FROM %s WHERE %s = ?", utils.PatientTableName, utils.ColumnIDUser)
 
 	log.Printf("[PATIENT] Attempting to delete patient with user ID %d", patientUserID)
 

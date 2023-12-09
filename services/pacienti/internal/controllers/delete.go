@@ -159,7 +159,7 @@ func (pController *PatientController) DeletePatientByUserID(w http.ResponseWrite
 		Message: fmt.Sprintf("Patient with user ID: %d deleted successfully", patientUserID),
 		Payload: models.ComplexResponse{
 			RowsAffected: rowsAffected,
-			DeletedID:    patient.IDPacient,
+			DeletedID:    patient.IDPatient,
 		},
 	})
 }

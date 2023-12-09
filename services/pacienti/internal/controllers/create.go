@@ -14,7 +14,7 @@ import (
 
 func (pController *PatientController) CreatePatient(w http.ResponseWriter, r *http.Request) {
 	log.Printf("[PATIENT] Attempting to create a new PATIENT.")
-	patient := r.Context().Value(utils.DECODED_PATIENT).(*models.Pacient)
+	patient := r.Context().Value(utils.DECODED_PATIENT).(*models.Patient)
 
 	// Ensure a database operation doesn't take longer than 5 seconds
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)

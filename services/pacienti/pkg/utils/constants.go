@@ -35,27 +35,31 @@ const (
 	TOGGLE_PATIENT_ACTIVITY_ENDPOINT   = "/patients/activity"
 
 	// Parameters
-	FETCH_PATIENT_BY_ID_PARAMETER       = "patient_id"
-	FETCH_PATIENT_BY_EMAIL_PARAMETER    = "patient_email"
-	FETCH_PATIENT_BY_USER_ID_PARAMETER  = "patient_id"
+	FETCH_PATIENT_BY_ID_PARAMETER       = "patientID"
+	FETCH_PATIENT_BY_EMAIL_PARAMETER    = "patientEmail"
+	FETCH_PATIENT_BY_USER_ID_PARAMETER  = "patientID"
 	UPDATE_PATIENT_BY_ID_PARAMETER      = "patient_id"
-	DELETE_PATIENT_BY_ID_PARAMETER      = "patient_id"
-	DELETE_PATIENT_BY_USER_ID_PARAMETER = "patient_user_id"
+	DELETE_PATIENT_BY_ID_PARAMETER      = "patientID"
+	DELETE_PATIENT_BY_USER_ID_PARAMETER = "patientUserID"
+
+	QUERY_IS_ACIVE = "isActive"
+	QUERY_PAGE     = "page"
+	QUERY_LIMIT    = "limit"
 )
 
 const (
-	DatabaseName = "pdp_db"
-	TableName    = "patient"
+	DatabaseName     = "pdp_db"
+	PatientTableName = "patient"
 
-	ColumnIDPacient    = "id_patient"
-	ColumnIDUser       = "id_user"
-	ColumnNume         = "nume"
-	ColumnPrenume      = "prenume"
-	ColumnEmail        = "email"
-	ColumnTelefon      = "telefon"
-	ColumnCNP          = "cnp"
-	ColumnDataNasterii = "data_nasterii"
-	ColumnIsActive     = "is_active"
+	ColumnIDPatient   = "id_patient"
+	ColumnIDUser      = "id_user"
+	ColumnFirstName   = "first_name"
+	ColumnSecondName  = "second_name"
+	ColumnEmail       = "email"
+	ColumnPhoneNumber = "phone_number"
+	ColumnCNP         = "cnp"
+	ColumnBirthDay    = "birth_day"
+	ColumnIsActive    = "is_active"
 )
 
 const CNP_DATE_FORMAT = "060102"
