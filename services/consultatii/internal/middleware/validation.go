@@ -135,18 +135,18 @@ func validateConsultation(consultation *models.Consultation) error {
 	}
 
 	// Validate each investigation in the list
-	for _, inv := range consultation.Investigatii {
-		if inv.Denumire == "" {
+	for _, inv := range consultation.Investigations {
+		if inv.Name == "" {
 			log.Println("[CONSULTATION_VALIDATION] Invalid investigation denumire")
 			return errors.New("invalid investigation denumire")
 		}
 
-		if inv.DurataProcesare <= 0 {
+		if inv.ProcessingTime <= 0 {
 			log.Println("[CONSULTATION_VALIDATION] Invalid investigation durata de procesare")
 			return errors.New("invalid investigation durata de procesare")
 		}
 
-		if inv.Rezultat == "" {
+		if inv.Result == "" {
 			log.Println("[CONSULTATION_VALIDATION] Invalid investigation rezultat")
 			return errors.New("invalid investigation rezultat")
 		}

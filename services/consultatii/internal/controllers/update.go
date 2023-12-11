@@ -34,7 +34,7 @@ func (cController *ConsultationController) UpdateConsultationByID(w http.Respons
 
 	// Retrieve the consultation data from the request context
 	consultation := r.Context().Value(utils.DECODED_CONSULTATION).(*models.Consultation)
-	consultation.IDConsultatie = consultationID
+	consultation.IDConsultation = consultationID
 
 	// Ensure a database operation doesn't take longer than utils.REQUEST_TIMEOUT_DURATION seconds
 	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_TIMEOUT_DURATION*time.Second)
@@ -97,7 +97,7 @@ func (cController *ConsultationController) UpdateConsultationByID(w http.Respons
 	}
 
 	// Log the successful update of the consultation
-	log.Printf("[CONSULTATION] Successfully updated consultation %s", consultation.IDConsultatie.Hex())
+	log.Printf("[CONSULTATION] Successfully updated consultation %s", consultation.IDConsultation.Hex())
 
 	// Respond with a success message and the number of rows affected
 	response := models.ResponseData{

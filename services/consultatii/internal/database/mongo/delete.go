@@ -15,7 +15,7 @@ func (db *MongoDB) DeleteConsultationByID(ctx context.Context, consultationID pr
 	collection := db.db.Collection(utils.CONSULTATIE_TABLE)
 
 	// Perform the deletion operation based on the provided consultation ID
-	result, err := collection.DeleteOne(ctx, bson.M{utils.ID_CONSULTATIE: consultationID})
+	result, err := collection.DeleteOne(ctx, bson.M{utils.COLUMN_ID_CONSULTATIE: consultationID})
 	if err != nil {
 		// Log an error if the deletion operation fails
 		log.Printf("[CONSULTATION] Error deleting consultation by ID %v: %v", consultationID.Hex(), err)

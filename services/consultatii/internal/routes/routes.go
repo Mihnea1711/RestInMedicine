@@ -45,52 +45,37 @@ func SetupRoutes(ctx context.Context, dbConn database.Database, rdb *redis.Redis
 func loadCrudRoutes(router *mux.Router, consultatieController *controllers.ConsultationController) {
 	log.Println("[CONSULTATION] Loading CRUD routes for consultatie entity...")
 
-	// // ---------------------------------------------------------- Create --------------------------------------------------------------
+	// ---------------------------------------------------------- Health --------------------------------------------------------------
+	healthHandler := http.HandlerFunc(consultatieController.HealthCheck)
+	router.Handle(utils.HEALTH_CHECK_ENDPOINT, healthHandler).Methods("GET")
+	log.Printf("[CONSULTATION] Route DELETE %s registered.", utils.HEALTH_CHECK_ENDPOINT)
+
+	// ---------------------------------------------------------- Create --------------------------------------------------------------
 	consultatieCreationHandler := http.HandlerFunc(consultatieController.CreateConsultation)
-	router.Handle(utils.INSERT_CONSULTATIE_ENDPOINT, middleware.ValidateConsultationInfo(consultatieCreationHandler)).Methods("POST") // Creates a new consultatie
+	router.Handle(utils.INSERT_CONSULTATIE_ENDPOINT, middleware.ValidateConsultationInfo(consultatieCreationHandler)).Methods("POST")
 	log.Print("[CONSULTATION] Route POST /consultatii registered.")
 
 	// ---------------------------------------------------------- Retrieve --------------------------------------------------------------
 	consultatieFetchAllHandler := http.HandlerFunc(consultatieController.GetConsultations)
-	router.HandleFunc(utils.FETCH_ALL_CONSULTATII_ENDPOINT, consultatieFetchAllHandler).Methods("GET") // Lists all consultaties
+	router.HandleFunc(utils.FETCH_ALL_CONSULTATII_ENDPOINT, consultatieFetchAllHandler).Methods("GET")
 	log.Printf("[CONSULTATION] Route GET %s registered.", utils.FETCH_ALL_CONSULTATII_ENDPOINT)
 
-	consultatieFetchByDoctorIDHandler := http.HandlerFunc(consultatieController.GetConsultationsByDoctorID)
-	router.HandleFunc(utils.FETCH_CONSULTATIE_BY_DOCTOR_ID_ENDPOINT, consultatieFetchByDoctorIDHandler).Methods("GET") // Get consultatii by doctor ID
-	log.Printf("[CONSULTATION] Route GET %s registered.", utils.FETCH_CONSULTATIE_BY_DOCTOR_ID_ENDPOINT)
-
-	consultatieFetchByPatientIDHandler := http.HandlerFunc(consultatieController.GetConsultationsByPatientID)
-	router.HandleFunc(utils.FETCH_CONSULTATIE_BY_PATIENT_ID_ENDPOINT, consultatieFetchByPatientIDHandler).Methods("GET") // Get consultatii by pacient ID
-	log.Printf("[CONSULTATION] Route GET %s registered.", utils.FETCH_CONSULTATIE_BY_PATIENT_ID_ENDPOINT)
-
-	consultatieFetchByDateHandler := http.HandlerFunc(consultatieController.GetConsultationsByDate)
-	router.HandleFunc(utils.FETCH_CONSULTATIE_BY_DATE_ENDPOINT, consultatieFetchByDateHandler).Methods("GET") // Get consultatii by date
-	log.Printf("[CONSULTATION] Route GET %s registered.", utils.FETCH_CONSULTATIE_BY_DATE_ENDPOINT)
-
-	filteredConsultationHandler := http.HandlerFunc(consultatieController.GetFilteredConsultations)
-	router.HandleFunc(utils.FILTER_CONSULTATII_ENDPOINT, filteredConsultationHandler).Methods("GET") // Filtered consultatii
-	log.Printf("[CONSULTATION] Route GET %s registered.", utils.FILTER_CONSULTATII_ENDPOINT)
-
-	healthHandler := http.HandlerFunc(consultatieController.HealthCheck)
-	router.Handle(utils.HEALTH_CHECK_ENDPOINT, healthHandler).Methods("GET") // Receives health checks
-	log.Printf("[CONSULTATION] Route DELETE %s registered.", utils.HEALTH_CHECK_ENDPOINT)
-
 	consultatieFetchByIDHandler := http.HandlerFunc(consultatieController.GetConsultationByID)
-	router.HandleFunc(utils.FETCH_CONSULTATIE_BY_ID_ENDPOINT, consultatieFetchByIDHandler).Methods("GET") // Get consultatii by consultatie ID
+	router.HandleFunc(utils.FETCH_CONSULTATIE_BY_ID_ENDPOINT, consultatieFetchByIDHandler).Methods("GET")
 	log.Printf("[CONSULTATION] Route GET %s registered.", utils.FETCH_CONSULTATIE_BY_ID_ENDPOINT)
 
 	// ---------------------------------------------------------- Update --------------------------------------------------------------
 	consultatieUpdateByIDHandler := http.HandlerFunc(consultatieController.UpdateConsultationByID)
-	router.Handle(utils.UPDATE_CONSULTATIE_BY_ID_ENDPOINT, middleware.ValidateConsultationInfo(consultatieUpdateByIDHandler)).Methods("PUT") // Updates a specific consultatie
+	router.Handle(utils.UPDATE_CONSULTATIE_BY_ID_ENDPOINT, middleware.ValidateConsultationInfo(consultatieUpdateByIDHandler)).Methods("PUT")
 	log.Printf("[CONSULTATION] Route PUT %s registered.", utils.UPDATE_CONSULTATIE_BY_ID_ENDPOINT)
 
 	// ---------------------------------------------------------- Delete --------------------------------------------------------------
 	consultatieDeleteByIDHandler := http.HandlerFunc(consultatieController.DeleteConsultationByID)
-	router.Handle(utils.DELETE_CONSULTATIE_BY_ID_ENDPOINT, consultatieDeleteByIDHandler).Methods("DELETE") // Deletes a consultatie
+	router.Handle(utils.DELETE_CONSULTATIE_BY_ID_ENDPOINT, consultatieDeleteByIDHandler).Methods("DELETE")
 	log.Printf("[CONSULTATION] Route DELETE %s registered.", utils.DELETE_CONSULTATIE_BY_ID_ENDPOINT)
 
 	consultatieDeleteByPatientOrDoctorIDHandler := http.HandlerFunc(consultatieController.DeleteConsultationByPatientOrDoctorID)
-	router.Handle(utils.DELETE_CONSULTATIE_BY_PATIENT_DOCTOR_ID_ENDPOINT, consultatieDeleteByPatientOrDoctorIDHandler).Methods("DELETE") // Deletes a consultatie
+	router.Handle(utils.DELETE_CONSULTATIE_BY_PATIENT_DOCTOR_ID_ENDPOINT, consultatieDeleteByPatientOrDoctorIDHandler).Methods("DELETE")
 	log.Printf("[CONSULTATION] Route DELETE %s registered.", utils.DELETE_CONSULTATIE_BY_PATIENT_DOCTOR_ID_ENDPOINT)
 
 	log.Println("[CONSULTATION] All CRUD routes for consultatie entity loaded successfully.")

@@ -22,36 +22,38 @@ var collectionName = "consultation";
 
 db[collectionName].createIndex({ id_patient: 1, id_doctor: 1, date: 1 }, { unique: true });
 
-// Define two Consultatie objects
-var consultatie1 = {
-    id_consultation: ObjectId(),
+// Define two Consultation objects
+var consultation1 = {
+    _id: ObjectId(),
     id_patient: 1,
     id_doctor: 1,
     date: new ISODate("2023-11-10"),
-    diagnostic: "Diagnostic for Consultatie 1",
-    investigatii: [
+    diagnostic: "Diagnostic for Consultation 1",
+    investigations: [
         {
-            denumire: "Investigatia 1",
-            durata_procesare: 30,
-            rezultat: "Rezultat investigatie 1"
+            id_investigation: ObjectId(),
+            name: "Investigation 1",
+            processingTime: 30,
+            result: "Result of Investigation 1"
         }
     ]
 };
 
-var consultatie2 = {
-    id_consultation: ObjectId(),
+var consultation2 = {
+    _id: ObjectId(),
     id_patient: 2,
     id_doctor: 2,
     date: new ISODate("2023-11-15"),
-    diagnostic: "Diagnostic for Consultatie 2",
-    investigatii: [
+    diagnostic: "Diagnostic for Consultation 2",
+    investigations: [
         {
-            denumire: "Investigatia 2",
-            durata_procesare: 45,
-            rezultat: "Rezultat investigatie 2"
+            id_investigation: ObjectId(),
+            name: "Investigation 2",
+            processingTime: 45,
+            result: "Result of Investigation 2"
         }
     ]
 };
 
 // Insert the Consultatie objects into the collection
-db[collectionName].insertMany([consultatie1, consultatie2]);
+db[collectionName].insertMany([consultation1, consultation2]);

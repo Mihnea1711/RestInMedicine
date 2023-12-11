@@ -8,19 +8,19 @@ import (
 
 // se poate adauga validare pe obiect aici dar ar fi de preferat sa fie facuta intr-unmiddleware pentru flexibiliate, adaptabilitate si cuplare scazuta
 type Consultation struct {
-	IDConsultatie primitive.ObjectID `json:"id_consultation" bson:"id_consultation"`
-	IDPatient     int                `json:"id_patient" bson:"id_patient"`
-	IDDoctor      int                `json:"id_doctor" bson:"id_doctor"`
-	Date          time.Time          `json:"date" bson:"date"`
-	Diagnostic    string             `json:"diagnostic" bson:"diagnostic"`
-	Investigatii  []Investigatie     `json:"investigatii" bson:"investigatii"`
+	IDConsultation primitive.ObjectID `json:"idConsultation" bson:"_id"`
+	IDPatient      int                `json:"idPatient" bson:"id_patient"`
+	IDDoctor       int                `json:"idDoctor" bson:"id_doctor"`
+	Date           time.Time          `json:"date" bson:"date"`
+	Diagnostic     string             `json:"diagnostic" bson:"diagnostic"`
+	Investigations []Investigation    `json:"investigations" bson:"investigations"`
 }
 
-type Investigatie struct {
-	ID              primitive.ObjectID `json:"id_investigatie" bson:"id_investigatie"`
-	Denumire        string             `json:"denumire" bson:"denumire"`
-	DurataProcesare int                `json:"durata_procesare" bson:"durata_procesare"`
-	Rezultat        string             `json:"rezultat" bson:"rezultat"`
+type Investigation struct {
+	IDInvestigation primitive.ObjectID `json:"idInvestigation" bson:"id_investigation"`
+	Name            string             `json:"name" bson:"name"`
+	ProcessingTime  int                `json:"processingTime" bson:"processing_time"`
+	Result          string             `json:"result" bson:"result"`
 }
 
 type ResponseData struct {
@@ -30,9 +30,9 @@ type ResponseData struct {
 }
 
 type RowsAffected struct {
-	RowsAffected int `json:"rows_affected"`
+	RowsAffected int `json:"rowsAffected"`
 }
 
 type LastInsertedID struct {
-	LastInsertedID string `json:"last_inserted_id"`
+	LastInsertedID string `json:"lastInsertedID"`
 }

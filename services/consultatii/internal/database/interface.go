@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"time"
 
 	"github.com/mihnea1711/POS_Project/services/consultatii/internal/models"
 	"go.mongodb.org/mongo-driver/bson"
@@ -14,13 +13,8 @@ type Database interface {
 	SaveConsultation(ctx context.Context, consultatie *models.Consultation) (primitive.ObjectID, error)
 
 	// retrieve
-	FetchAllConsultations(ctx context.Context, page, limit int) ([]models.Consultation, error)
+	FetchConsultations(ctx context.Context, filter bson.M, page int, limit int) ([]models.Consultation, error)
 	FetchConsultationByID(ctx context.Context, consultationID primitive.ObjectID) (*models.Consultation, error)
-	FetchConsultationsByPatientID(ctx context.Context, patientID int, page, limit int) ([]models.Consultation, error)
-	FetchConsultationsByDoctorID(ctx context.Context, doctorID int, page, limit int) ([]models.Consultation, error)
-	FetchConsultationsByDate(ctx context.Context, date time.Time, page, limit int) ([]models.Consultation, error)
-
-	FetchConsultationsByFilter(ctx context.Context, filter bson.D, page int, limit int) ([]models.Consultation, error)
 
 	// update
 	UpdateConsultationByID(ctx context.Context, consultatie *models.Consultation) (int, error)

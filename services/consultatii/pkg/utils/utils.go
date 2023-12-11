@@ -2,12 +2,14 @@ package utils
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -83,8 +85,8 @@ func writeJSONResponse(w http.ResponseWriter, status int, response []byte) {
 
 // Extract pagination parameters from the request
 func ExtractPaginationParams(r *http.Request) (int, int) {
-	limitStr := r.URL.Query().Get("limit")
-	pageStr := r.URL.Query().Get("page")
+	limitStr := r.URL.Query().Get(QUERY_LIMIT)
+	pageStr := r.URL.Query().Get(QUERY_PAGE)
 
 	var limit, page int
 	var err error
@@ -131,4 +133,64 @@ func ExtractQueryParams(r *http.Request) bson.D {
 		}
 	}
 	return filter
+}
+
+// ExtractFiltersFromRequest extracts query parameters from the request and constructs a map of filters.
+func ExtractFiltersFromRequest(r *http.Request) (bson.M, error) {
+	filters := bson.M{}
+
+	// Check for unknown filters
+	for key := range r.URL.Query() {
+		if !isExpectedFilter(key) {
+			log.Printf("[APPOINTMENT] ExtractFiltersFromRequest: Unknown filter: %s", key)
+			return nil, fmt.Errorf("unknown filter: %s", key)
+		}
+	}
+
+	// Parse query parameters
+	patientID := r.URL.Query().Get(QUERY_PATIENT_ID)
+	doctorID := r.URL.Query().Get(QUERY_DOCTOR_ID)
+	date := r.URL.Query().Get(QUERY_DATE)
+
+	// Convert string values to appropriate types
+	if patientID != "" {
+		if id, err := strconv.Atoi(patientID); err == nil {
+			filters[COLUMN_ID_PATIENT] = id
+		} else {
+			log.Printf("[APPOINTMENT] ExtractFiltersFromRequest: Failed to parse patientID: %v", err)
+			return nil, fmt.Errorf("invalid patientID: %v", err)
+		}
+	}
+	if doctorID != "" {
+		if id, err := strconv.Atoi(doctorID); err == nil {
+			filters[COLUMN_ID_DOCTOR] = id
+		} else {
+			log.Printf("[APPOINTMENT] ExtractFiltersFromRequest: Failed to parse doctorID: %v", err)
+			return nil, fmt.Errorf("invalid doctorID: %v", err)
+		}
+	}
+	if date != "" {
+		if t, err := time.Parse(TIME_FORMAT, date); err == nil {
+			filters[COLUMN_DATE] = bson.M{"$eq": t}
+		} else {
+			log.Printf("[APPOINTMENT] ExtractFiltersFromRequest: Failed to parse date: %v", err)
+			return nil, fmt.Errorf("invalid date: %v", err)
+		}
+	}
+
+	return filters, nil
+}
+
+// isExpectedFilter checks if a filter name is one of the expected names.
+func isExpectedFilter(filterName string) bool {
+	expectedFilters := map[string]struct{}{
+		QUERY_PATIENT_ID: {},
+		QUERY_DOCTOR_ID:  {},
+		QUERY_DATE:       {},
+		QUERY_PAGE:       {},
+		QUERY_LIMIT:      {},
+	}
+
+	_, ok := expectedFilters[filterName]
+	return ok
 }

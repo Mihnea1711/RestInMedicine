@@ -10,18 +10,18 @@ const DATABASE_NAME = "consultations_db"
 const CONSULTATIE_TABLE = "consultation"
 
 const (
-	ID_CONSULTATIE = "id_consultation"
-	ID_PACIENT     = "id_patient"
-	ID_DOCTOR      = "id_doctor"
-	DATE           = "date"
-	DIAGNOSTIC     = "diagnostic"
-	INVESTIGATII   = "investigatii"
+	COLUMN_ID_CONSULTATIE = "_id"
+	COLUMN_ID_PATIENT     = "id_patient"
+	COLUMN_ID_DOCTOR      = "id_doctor"
+	COLUMN_DATE           = "date"
+	COLUMN_DIAGNOSTIC     = "diagnostic"
+	COLUMN_INVESTIGATII   = "investigations"
 )
 const (
-	ID_INVESTIGATIE  = "id_investigatie"
-	DENUMIRE         = "denumire"
-	DURATA_PROCESARE = "durata_procesare"
-	REZULTAT         = "rezultat"
+	ID_INVESTIGATION = "id_investigation"
+	NAME             = "name"
+	PROCESSING_TIME  = "processing_time"
+	RESULT           = "result"
 )
 
 const (
@@ -36,6 +36,14 @@ const (
 	DEFAULT_PAGINATION_LIMIT = 20
 	MAX_PAGINATION_LIMIT     = 50
 	DEFAULT_PAGINATION_PAGE  = 1
+)
+
+const (
+	QUERY_PATIENT_ID = "patientID"
+	QUERY_DOCTOR_ID  = "doctorID"
+	QUERY_DATE       = "date"
+	QUERY_PAGE       = "page"
+	QUERY_LIMIT      = "limit"
 )
 
 const TIME_FORMAT = "2006-01-02"

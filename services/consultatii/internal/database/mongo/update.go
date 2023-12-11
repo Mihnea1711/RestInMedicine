@@ -15,10 +15,10 @@ func (db *MongoDB) UpdateConsultationByID(ctx context.Context, consultation *mod
 	collection := db.db.Collection(utils.CONSULTATIE_TABLE)
 
 	// Log the attempt to update the consultation with its ID
-	log.Printf("[PATIENT] Attempting to update consultation %s", consultation.IDConsultatie.Hex())
+	log.Printf("[PATIENT] Attempting to update consultation %s", consultation.IDConsultation.Hex())
 
 	// Replace the existing consultation document in the collection with the provided one
-	result, err := collection.ReplaceOne(ctx, bson.M{utils.ID_CONSULTATIE: consultation.IDConsultatie}, consultation)
+	result, err := collection.ReplaceOne(ctx, bson.M{utils.COLUMN_ID_CONSULTATIE: consultation.IDConsultation}, consultation)
 	if err != nil {
 		// Log an error if the update operation fails
 		log.Printf("[CONSULTATION] Error updating consultation by ID: %v", err)
@@ -28,10 +28,10 @@ func (db *MongoDB) UpdateConsultationByID(ctx context.Context, consultation *mod
 	// Check if any document was modified during the update
 	if result.ModifiedCount != 0 {
 		// Log a success message if the consultation was updated
-		log.Printf("[CONSULTATION] Consultation updated successfully. ID: %v", consultation.IDConsultatie.Hex())
+		log.Printf("[CONSULTATION] Consultation updated successfully. ID: %v", consultation.IDConsultation.Hex())
 	} else {
 		// Log a message if no consultation was updated (ID not found)
-		log.Printf("[CONSULTATION] No consultation has been updated for ID: %v", consultation.IDConsultatie.Hex())
+		log.Printf("[CONSULTATION] No consultation has been updated for ID: %v", consultation.IDConsultation.Hex())
 	}
 
 	// Return the number of modified documents (rows) and a potential error

@@ -25,7 +25,7 @@ func (cController *ConsultationController) CreateConsultation(w http.ResponseWri
 	defer cancel()
 
 	// Assign an ID to the consultation
-	consultation.IDConsultatie = primitive.NewObjectID()
+	consultation.IDConsultation = primitive.NewObjectID()
 
 	// Use cController.DbConn to save the consultation to the database
 	insertedID, err := cController.DbConn.SaveConsultation(ctx, consultation)
