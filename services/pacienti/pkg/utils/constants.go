@@ -23,6 +23,7 @@ const CLEAR_DB_RESOURCES_TIMEOUT = 10
 
 const (
 	// Endpoints
+	HEALTH_CHECK_ENDPOINT              = "/patients/health-check"
 	CREATE_PATIENT_ENDPOINT            = "/patients"
 	FETCH_ALL_PATIENTS_ENDPOINT        = "/patients"
 	FETCH_PATIENT_BY_ID_ENDPOINT       = "/patients/{" + FETCH_PATIENT_BY_ID_PARAMETER + "}"
@@ -31,14 +32,14 @@ const (
 	UPDATE_PATIENT_BY_ID_ENDPOINT      = "/patients/{" + UPDATE_PATIENT_BY_ID_PARAMETER + "}"
 	DELETE_PATIENT_BY_ID_ENDPOINT      = "/patients/{" + DELETE_PATIENT_BY_ID_PARAMETER + "}"
 	DELETE_PATIENT_BY_USER_ID_ENDPOINT = "/patients/users/{" + DELETE_PATIENT_BY_USER_ID_PARAMETER + "}"
-	HEALTH_CHECK_ENDPOINT              = "/patients/health-check"
-	TOGGLE_PATIENT_ACTIVITY_ENDPOINT   = "/patients/activity"
+	TOGGLE_PATIENT_ACTIVITY_ENDPOINT   = "/patients/{" + PATCH_PATIENT_BY_ID_PARAMETER + "}"
 
 	// Parameters
 	FETCH_PATIENT_BY_ID_PARAMETER       = "patientID"
 	FETCH_PATIENT_BY_EMAIL_PARAMETER    = "patientEmail"
 	FETCH_PATIENT_BY_USER_ID_PARAMETER  = "patientID"
-	UPDATE_PATIENT_BY_ID_PARAMETER      = "patient_id"
+	UPDATE_PATIENT_BY_ID_PARAMETER      = "patientID"
+	PATCH_PATIENT_BY_ID_PARAMETER       = "patientID"
 	DELETE_PATIENT_BY_ID_PARAMETER      = "patientID"
 	DELETE_PATIENT_BY_USER_ID_PARAMETER = "patientUserID"
 

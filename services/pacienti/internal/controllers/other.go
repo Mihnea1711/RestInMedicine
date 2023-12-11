@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/mihnea1711/POS_Project/services/pacienti/internal/models"
 	"github.com/mihnea1711/POS_Project/services/pacienti/pkg/utils"
 )
@@ -15,8 +17,21 @@ import (
 func (pController *PatientController) TogglePatientActivity(w http.ResponseWriter, r *http.Request) {
 	log.Println("[PATIENT] Setting patient activity...")
 
+	vars := mux.Vars(r)
+	patientUserIDStr := vars[utils.FETCH_PATIENT_BY_ID_PARAMETER]
+	patientUserID, err := strconv.Atoi(patientUserIDStr)
+	if err != nil {
+		errMsg := fmt.Sprintf("Invalid patient ID: %s", patientUserIDStr)
+		log.Printf("[PATIENT] %s", errMsg)
+
+		// Use utils.RespondWithJSON for error response
+		utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Bad request"})
+		return
+	}
+
 	// Decode the patient details from the context
 	reqData := r.Context().Value(utils.DECODED_PATIENT_ACTIVITY).(*models.ActivityData)
+	reqData.IDUser = patientUserID
 
 	// Ensure a database operation doesn't take longer than 5 seconds
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)

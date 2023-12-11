@@ -221,13 +221,6 @@ func ValidatePatientActivityInfo(next http.Handler) http.Handler {
 			return
 		}
 
-		if PatientActivityData.IDUser <= 0 {
-			errMsg := "Invalid or missing IDUser"
-			log.Printf("[PATIENT_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
-			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Patient validation failed due to user ID"})
-			return
-		}
-
 		log.Printf("[PATIENT_VALIDATION] Patient info validated successfully in request: %s", r.RequestURI)
 
 		// If all validations pass, proceed to the actual controller
