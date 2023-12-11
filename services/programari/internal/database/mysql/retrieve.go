@@ -28,13 +28,13 @@ func (db *MySQLDatabase) FetchAppointments(ctx context.Context, filters map[stri
 
 	query, args, err := qb.ToSql()
 	if err != nil {
-		log.Printf("[APPOINTMENT] GetAppointmentsByFilters: Failed to construct SQL query: %v", err)
+		log.Printf("[APPOINTMENT] FetchAppointments: Failed to construct SQL query: %v", err)
 		return nil, fmt.Errorf("internal server error")
 	}
 
 	rows, err := db.QueryContext(ctx, query, args...)
 	if err != nil {
-		log.Printf("[APPOINTMENT] GetAppointmentsByFilters: Failed to query database: %v", err)
+		log.Printf("[APPOINTMENT] FetchAppointments: Failed to query database: %v", err)
 		return nil, fmt.Errorf("internal server error")
 	}
 	defer rows.Close()
@@ -50,7 +50,7 @@ func (db *MySQLDatabase) FetchAppointments(ctx context.Context, filters map[stri
 			&appointment.Status,
 		)
 		if err != nil {
-			log.Printf("[APPOINTMENT] GetAppointmentsByFilters: Failed to scan rows: %v", err)
+			log.Printf("[APPOINTMENT] FetchAppointments: Failed to scan rows: %v", err)
 			return nil, fmt.Errorf("internal server error")
 		}
 		appointments = append(appointments, appointment)

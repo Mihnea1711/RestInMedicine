@@ -46,7 +46,6 @@ func loadCrudRoutes(router *mux.Router, appointmentController *controllers.Appoi
 	log.Println("[APPOINTMENT] Loading CRUD routes for Appointment entity...")
 
 	// ---------------------------------------------------------- Health --------------------------------------------------------------
-
 	healthCheckHandler := http.HandlerFunc(appointmentController.HealthCheck)
 	router.Handle(utils.HEALTH_CHECK_ENDPOINT, healthCheckHandler).Methods("GET")
 	log.Println("[APPOINTMENT] Route GET", utils.HEALTH_CHECK_ENDPOINT, "registered.")
@@ -57,12 +56,7 @@ func loadCrudRoutes(router *mux.Router, appointmentController *controllers.Appoi
 	log.Println("[APPOINTMENT] Route POST", utils.CREATE_APPOINTMENT_ENDPOINT, "registered.")
 
 	// ---------------------------------------------------------- Retrieve --------------------------------------------------------------
-	// // implement pagination for these
-	// appointmentFetchAllHandler := http.HandlerFunc(appointmentController.GetAppointments)
-	// router.HandleFunc(utils.FETCH_ALL_APPOINTMENTS_ENDPOINT, appointmentFetchAllHandler).Methods("GET") // Lists all appointments
-	// log.Println("[APPOINTMENT] Route GET", utils.FETCH_ALL_APPOINTMENTS_ENDPOINT, "registered.")
-
-	appointmentFetchAllHandler := http.HandlerFunc(appointmentController.GetAppointmentsByFilter)
+	appointmentFetchAllHandler := http.HandlerFunc(appointmentController.GetAppointments)
 	router.HandleFunc(utils.FETCH_ALL_APPOINTMENTS_ENDPOINT, appointmentFetchAllHandler).Methods("GET") // Lists all appointments
 	log.Println("[APPOINTMENT] Route GET", utils.FETCH_ALL_APPOINTMENTS_ENDPOINT, "registered.")
 

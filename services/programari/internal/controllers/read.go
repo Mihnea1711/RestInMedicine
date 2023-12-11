@@ -15,14 +15,14 @@ import (
 )
 
 // GetAppointmentsByFilter retrieves appointments by filter.
-func (aController *AppointmentController) GetAppointmentsByFilter(w http.ResponseWriter, r *http.Request) {
+func (aController *AppointmentController) GetAppointments(w http.ResponseWriter, r *http.Request) {
 	log.Printf("[APPOINTMENT] Attempting to retrieve appointments.")
 
 	// get query params for appointment
 	filters, err := utils.ExtractFiltersFromRequest(r)
 	if err != nil {
 		errMsg := fmt.Sprintf("bad request: %s", err)
-		log.Printf("[ERROR] GetAppointmentsByFilter: Failed to extract filters: %s", errMsg)
+		log.Printf("[APPOINTMENT] GetAppointmentsByFilter: Failed to extract filters: %s", errMsg)
 
 		// Respond with a bad request error
 		response := models.ResponseData{
@@ -46,7 +46,7 @@ func (aController *AppointmentController) GetAppointmentsByFilter(w http.Respons
 	appointments, err := aController.DbConn.FetchAppointments(ctx, filters, page, limit)
 	if err != nil {
 		errMsg := fmt.Sprintf("internal server error: %s", err)
-		log.Printf("[ERROR] GetAppointmentsByFilter: Failed to fetch appointments: %s", errMsg)
+		log.Printf("[APPOINTMENT] GetAppointmentsByFilter: Failed to fetch appointments: %s", errMsg)
 
 		// Respond with an internal server error
 		response := models.ResponseData{
