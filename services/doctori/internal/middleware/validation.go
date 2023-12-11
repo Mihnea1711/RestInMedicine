@@ -193,13 +193,6 @@ func ValidateDoctorActivityInfo(next http.Handler) http.Handler {
 			return
 		}
 
-		if doctorActivityData.IDUser <= 0 {
-			errMsg := "Invalid or missing IDUser"
-			log.Printf("[DOCTOR_VALIDATION] %s in request: %s", errMsg, r.RequestURI)
-			utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Error: errMsg, Message: "Doctor validation failed due to first name"})
-			return
-		}
-
 		log.Printf("[DOCTOR_VALIDATION] Doctor info validated successfully in request: %s", r.RequestURI)
 
 		// If all validations pass, proceed to the actual controller

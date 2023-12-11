@@ -10,7 +10,6 @@ type Database interface {
 	SaveDoctor(ctx context.Context, doctor *models.Doctor) (int, error)
 
 	FetchDoctors(ctx context.Context, filters map[string]interface{}, page, limit int) ([]models.Doctor, error)
-	// FetchActiveDoctors(ctx context.Context, page, limit int) ([]models.Doctor, error)
 
 	FetchDoctorByID(ctx context.Context, doctorID int) (*models.Doctor, error)
 	FetchDoctorByEmail(ctx context.Context, email string) (*models.Doctor, error)

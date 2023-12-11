@@ -45,10 +45,17 @@ func SetupRoutes(parentCtx context.Context, dbConn database.Database, rdb *redis
 func loadCrudRoutes(router *mux.Router, doctorController *controllers.DoctorController) {
 	log.Println("[DOCTOR] Loading CRUD routes for Doctor entity...")
 
+	// ---------------------------------------------------------- Health --------------------------------------------------------------
+	healthCheckHandler := http.HandlerFunc(doctorController.HealthCheck)
+	router.Handle(utils.HEALTH_CHECK_ENDPOINT, healthCheckHandler).Methods("GET")
+	log.Println("[DOCTOR] Route GET", utils.HEALTH_CHECK_ENDPOINT, "registered.")
+
+	// ---------------------------------------------------------- Create --------------------------------------------------------------
 	doctorCreationHandler := http.HandlerFunc(doctorController.CreateDoctor)
 	router.Handle(utils.CREATE_DOCTOR_ENDPOINT, middleware.ValidateDoctorInfo(doctorCreationHandler)).Methods("POST")
 	log.Println("[DOCTOR] Route POST", utils.CREATE_DOCTOR_ENDPOINT, "registered.")
 
+	// ---------------------------------------------------------- Retrieve --------------------------------------------------------------
 	doctorFetchAllHandler := http.HandlerFunc(doctorController.GetDoctors)
 	router.HandleFunc(utils.FETCH_ALL_DOCTORS_ENDPOINT, doctorFetchAllHandler).Methods("GET")
 	log.Println("[DOCTOR] Route GET", utils.FETCH_ALL_DOCTORS_ENDPOINT, "registered.")
@@ -61,22 +68,20 @@ func loadCrudRoutes(router *mux.Router, doctorController *controllers.DoctorCont
 	router.HandleFunc(utils.FETCH_DOCTOR_BY_USER_ID_ENDPOINT, doctorFetchByUserIDHandler).Methods("GET")
 	log.Println("[DOCTOR] Route GET", utils.FETCH_DOCTOR_BY_USER_ID_ENDPOINT, "registered.")
 
-	healthCheckHandler := http.HandlerFunc(doctorController.HealthCheck)
-	router.Handle(utils.HEALTH_CHECK_ENDPOINT, healthCheckHandler).Methods("GET")
-	log.Println("[DOCTOR] Route GET", utils.HEALTH_CHECK_ENDPOINT, "registered.")
-
 	doctorFetchByIDHandler := http.HandlerFunc(doctorController.GetDoctorByID)
 	router.HandleFunc(utils.FETCH_DOCTOR_BY_ID_ENDPOINT, doctorFetchByIDHandler).Methods("GET")
 	log.Println("[DOCTOR] Route GET", utils.FETCH_DOCTOR_BY_ID_ENDPOINT, "registered.")
 
+	// ---------------------------------------------------------- Update --------------------------------------------------------------
 	doctorUpdateByIDHandler := http.HandlerFunc(doctorController.UpdateDoctorByID)
 	router.Handle(utils.UPDATE_DOCTOR_BY_ID_ENDPOINT, middleware.ValidateDoctorInfo(doctorUpdateByIDHandler)).Methods("PUT")
 	log.Println("[DOCTOR] Route PUT", utils.UPDATE_DOCTOR_BY_ID_ENDPOINT, "registered.")
 
 	toggleActivityHandler := http.HandlerFunc(doctorController.ToggleDoctorActivity)
 	router.Handle(utils.TOGGLE_DOCTOR_ACTIVITY_ENDPOINT, middleware.ValidateDoctorActivityInfo(toggleActivityHandler)).Methods("PATCH")
-	log.Println("[PATIENT] Route POST", utils.TOGGLE_DOCTOR_ACTIVITY_ENDPOINT, "registered.")
+	log.Println("[PATIENT] Route PATCH", utils.TOGGLE_DOCTOR_ACTIVITY_ENDPOINT, "registered.")
 
+	// ---------------------------------------------------------- Delete --------------------------------------------------------------
 	doctorDeleteByUserIDHandler := http.HandlerFunc(doctorController.DeleteDoctorByUserID)
 	router.Handle(utils.DELETE_DOCTOR_BY_USER_ID_ENDPOINT, doctorDeleteByUserIDHandler).Methods("DELETE")
 	log.Println("[DOCTOR] Route DELETE", utils.DELETE_DOCTOR_BY_USER_ID_ENDPOINT, "registered.")

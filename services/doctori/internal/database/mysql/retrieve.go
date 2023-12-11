@@ -11,111 +11,11 @@ import (
 	"github.com/mihnea1711/POS_Project/services/doctori/pkg/utils"
 )
 
-// func (db *MySQLDatabase) FetchDoctors(ctx context.Context, page, limit int) ([]models.Doctor, error) {
-// 	// Get the offset based on page and limit
-// 	offset := (page - 1) * limit
-
-// 	// Construct the SQL insert query
-// 	query := fmt.Sprintf("SELECT %s, %s, %s, %s, %s, %s, %s FROM %s LIMIT ? OFFSET ?",
-// 		utils.ColumnIDDoctor,
-// 		utils.ColumnIDUser,
-// 		utils.ColumnNume,
-// 		utils.ColumnPrenume,
-// 		utils.ColumnEmail,
-// 		utils.ColumnTelefon,
-// 		utils.ColumnSpecializare,
-// 		utils.DoctorTableName,
-// 	)
-
-// 	log.Printf("[DOCTOR] Attempting to fetch doctors with limit=%d, offset=%d", limit, offset)
-
-// 	// Execute the SQL query with context
-// 	rows, err := db.QueryContext(ctx, query, limit, offset)
-// 	if err != nil {
-// 		log.Printf("[DOCTOR] Error executing query to fetch doctors: %v", err)
-// 		return nil, err
-// 	}
-// 	defer rows.Close()
-
-// 	var doctors []models.Doctor
-// 	for rows.Next() {
-// 		var doctor models.Doctor
-// 		err := rows.Scan(&doctor.IDDoctor, &doctor.IDUser, &doctor.Nume, &doctor.Prenume, &doctor.Email, &doctor.Telefon, &doctor.Specializare)
-// 		if err != nil {
-// 			log.Printf("[DOCTOR] Error scanning doctor row: %v", err)
-// 			return nil, err
-// 		}
-// 		doctors = append(doctors, doctor)
-// 	}
-
-// 	// Check for errors from iterating over rows.
-// 	err = rows.Err()
-// 	if err != nil {
-// 		log.Printf("[DOCTOR] Error after iterating over rows: %v", err)
-// 		return nil, err
-// 	}
-
-// 	log.Printf("[DOCTOR] Successfully fetched %d doctors.", len(doctors))
-// 	return doctors, nil
-// }
-
-// func (db *MySQLDatabase) FetchActiveDoctors(ctx context.Context, page, limit int) ([]models.Doctor, error) {
-// 	// Get the offset based on page and limit
-// 	offset := (page - 1) * limit
-
-// 	// Construct the SQL insert query
-// 	query := fmt.Sprintf("SELECT %s, %s, %s, %s, %s, %s, %s, %s FROM %s WHERE %s = true LIMIT ? OFFSET ?",
-// 		utils.ColumnIDDoctor,
-// 		utils.ColumnIDUser,
-// 		utils.ColumnNume,
-// 		utils.ColumnPrenume,
-// 		utils.ColumnEmail,
-// 		utils.ColumnTelefon,
-// 		utils.ColumnSpecializare,
-// 		utils.ColumnIsActive,
-// 		utils.DoctorTableName,
-// 		utils.ColumnIsActive,
-// 	)
-
-// 	log.Printf("[DOCTOR] Attempting to fetch active doctors with limit=%d, offset=%d", limit, offset)
-
-// 	// Execute the SQL query with context
-// 	rows, err := db.QueryContext(ctx, query, limit, offset)
-// 	if err != nil {
-// 		log.Printf("[DOCTOR] Error executing query to fetch active doctors: %v", err)
-// 		return nil, err
-// 	}
-// 	defer rows.Close()
-
-// 	var doctors []models.Doctor
-// 	for rows.Next() {
-// 		var doctor models.Doctor
-// 		err := rows.Scan(&doctor.IDDoctor, &doctor.IDUser, &doctor.Nume, &doctor.Prenume, &doctor.Email, &doctor.Telefon, &doctor.Specializare, &doctor.IsActive)
-// 		if err != nil {
-// 			log.Printf("[DOCTOR] Error scanning doctor row: %v", err)
-// 			return nil, err
-// 		}
-// 		doctors = append(doctors, doctor)
-// 	}
-
-// 	// Check for errors from iterating over rows.
-// 	err = rows.Err()
-// 	if err != nil {
-// 		log.Printf("[DOCTOR] Error after iterating over rows: %v", err)
-// 		return nil, err
-// 	}
-
-// 	log.Printf("[DOCTOR] Successfully fetched %d active doctors.", len(doctors))
-// 	return doctors, nil
-// }
-
 func (db *MySQLDatabase) FetchDoctors(ctx context.Context, filters map[string]interface{}, page, limit int) ([]models.Doctor, error) {
 	// Get the offset based on page and limit
 	offset := (page - 1) * limit
 
 	qb := squirrel.Select("*").From(utils.DoctorTableName)
-
-	fmt.Println(filters)
 
 	// Check if filters is not empty and add WHERE clause if needed
 	if len(filters) > 0 {
@@ -146,8 +46,6 @@ func (db *MySQLDatabase) FetchDoctors(ctx context.Context, filters map[string]in
 		log.Printf("[DOCTOR] FetchDoctors: Failed to construct SQL query: %v", err)
 		return nil, fmt.Errorf("internal server error")
 	}
-
-	fmt.Println(query)
 
 	rows, err := db.QueryContext(ctx, query, args...)
 	if err != nil {

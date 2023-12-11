@@ -32,8 +32,6 @@ func (dController *DoctorController) GetDoctors(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	fmt.Println(filters)
-
 	// Extract the limit and page query parameters from the request
 	limit, page := utils.ExtractPaginationParams(r)
 

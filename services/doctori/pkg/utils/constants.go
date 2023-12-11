@@ -39,6 +39,7 @@ const CLEAR_DB_RESOURCES_TIMEOUT = 10
 
 // Doctor module endpoints with parameters
 const (
+	HEALTH_CHECK_ENDPOINT             = "/doctors/health-check"
 	CREATE_DOCTOR_ENDPOINT            = "/doctors"
 	FETCH_ALL_DOCTORS_ENDPOINT        = "/doctors"
 	FETCH_DOCTOR_BY_ID_ENDPOINT       = "/doctors/{" + FETCH_DOCTOR_BY_ID_PARAMETER + "}"
@@ -47,20 +48,18 @@ const (
 	UPDATE_DOCTOR_BY_ID_ENDPOINT      = "/doctors/{" + UPDATE_DOCTOR_BY_ID_PARAMETER + "}"
 	DELETE_DOCTOR_BY_ID_ENDPOINT      = "/doctors/{" + DELETE_DOCTOR_BY_ID_PARAMETER + "}"
 	DELETE_DOCTOR_BY_USER_ID_ENDPOINT = "/doctors/users/{" + DELETE_DOCTOR_BY_USER_ID_PARAMETER + "}"
-
-	HEALTH_CHECK_ENDPOINT = "/doctors/health-check"
-
-	TOGGLE_DOCTOR_ACTIVITY_ENDPOINT = "/doctors/activity"
+	TOGGLE_DOCTOR_ACTIVITY_ENDPOINT   = "/doctors/{" + PATCH_DOCTOR_BY_ID_PARAMETER + "}"
 )
 
 // Doctor module parameters
 const (
-	FETCH_DOCTOR_BY_ID_PARAMETER       = "doctor_id"
-	FETCH_DOCTOR_BY_EMAIL_PARAMETER    = "doctor_email"
-	FETCH_DOCTOR_BY_USER_ID_PARAMETER  = "doctor_id"
-	UPDATE_DOCTOR_BY_ID_PARAMETER      = "doctor_id"
-	DELETE_DOCTOR_BY_ID_PARAMETER      = "doctor_id"
-	DELETE_DOCTOR_BY_USER_ID_PARAMETER = "doctor_user_id"
+	FETCH_DOCTOR_BY_ID_PARAMETER       = "doctorID"
+	FETCH_DOCTOR_BY_EMAIL_PARAMETER    = "doctorEmail"
+	FETCH_DOCTOR_BY_USER_ID_PARAMETER  = "doctorID"
+	UPDATE_DOCTOR_BY_ID_PARAMETER      = "doctorID"
+	PATCH_DOCTOR_BY_ID_PARAMETER       = "doctorUserID"
+	DELETE_DOCTOR_BY_ID_PARAMETER      = "doctorID"
+	DELETE_DOCTOR_BY_USER_ID_PARAMETER = "doctorUserID"
 
 	QUERY_IS_ACIVE       = "isActive"
 	QUERY_FIRST_NAME     = "firstName"

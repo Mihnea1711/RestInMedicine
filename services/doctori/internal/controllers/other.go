@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/mihnea1711/POS_Project/services/doctori/internal/models"
 	"github.com/mihnea1711/POS_Project/services/doctori/pkg/utils"
 )
@@ -15,8 +17,19 @@ import (
 func (dController *DoctorController) ToggleDoctorActivity(w http.ResponseWriter, r *http.Request) {
 	log.Println("[DOCTOR] Setting doctor activity...")
 
+	vars := mux.Vars(r)
+	doctorUserIDStr := vars[utils.PATCH_DOCTOR_BY_ID_PARAMETER]
+	doctorUserID, err := strconv.Atoi(doctorUserIDStr)
+	if err != nil {
+		errMsg := fmt.Sprintf("Invalid doctor ID: %s", doctorUserIDStr)
+		log.Printf("[DOCTOR] %s", errMsg)
+		utils.RespondWithJSON(w, http.StatusBadRequest, models.ResponseData{Message: "Bad Request", Error: errMsg})
+		return
+	}
+
 	// Decode the doctor details from the context
 	reqData := r.Context().Value(utils.DECODED_DOCTOR_ACTIVITY).(*models.ActivityData)
+	reqData.IDUser = doctorUserID
 
 	// Ensure a database operation doesn't take longer than 5 seconds
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
