@@ -62,12 +62,12 @@ const (
 
 const (
 	PREPARE_PATIENT_ENDPOINT  = "/patients/health-check"
-	COMMIT_PATIENT_ENDPOINT   = "/patients/activity"
+	COMMIT_PATIENT_ENDPOINT   = "/patients"
 	ABORT_PATIENT_ENDPOINT    = "/patients/transaction/abort"
 	ROLLBACK_PATIENT_ENDPOINT = "/patients/transaction/rollback"
 
 	PREPARE_DOCTOR_ENDPOINT  = "/doctors/health-check"
-	COMMIT_DOCTOR_ENDPOINT   = "/doctors/activity"
+	COMMIT_DOCTOR_ENDPOINT   = "/doctors"
 	ABORT_DOCTOR_ENDPOINT    = "/doctors/transaction/abort"
 	ROLLBACK_DOCTOR_ENDPOINT = "/doctors/transaction/rollback"
 )

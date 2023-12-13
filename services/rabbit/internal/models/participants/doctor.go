@@ -2,6 +2,7 @@ package participants
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -56,9 +57,8 @@ func (d *Doctor) Commit(userID int) (*models.ParticipantResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), utils.REQUEST_TIMEOUT_MULTIPLIER*time.Second)
 	defer cancel()
 
-	response, status, err := utils.MakeRequest(ctx, http.MethodPatch, utils.DOCTOR_HOST, utils.COMMIT_DOCTOR_ENDPOINT, utils.DOCTOR_PORT, models.ActivityData{
+	response, status, err := utils.MakeRequest(ctx, http.MethodPatch, utils.DOCTOR_HOST, fmt.Sprintf("%s/%d", utils.COMMIT_DOCTOR_ENDPOINT, userID), utils.DOCTOR_PORT, models.ActivityData{
 		IsActive: false,
-		IDUser:   userID,
 	})
 	if err != nil {
 		log.Printf("Error making Doctor commit request: %v", err)
@@ -89,9 +89,8 @@ func (d *Doctor) Rollback(userID int) (*models.ParticipantResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), utils.REQUEST_TIMEOUT_MULTIPLIER*time.Second)
 	defer cancel()
 
-	response, status, err := utils.MakeRequest(ctx, http.MethodPatch, utils.DOCTOR_HOST, utils.COMMIT_DOCTOR_ENDPOINT, utils.DOCTOR_PORT, models.ActivityData{
+	response, status, err := utils.MakeRequest(ctx, http.MethodPatch, utils.DOCTOR_HOST, fmt.Sprintf("%s/%d", utils.COMMIT_DOCTOR_ENDPOINT, userID), utils.DOCTOR_PORT, models.ActivityData{
 		IsActive: true,
-		IDUser:   userID,
 	})
 	if err != nil {
 		log.Printf("Error making Doctor rollback request: %v", err)

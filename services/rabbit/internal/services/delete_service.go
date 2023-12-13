@@ -86,7 +86,7 @@ func (s *ServiceContainer) DeleteUserMessageHandler(message []byte) error {
 
 		// Inform client about the error
 		twophasecommit.InformClient("clientID", messageWrapper, models.ClientResponse{
-			Code:    http.StatusInternalServerError,
+			Code:    http.StatusServiceUnavailable,
 			Message: "Transaction aborted due to participant response with 'NO'.",
 		})
 
@@ -112,7 +112,7 @@ func (s *ServiceContainer) DeleteUserMessageHandler(message []byte) error {
 
 		// Inform client about the error
 		twophasecommit.InformClient("clientID", messageWrapper, models.ClientResponse{
-			Code:    http.StatusInternalServerError,
+			Code:    http.StatusFailedDependency,
 			Message: "Transaction rolled back due to participant failure.",
 		})
 

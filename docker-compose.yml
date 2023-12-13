@@ -1,38 +1,38 @@
 version: "3.8"
 
 services:  
-  # # RabbitMQ container #
-  # rabbitmq:
-  #   image: "rabbitmq:3-management"
-  #   container_name: rabbitmq
-  #   ports:
-  #     - "5672:5672"
-  #     - "15672:15672"
-  #   env_file:
-  #     - services/rabbit/.env
-  #   networks:
-  #     - pos_network
+  # RabbitMQ container #
+  rabbitmq:
+    image: "rabbitmq:3-management"
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    env_file:
+      - services/rabbit/.env
+    networks:
+      - pos_network
 
-  # # RabbitMQ module #
-  # rabbit_app:
-  #   build:
-  #     context: ./services/rabbit
-  #     dockerfile: docker/api.Dockerfile
-  #   container_name: rabbit_app
-  #   ports:
-  #     - "8090:8090"
-  #   env_file:
-  #     - ./services/rabbit/.env
-  #   depends_on:
-  #     - rabbitmq
-  #   restart: always
-  #   networks:
-  #     - pos_network
-  #   # healthcheck:
-  #   #   test: ["CMD", "curl", "-f", "http://localhost:8090/api/rabbit/health-check"]
-  #   #   interval: 20s
-  #   #   timeout: 5s
-  #   #   retries: 2
+  # RabbitMQ module #
+  rabbit_app:
+    build:
+      context: ./services/rabbit
+      dockerfile: docker/api.Dockerfile
+    container_name: rabbit_app
+    ports:
+      - "8090:8090"
+    env_file:
+      - ./services/rabbit/.env
+    depends_on:
+      - rabbitmq
+    restart: always
+    networks:
+      - pos_network
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost:8090/api/rabbit/health-check"]
+    #   interval: 20s
+    #   timeout: 5s
+    #   retries: 2
   
   # # ######################################################################################################################################################
 

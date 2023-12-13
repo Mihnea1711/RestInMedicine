@@ -29,7 +29,7 @@ func SetupRoutes(rabbitMQ *rabbitmq.RabbitMQ) *mux.Router {
 func loadRoutes(router *mux.Router, rabbitController *controllers.RabbitController) {
 	log.Println("[RABBIT] Loading routes for RABBIT entity...")
 
-	// ---------------------------------------------------------- Create --------------------------------------------------------------
+	// ---------------------------------------------------------- Health --------------------------------------------------------------
 	healthCheckHandler := http.HandlerFunc(rabbitController.HandleHealthCheck)
 	router.Handle(utils.HEALTH_CHECK_ENDPOINT, healthCheckHandler).Methods("GET") // Handles health check
 	log.Println("[RABBIT] Route GET", utils.HEALTH_CHECK_ENDPOINT, "registered.")
