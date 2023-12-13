@@ -37,29 +37,12 @@ func (cController *ConsultationController) DeleteConsultationByID(w http.Respons
 	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_TIMEOUT_DURATION*time.Second)
 	defer cancel()
 
+	cController.handleContextTimeout(ctx, w)
+
 	// Use cController.DbConn to delete the consultation by ID from the database
 	rowsAffected, err := cController.DbConn.DeleteConsultationByID(ctx, consultationID)
 	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			// Handle the case where no document is found with the given ID
-			errMsg := fmt.Sprintf("Failed to delete consultation by ID. Consultation not found: %s", err)
-			log.Printf("[CONSULTATION] %s: %v", errMsg, consultationID)
-			response := models.ResponseData{
-				Error:   errMsg,
-				Message: "Failed to delete consultation. Consultation not found.",
-			}
-			utils.RespondWithJSON(w, http.StatusNotFound, response)
-			return
-		}
-
-		// Handle the case where an internal server error occurs during the deletion
-		errMsg := fmt.Sprintf("Internal server error: %s", err)
-		log.Printf("[CONSULTATION] Failed to delete consultation by ID: %s\n", errMsg)
-		response := models.ResponseData{
-			Error:   errMsg,
-			Message: "Failed to delete consultation. Internal server error.",
-		}
-		utils.RespondWithJSON(w, http.StatusInternalServerError, response)
+		handleDatabaseDeleteError(w, err, consultationID)
 		return
 	}
 
@@ -110,29 +93,12 @@ func (cController *ConsultationController) DeleteConsultationByPatientOrDoctorID
 	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_TIMEOUT_DURATION*time.Second)
 	defer cancel()
 
+	cController.handleContextTimeout(ctx, w)
+
 	// Use cController.DbConn to delete the consultation by patient or doctor ID from the database
 	rowsAffected, err := cController.DbConn.DeleteConsultationsByPatientOrDoctorID(ctx, patientOrDoctorID)
 	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			// Handle the case where no document is found with the given patient or doctor ID
-			errMsg := fmt.Sprintf("Failed to delete consultations by patient or doctor ID. Consultations not found: %s", err)
-			log.Printf("[CONSULTATION] %s: %v", errMsg, patientOrDoctorID)
-			response := models.ResponseData{
-				Error:   errMsg,
-				Message: "Failed to delete consultations. Consultations not found.",
-			}
-			utils.RespondWithJSON(w, http.StatusNotFound, response)
-			return
-		}
-
-		// Handle the case where an internal server error occurs during the deletion
-		errMsg := fmt.Sprintf("Internal server error: %s", err)
-		log.Printf("[CONSULTATION] Failed to delete consultations by patient or doctor ID: %s\n", errMsg)
-		response := models.ResponseData{
-			Error:   errMsg,
-			Message: "Failed to delete consultations. Internal server error.",
-		}
-		utils.RespondWithJSON(w, http.StatusInternalServerError, response)
+		handleDatabaseDeleteError(w, err, patientOrDoctorID)
 		return
 	}
 
@@ -158,4 +124,27 @@ func (cController *ConsultationController) DeleteConsultationByPatientOrDoctorID
 		},
 	}
 	utils.RespondWithJSON(w, http.StatusOK, response)
+}
+
+func handleDatabaseDeleteError(w http.ResponseWriter, err error, id interface{}) {
+	if err == mongo.ErrNoDocuments {
+		// Handle the case where no document is found with the given ID
+		errMsg := fmt.Sprintf("Failed to delete consultation by ID. Consultation not found: %s", err)
+		log.Printf("[CONSULTATION] %s: %v", errMsg, id)
+		response := models.ResponseData{
+			Error:   errMsg,
+			Message: "Failed to delete consultation. Consultation not found.",
+		}
+		utils.RespondWithJSON(w, http.StatusNotFound, response)
+		return
+	}
+
+	// Handle the case where an internal server error occurs during the deletion
+	errMsg := fmt.Sprintf("Internal server error: %s", err)
+	log.Printf("[CONSULTATION] Failed to delete consultation by ID: %s\n", errMsg)
+	response := models.ResponseData{
+		Error:   errMsg,
+		Message: "Failed to delete consultation. Internal server error.",
+	}
+	utils.RespondWithJSON(w, http.StatusInternalServerError, response)
 }

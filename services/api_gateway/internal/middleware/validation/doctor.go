@@ -3,6 +3,7 @@ package validation
 import (
 	"context"
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
@@ -24,7 +25,7 @@ func ValidateDoctorData(next http.Handler) http.Handler {
 		// Decode the request body into DoctorData
 		err := json.NewDecoder(r.Body).Decode(&doctorData)
 		if err != nil {
-			logAndRespondWithError(w, http.StatusBadRequest, "Error decoding doctor request body", err)
+			logAndRespondWithError(w, http.StatusUnprocessableEntity, "Error decoding doctor request body", err)
 			return
 		}
 
@@ -51,10 +52,18 @@ func ValidateDoctorActivityData(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var patientActivityData models.ActivityData
 
+		contentTypeFlag := isContentTypeJSON(r)
+		if !contentTypeFlag {
+			errMsg := "Unsupported media type. Content-Type must be application/json"
+			log.Printf("[MIDDLEWARE_GATEWAY] %s in request: %s", errMsg, r.RequestURI)
+			utils.RespondWithJSON(w, http.StatusUnsupportedMediaType, models.ResponseData{Error: errMsg, Message: "Patient validation failed due to unsupported media type"})
+			return
+		}
+
 		// Decode the request body into PatientData
 		err := json.NewDecoder(r.Body).Decode(&patientActivityData)
 		if err != nil {
-			logAndRespondWithError(w, http.StatusBadRequest, "Error decoding doctor request body", err)
+			logAndRespondWithError(w, http.StatusUnprocessableEntity, "Error decoding doctor request body", err)
 			return
 		}
 

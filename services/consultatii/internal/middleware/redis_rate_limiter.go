@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/mihnea1711/POS_Project/services/consultatii/internal/database/redis"
+	"github.com/mihnea1711/POS_Project/services/consultatii/internal/models"
+	"github.com/mihnea1711/POS_Project/services/consultatii/pkg/utils"
 )
 
 type RedisRateLimiter struct {
@@ -35,16 +37,22 @@ func (r *RedisRateLimiter) Limit(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		ip, _, err := net.SplitHostPort(req.RemoteAddr)
 		if err != nil {
-			log.Printf("[CONSULTATION_LIMITER] Error splitting remote addr %s", err) // Logging the error
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			log.Printf("[CONSULTATION_LIMITER] Error splitting remote addr %s", err)
+			utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{
+				Error:   err.Error(),
+				Message: "Internal Server Error",
+			})
 			return
 		}
 		key := r.getKey(ip)
 
 		val, err := r.rdb.GetClient().Incr(r.context, key).Result()
 		if err != nil {
-			log.Printf("[CONSULTATION_LIMITER] Error incrementing rate limit key %s: %v", key, err) // Logging the error
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			log.Printf("[CONSULTATION_LIMITER] Error incrementing rate limit key %s: %v", key, err)
+			utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{
+				Error:   err.Error(),
+				Message: "Internal Server Error",
+			})
 			return
 		}
 		if val == 1 {
@@ -61,7 +69,9 @@ func (r *RedisRateLimiter) Limit(next http.Handler) http.Handler {
 
 		if val > int64(r.rate) {
 			log.Printf("[CONSULTATION_LIMITER] Rate limit exceeded for IP %s", req.RemoteAddr)
-			http.Error(w, "Too Many Requests", http.StatusTooManyRequests)
+			utils.RespondWithJSON(w, http.StatusTooManyRequests, models.ResponseData{
+				Message: "Too Many Requests",
+			})
 			return
 		}
 

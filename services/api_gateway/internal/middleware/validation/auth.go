@@ -3,6 +3,7 @@ package validation
 import (
 	"context"
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
@@ -27,11 +28,20 @@ func ValidateRegistrationData(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var registrationData models.UserRegistrationData
 
+		contentTypeFlag := isContentTypeJSON(r)
+		if !contentTypeFlag {
+			errMsg := "Unsupported media type. Content-Type must be application/json"
+			log.Printf("[MIDDLEWARE_GATEWAY] %s in request: %s", errMsg, r.RequestURI)
+			utils.RespondWithJSON(w, http.StatusUnsupportedMediaType, models.ResponseData{Error: errMsg, Message: "Patient validation failed due to unsupported media type"})
+			return
+		}
+
 		dec := json.NewDecoder(r.Body)
 		dec.DisallowUnknownFields()
 
 		err := dec.Decode(&registrationData)
-		if checkErrorOnDecode(err, w) {
+		decodeFlag, decodeStatus := checkErrorOnDecode(err, w)
+		if decodeFlag || decodeStatus != http.StatusOK {
 			logAndRespondWithError(w, http.StatusBadRequest, "Error decoding registration request body", err)
 			return
 		}
@@ -53,11 +63,20 @@ func ValidateLoginData(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var loginData models.UserLoginData
 
+		contentTypeFlag := isContentTypeJSON(r)
+		if !contentTypeFlag {
+			errMsg := "Unsupported media type. Content-Type must be application/json"
+			log.Printf("[MIDDLEWARE_GATEWAY] %s in request: %s", errMsg, r.RequestURI)
+			utils.RespondWithJSON(w, http.StatusUnsupportedMediaType, models.ResponseData{Error: errMsg, Message: "Patient validation failed due to unsupported media type"})
+			return
+		}
+
 		dec := json.NewDecoder(r.Body)
 		dec.DisallowUnknownFields()
 
 		err := dec.Decode(&loginData)
-		if checkErrorOnDecode(err, w) {
+		decodeFlag, decodeStatus := checkErrorOnDecode(err, w)
+		if decodeFlag || decodeStatus != http.StatusOK {
 			logAndRespondWithError(w, http.StatusBadRequest, "Error decoding registration request body", err)
 			return
 		}

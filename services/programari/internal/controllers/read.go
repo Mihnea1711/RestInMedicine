@@ -91,6 +91,8 @@ func (aController *AppointmentController) GetAppointmentByID(w http.ResponseWrit
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
+	aController.handleContextTimeout(ctx, w)
+
 	// Use aController.DbConn to fetch the appointment by ID from the database
 	appointment, err := aController.DbConn.FetchAppointmentByID(ctx, appointmentID)
 	if err != nil {

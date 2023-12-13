@@ -18,7 +18,7 @@ func (pController *PatientController) TogglePatientActivity(w http.ResponseWrite
 	log.Println("[PATIENT] Setting patient activity...")
 
 	vars := mux.Vars(r)
-	patientUserIDStr := vars[utils.FETCH_PATIENT_BY_ID_PARAMETER]
+	patientUserIDStr := vars[utils.PATCH_PATIENT_BY_ID_PARAMETER]
 	patientUserID, err := strconv.Atoi(patientUserIDStr)
 	if err != nil {
 		errMsg := fmt.Sprintf("Invalid patient ID: %s", patientUserIDStr)
@@ -36,6 +36,8 @@ func (pController *PatientController) TogglePatientActivity(w http.ResponseWrite
 	// Ensure a database operation doesn't take longer than 5 seconds
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
+
+	pController.handleContextTimeout(ctx, w)
 
 	// Use pController.DbConn to update the patient in the database
 	rowsAffected, err := pController.DbConn.SetPatientActivityByUserID(ctx, reqData.IsActive, reqData.IDUser)

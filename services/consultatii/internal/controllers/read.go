@@ -39,6 +39,8 @@ func (cController *ConsultationController) GetConsultations(w http.ResponseWrite
 	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_TIMEOUT_DURATION*time.Second)
 	defer cancel()
 
+	cController.handleContextTimeout(ctx, w)
+
 	// Use cController.DbConn to fetch filtered consultations from the database
 	consultations, err := cController.DbConn.FetchConsultations(ctx, filters, page, limit)
 	if err != nil {
@@ -54,7 +56,11 @@ func (cController *ConsultationController) GetConsultations(w http.ResponseWrite
 		log.Println("[CONSULTATION] No consultations found with the filter")
 	}
 	// Serialize the filtered consultations to JSON and send the response
-	utils.RespondWithJSON(w, http.StatusOK, consultations)
+	response := models.ResponseData{
+		Message: "Consultations retrieved successfully.",
+		Payload: consultations,
+	}
+	utils.RespondWithJSON(w, http.StatusOK, response)
 }
 
 // Retrieve a consultation by ID
@@ -81,6 +87,8 @@ func (cController *ConsultationController) GetConsultationByID(w http.ResponseWr
 	// Ensure a database operation doesn't take longer than utils.REQUEST_TIMEOUT_DURATION seconds
 	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_TIMEOUT_DURATION*time.Second)
 	defer cancel()
+
+	cController.handleContextTimeout(ctx, w)
 
 	// Use cController.DbConn to fetch the consultation by ID from the database
 	consultation, err := cController.DbConn.FetchConsultationByID(ctx, objectID)

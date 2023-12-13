@@ -1,6 +1,7 @@
 package authorization
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -62,7 +63,10 @@ func RoleMiddleware(allowedRoles []string, jwtConfig config.JWTConfig, next http
 			r.URL.RawQuery,
 			r.URL.Fragment,
 		)
-		next.ServeHTTP(w, r)
+
+		// Store claims in the request context
+		ctx := context.WithValue(r.Context(), utils.JWT_CLAIMS_CONTEXT_KEY, claims)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	}
 }
 
@@ -74,82 +78,14 @@ func AdminOnlyMiddleware(jwtConfig config.JWTConfig, next http.Handler) http.Han
 
 // AdminAndPatientMiddleware is a middleware function that allows admin and patient access.
 func AdminAndPatientMiddleware(jwtConfig config.JWTConfig, next http.Handler) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// Check if the user has either admin or patient role
-		tokenString := ExtractJWTFromHeader(r)
-		if tokenString == "" {
-			log.Println("[GATEWAY_AUTH] An unexpected error occurred while trying to parse the token. Token is empty")
-			utils.RespondWithJSON(w, http.StatusUnauthorized, models.ResponseData{
-				Error:   "An unexpected error occurred while trying to parse the token. Token is empty",
-				Message: "Access denied: An unexpected error occurred",
-			})
-			return
-		}
-
-		// Get the claims from the jwt
-		claims, err := ParseJWT(tokenString, jwtConfig)
-		if err != nil {
-			log.Printf("[GATEWAY_AUTH] An unexpected error occurred while trying to parse the token: %v", err)
-			utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{
-				Error:   fmt.Sprintf("An unexpected error occurred while trying to parse the token: %v", err),
-				Message: "Access denied: An unexpected error occurred",
-			})
-			return
-		}
-
-		userRole := claims.Role
-		if userRole != utils.ADMIN_ROLE && userRole != utils.PATIENT_ROLE {
-			err := "You don't have access to this resource"
-			log.Printf("[GATEWAY_AUTH] Unauthorized: %v", err)
-			utils.RespondWithJSON(w, http.StatusUnauthorized, models.ResponseData{
-				Error:   fmt.Sprintf("Unauthorized: %v", err),
-				Message: "Access denied: Unauthorized",
-			})
-			return
-		}
-
-		next.ServeHTTP(w, r)
-	}
+	allowedRoles := []string{utils.ADMIN_ROLE, utils.PATIENT_ROLE}
+	return RoleMiddleware(allowedRoles, jwtConfig, next)
 }
 
 // AdminAndDoctorMiddleware is a middleware function that allows admin and doctor access.
 func AdminAndDoctorMiddleware(jwtConfig config.JWTConfig, next http.Handler) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// Check if the user has either admin or doctor role
-		tokenString := ExtractJWTFromHeader(r)
-		if tokenString == "" {
-			log.Println("[GATEWAY_AUTH] An unexpected error occurred while trying to parse the token. Token is empty")
-			utils.RespondWithJSON(w, http.StatusUnauthorized, models.ResponseData{
-				Error:   "An unexpected error occurred while trying to parse the token. Token is empty",
-				Message: "Access denied: An unexpected error occurred",
-			})
-			return
-		}
-
-		// Get the claims from the jwt
-		claims, err := ParseJWT(tokenString, jwtConfig)
-		if err != nil {
-			log.Printf("[GATEWAY_AUTH] An unexpected error occurred while trying to parse the token: %v", err)
-			utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{
-				Error:   fmt.Sprintf("An unexpected error occurred while trying to parse the token: %v", err),
-				Message: "Access denied: An unexpected error occurred",
-			})
-			return
-		}
-
-		userRole := claims.Role
-		if userRole != utils.ADMIN_ROLE && userRole != utils.DOCTOR_ROLE {
-			err := "You don't have access to this resource"
-			log.Printf("[GATEWAY_AUTH] Unauthorized: %v", err)
-			utils.RespondWithJSON(w, http.StatusUnauthorized, models.ResponseData{
-				Error:   fmt.Sprintf("Unauthorized: %v", err),
-				Message: "Access denied: Unauthorized",
-			})
-			return
-		}
-
-		next.ServeHTTP(w, r)
-	}
+	allowedRoles := []string{utils.ADMIN_ROLE, utils.DOCTOR_ROLE}
+	return RoleMiddleware(allowedRoles, jwtConfig, next)
 }
 
 // AllRolesMiddleware is a middleware function that allows admin, doctor, and patient access.

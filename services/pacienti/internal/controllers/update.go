@@ -44,29 +44,7 @@ func (pController *PatientController) UpdatePatientByID(w http.ResponseWriter, r
 	// Use pController.DbConn to update the patient in the database
 	rowsAffected, err := pController.DbConn.UpdatePatientByID(ctx, patient)
 	if err != nil {
-		// Check if the error is due to no rows found
-		if err == sql.ErrNoRows {
-			errMsg := fmt.Sprintf("Error updating patient: %s", err.Error())
-			log.Printf("[PATIENT] %s", errMsg)
-			// Create a conflict response using ResponseData
-			utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Error: errMsg, Message: "Failed to update patient. Patient not found"})
-			return
-		}
-		// Check if the error is a MySQL duplicate entry error
-		if mysqlErr, ok := err.(*mysql.MySQLError); ok && mysqlErr.Number == utils.MySQLDuplicateEntryErrorCode {
-			errMsg := fmt.Sprintf("Conflict error: %s", mysqlErr.Message)
-			log.Printf("[PATIENT] %s", errMsg)
-
-			// Create a conflict response using ResponseData
-			utils.RespondWithJSON(w, http.StatusConflict, models.ResponseData{Error: errMsg, Message: "Failed to update patient. Duplicate entry violation"})
-			return
-		}
-
-		errMsg := fmt.Sprintf("Internal server error: %s", err)
-		log.Printf("[PATIENT] Failed to update patient in the database: %s\n", errMsg)
-
-		// Create an error response using ResponseData
-		utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{Error: errMsg, Message: "Internal database server error"})
+		handleDatabaseUpdateError(w, err)
 		return
 	}
 
@@ -88,4 +66,30 @@ func (pController *PatientController) UpdatePatientByID(w http.ResponseWriter, r
 			RowsAffected: rowsAffected,
 		},
 	})
+}
+
+func handleDatabaseUpdateError(w http.ResponseWriter, err error) {
+	// Check if the error is due to no rows found
+	if err == sql.ErrNoRows {
+		errMsg := fmt.Sprintf("Error updating patient: %s", err.Error())
+		log.Printf("[PATIENT] %s", errMsg)
+		// Create a conflict response using ResponseData
+		utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Error: errMsg, Message: "Failed to update patient. Patient not found"})
+		return
+	}
+	// Check if the error is a MySQL duplicate entry error
+	if mysqlErr, ok := err.(*mysql.MySQLError); ok && mysqlErr.Number == utils.MySQLDuplicateEntryErrorCode {
+		errMsg := fmt.Sprintf("Conflict error: %s", mysqlErr.Message)
+		log.Printf("[PATIENT] %s", errMsg)
+
+		// Create a conflict response using ResponseData
+		utils.RespondWithJSON(w, http.StatusConflict, models.ResponseData{Error: errMsg, Message: "Failed to update patient. Duplicate entry violation"})
+		return
+	}
+
+	errMsg := fmt.Sprintf("Internal server error: %s", err)
+	log.Printf("[PATIENT] Failed to update patient in the database: %s\n", errMsg)
+
+	// Create an error response using ResponseData
+	utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{Error: errMsg, Message: "Internal database server error"})
 }

@@ -43,29 +43,7 @@ func (aController *AppointmentController) UpdateAppointmentByID(w http.ResponseW
 	// Use aController.DbConn to update the appointment by ID in the database
 	rowsAffected, err := aController.DbConn.UpdateAppointmentByID(ctx, appointment)
 	if err != nil {
-		// Check if the error is due to no rows found
-		if err == sql.ErrNoRows {
-			errMsg := fmt.Sprintf("Error updating appointment: %s", err.Error())
-			log.Printf("[APPOINTMENT] %s", errMsg)
-			// Create a conflict response using ResponseData
-			utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Error: errMsg, Message: "Failed to update appointment. Appointment not found"})
-			return
-		}
-		// Check if the error is a MySQL duplicate entry error
-		if mysqlErr, ok := err.(*mysql.MySQLError); ok && mysqlErr.Number == utils.MySQLDuplicateEntryErrorCode {
-			errMsg := fmt.Sprintf("Conflict error: %s", mysqlErr.Message)
-			log.Printf("[APPOINTMENT] %s", errMsg)
-
-			// Create a conflict response using ResponseData
-			utils.RespondWithJSON(w, http.StatusConflict, models.ResponseData{Error: errMsg, Message: "Failed to update appointment. Duplicate entry violation"})
-			return
-		}
-
-		errMsg := fmt.Sprintf("internal server error: %s", err)
-		log.Printf("[APPOINTMENT] Failed to update appointment in the database: %s\n", errMsg)
-
-		// Create an error response using ResponseData
-		utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{Error: errMsg, Message: "Internal database server error"})
+		handleDatabaseUpdateError(w, err)
 		return
 	}
 
@@ -86,4 +64,30 @@ func (aController *AppointmentController) UpdateAppointmentByID(w http.ResponseW
 			RowsAffected: rowsAffected,
 		},
 	})
+}
+
+func handleDatabaseUpdateError(w http.ResponseWriter, err error) {
+	// Check if the error is due to no rows found
+	if err == sql.ErrNoRows {
+		errMsg := fmt.Sprintf("Error updating appointment: %s", err.Error())
+		log.Printf("[APPOINTMENT] %s", errMsg)
+		// Create a conflict response using ResponseData
+		utils.RespondWithJSON(w, http.StatusNotFound, models.ResponseData{Error: errMsg, Message: "Failed to update appointment. Appointment not found"})
+		return
+	}
+	// Check if the error is a MySQL duplicate entry error
+	if mysqlErr, ok := err.(*mysql.MySQLError); ok && mysqlErr.Number == utils.MySQLDuplicateEntryErrorCode {
+		errMsg := fmt.Sprintf("Conflict error: %s", mysqlErr.Message)
+		log.Printf("[APPOINTMENT] %s", errMsg)
+
+		// Create a conflict response using ResponseData
+		utils.RespondWithJSON(w, http.StatusConflict, models.ResponseData{Error: errMsg, Message: "Failed to update appointment. Duplicate entry violation"})
+		return
+	}
+
+	errMsg := fmt.Sprintf("internal server error: %s", err)
+	log.Printf("[APPOINTMENT] Failed to update appointment in the database: %s\n", errMsg)
+
+	// Create an error response using ResponseData
+	utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{Error: errMsg, Message: "Internal database server error"})
 }

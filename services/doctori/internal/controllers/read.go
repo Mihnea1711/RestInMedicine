@@ -41,6 +41,8 @@ func (dController *DoctorController) GetDoctors(w http.ResponseWriter, r *http.R
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
+	dController.handleContextTimeout(ctx, w)
+
 	doctors, err := dController.DbConn.FetchDoctors(ctx, filters, page, limit)
 	if err != nil {
 		errMsg := fmt.Sprintf("internal server error: %s", err)
@@ -79,6 +81,8 @@ func (dController *DoctorController) GetDoctorByID(w http.ResponseWriter, r *htt
 	// Ensure a database operation doesn't take longer than 5 seconds
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
+
+	dController.handleContextTimeout(ctx, w)
 
 	doctor, err := dController.DbConn.FetchDoctorByID(ctx, doctorID)
 	if err != nil {
@@ -121,6 +125,8 @@ func (dController *DoctorController) GetDoctorByEmail(w http.ResponseWriter, r *
 	// Ensure a database operation doesn't take longer than 5 seconds
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
+
+	dController.handleContextTimeout(ctx, w)
 
 	doctor, err := dController.DbConn.FetchDoctorByEmail(ctx, doctorEmail)
 	if err != nil {
@@ -171,6 +177,8 @@ func (dController *DoctorController) GetDoctorByUserID(w http.ResponseWriter, r 
 	// Ensure a database operation doesn't take longer than 5 seconds
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
+
+	dController.handleContextTimeout(ctx, w)
 
 	doctor, err := dController.DbConn.FetchDoctorByUserID(ctx, userID)
 	if err != nil {

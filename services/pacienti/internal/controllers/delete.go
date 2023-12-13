@@ -34,6 +34,8 @@ func (pController *PatientController) DeletePatientByID(w http.ResponseWriter, r
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
+	pController.handleContextTimeout(ctx, w)
+
 	rowsAffected, err := pController.DbConn.DeletePatientByID(ctx, patientID)
 	if err != nil {
 		// Check if the error is due to no rows found

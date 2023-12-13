@@ -24,18 +24,6 @@ func loadConsultationRoutes(router *mux.Router, gatewayController *controllers.G
 	router.HandleFunc(utils.GET_ALL_CONSULTATIONS_ENDPOINT, authorization.AllRolesMiddleware(jwtConfig, consultatieFetchAllHandler)).Methods("GET")
 	log.Printf("[GATEWAY] Route GET %s registered.", utils.GET_ALL_CONSULTATIONS_ENDPOINT)
 
-	consultatieFetchByDoctorIDHandler := http.HandlerFunc(gatewayController.GetConsultationsByDoctorID)
-	router.HandleFunc(utils.GET_CONSULTATION_BY_DOCTOR_ID_ENDPOINT, authorization.AllRolesMiddleware(jwtConfig, consultatieFetchByDoctorIDHandler)).Methods("GET")
-	log.Printf("[GATEWAY] Route GET %s registered.", utils.GET_CONSULTATION_BY_DOCTOR_ID_ENDPOINT)
-
-	consultatieFetchByPacientIDHandler := http.HandlerFunc(gatewayController.GetConsultationsByPatientID)
-	router.HandleFunc(utils.GET_CONSULTATION_BY_PATIENT_ID_ENDPOINT, authorization.AllRolesMiddleware(jwtConfig, consultatieFetchByPacientIDHandler)).Methods("GET")
-	log.Printf("[GATEWAY] Route GET %s registered.", utils.GET_CONSULTATION_BY_PATIENT_ID_ENDPOINT)
-
-	consultatieFetchByDateHandler := http.HandlerFunc(gatewayController.GetConsultationsByDate)
-	router.HandleFunc(utils.GET_CONSULTATION_BY_DATE_ENDPOINT, authorization.AllRolesMiddleware(jwtConfig, consultatieFetchByDateHandler)).Methods("GET")
-	log.Printf("[GATEWAY] Route GET %s registered.", utils.GET_CONSULTATION_BY_DATE_ENDPOINT)
-
 	consultatieFetchByIDHandler := http.HandlerFunc(gatewayController.GetConsultationByID)
 	router.HandleFunc(utils.GET_CONSULTATION_BY_ID_ENDPOINT, authorization.AllRolesMiddleware(jwtConfig, consultatieFetchByIDHandler)).Methods("GET")
 	log.Printf("[GATEWAY] Route GET %s registered.", utils.GET_CONSULTATION_BY_ID_ENDPOINT)

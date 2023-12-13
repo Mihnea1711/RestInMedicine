@@ -35,6 +35,8 @@ func (dController *DoctorController) ToggleDoctorActivity(w http.ResponseWriter,
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
+	dController.handleContextTimeout(ctx, w)
+
 	// Use dController.DbConn to update the doctor in the database
 	rowsAffected, err := dController.DbConn.SetDoctorActivityByUserID(ctx, reqData.IsActive, reqData.IDUser)
 	if err != nil {

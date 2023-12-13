@@ -9,7 +9,7 @@ import (
 	"github.com/mihnea1711/POS_Project/services/pacienti/pkg/utils"
 )
 
-func (db *MySQLDatabase) SavePatient(ctx context.Context, pacient *models.Patient) (int, error) {
+func (db *MySQLDatabase) SavePatient(ctx context.Context, patient *models.Patient) (int, error) {
 	// Construct the SQL insert query
 	query := fmt.Sprintf("INSERT INTO %s (%s, %s, %s, %s, %s, %s, %s, %s) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
 		utils.PatientTableName,
@@ -26,7 +26,7 @@ func (db *MySQLDatabase) SavePatient(ctx context.Context, pacient *models.Patien
 	log.Println("[PATIENT] Attempting to save patient")
 
 	// Execute the SQL statement
-	result, err := db.ExecContext(ctx, query, pacient.IDUser, pacient.FirstName, pacient.SecondName, pacient.Email, pacient.PhoneNumber, pacient.CNP, pacient.BirthDay, pacient.IsActive)
+	result, err := db.ExecContext(ctx, query, patient.IDUser, patient.FirstName, patient.SecondName, patient.Email, patient.PhoneNumber, patient.CNP, patient.BirthDay, patient.IsActive)
 	if err != nil {
 		log.Printf("[PATIENT] Error executing query to save patient: %v", err)
 		return 0, err

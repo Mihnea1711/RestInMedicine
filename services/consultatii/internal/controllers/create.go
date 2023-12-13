@@ -24,41 +24,15 @@ func (cController *ConsultationController) CreateConsultation(w http.ResponseWri
 	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_TIMEOUT_DURATION*time.Second)
 	defer cancel()
 
+	cController.handleContextTimeout(ctx, w)
+
 	// Assign an ID to the consultation
 	consultation.IDConsultation = primitive.NewObjectID()
 
 	// Use cController.DbConn to save the consultation to the database
 	insertedID, err := cController.DbConn.SaveConsultation(ctx, consultation)
 	if err != nil {
-		// Check for a duplicate key error
-		if writeException, ok := err.(mongo.WriteException); ok {
-			for _, writeError := range writeException.WriteErrors {
-				if writeError.Code == utils.DUPLICATE_KEY_ERROR_CODE {
-					// Handle the case where a duplicate key error occurs
-					errMsg := fmt.Sprintf("Duplicate key error: %s", writeError.Error())
-					log.Printf("[CONSULTATION] Failed to save consultation to the database: %s\n", errMsg)
-
-					// Respond with an error using the ResponseData struct
-					response := models.ResponseData{
-						Error:   errMsg,
-						Message: "Failed to create consultation. Duplicate key violation.",
-					}
-					utils.RespondWithJSON(w, http.StatusConflict, response)
-					return
-				}
-			}
-		}
-
-		// Handle the case where an internal server error occurs during the save
-		errMsg := fmt.Sprintf("Internal server error: %s", err)
-		log.Printf("[CONSULTATION] Failed to save consultation to the database: %s\n", errMsg)
-
-		// Respond with an error using the ResponseData struct
-		response := models.ResponseData{
-			Error:   errMsg,
-			Message: "Failed to create consultation. Internal server error.",
-		}
-		utils.RespondWithJSON(w, http.StatusInternalServerError, response)
+		handleDatabaseCreateError(w, err)
 		return
 	}
 
@@ -75,6 +49,7 @@ func (cController *ConsultationController) CreateConsultation(w http.ResponseWri
 			},
 		}
 		utils.RespondWithJSON(w, http.StatusOK, response)
+		return
 	} else {
 		// Log the failure to get a valid inserted ID
 		log.Printf("[CONSULTATION] Failed to get valid inserted ID after creating consultation.")
@@ -85,5 +60,38 @@ func (cController *ConsultationController) CreateConsultation(w http.ResponseWri
 			Message: "Failed to create consultation. Error getting valid inserted ID.",
 		}
 		utils.RespondWithJSON(w, http.StatusInternalServerError, response)
+		return
 	}
+}
+
+func handleDatabaseCreateError(w http.ResponseWriter, err error) {
+	// Check for a duplicate key error
+	if writeException, ok := err.(mongo.WriteException); ok {
+		for _, writeError := range writeException.WriteErrors {
+			if writeError.Code == utils.DUPLICATE_KEY_ERROR_CODE {
+				// Handle the case where a duplicate key error occurs
+				errMsg := fmt.Sprintf("Duplicate key error: %s", writeError.Error())
+				log.Printf("[CONSULTATION] Failed to save consultation to the database: %s\n", errMsg)
+
+				// Respond with an error using the ResponseData struct
+				response := models.ResponseData{
+					Error:   errMsg,
+					Message: "Failed to create consultation. Duplicate key violation.",
+				}
+				utils.RespondWithJSON(w, http.StatusConflict, response)
+				return
+			}
+		}
+	}
+
+	// Handle the case where an internal server error occurs during the save
+	errMsg := fmt.Sprintf("Internal server error: %s", err)
+	log.Printf("[CONSULTATION] Failed to save consultation to the database: %s\n", errMsg)
+
+	// Respond with an error using the ResponseData struct
+	response := models.ResponseData{
+		Error:   errMsg,
+		Message: "Failed to create consultation. Internal server error.",
+	}
+	utils.RespondWithJSON(w, http.StatusInternalServerError, response)
 }

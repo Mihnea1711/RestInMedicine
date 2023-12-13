@@ -40,48 +40,12 @@ func (cController *ConsultationController) UpdateConsultationByID(w http.Respons
 	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_TIMEOUT_DURATION*time.Second)
 	defer cancel()
 
+	cController.handleContextTimeout(ctx, w)
+
 	// Use cController.DbConn to update the consultation by ID in the database
 	rowsAffected, err := cController.DbConn.UpdateConsultationByID(ctx, consultation)
 	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			// Handle the case where no document is found with the given ID
-			errMsg := fmt.Sprintf("Failed to update consultation by ID. Consultation not found: %s", err)
-			log.Printf("[CONSULTATION] %s: %v", errMsg, consultationID)
-			response := models.ResponseData{
-				Error:   errMsg,
-				Message: "Failed to update consultation. Consultation not found.",
-			}
-			utils.RespondWithJSON(w, http.StatusNotFound, response)
-			return
-		}
-
-		// Check for a duplicate key error
-		if writeException, ok := err.(mongo.WriteException); ok {
-			for _, writeError := range writeException.WriteErrors {
-				if writeError.Code == utils.DUPLICATE_KEY_ERROR_CODE {
-					// Handle the case where a duplicate key error occurs
-					errMsg := fmt.Sprintf("Duplicate key error: %s", writeError.Error())
-					log.Printf("[CONSULTATION] Failed to update consultation to the database: %s\n", errMsg)
-
-					// Respond with an error using the ResponseData struct
-					response := models.ResponseData{
-						Error:   errMsg,
-						Message: "Failed to update consultation. Duplicate key violation.",
-					}
-					utils.RespondWithJSON(w, http.StatusConflict, response)
-					return
-				}
-			}
-		}
-
-		// Handle the case where an internal server error occurs during the update
-		errMsg := fmt.Sprintf("Internal server error: %s", err)
-		log.Printf("[CONSULTATION] Failed to update consultation by ID: %s\n", errMsg)
-		response := models.ResponseData{
-			Error:   errMsg,
-			Message: "Failed to update consultation. Internal server error.",
-		}
-		utils.RespondWithJSON(w, http.StatusInternalServerError, response)
+		handleDatabaseUpdateError(w, err, consultationID)
 		return
 	}
 
@@ -107,4 +71,46 @@ func (cController *ConsultationController) UpdateConsultationByID(w http.Respons
 		},
 	}
 	utils.RespondWithJSON(w, http.StatusOK, response)
+}
+
+func handleDatabaseUpdateError(w http.ResponseWriter, err error, id primitive.ObjectID) {
+	if err == mongo.ErrNoDocuments {
+		// Handle the case where no document is found with the given ID
+		errMsg := fmt.Sprintf("Failed to update consultation by ID. Consultation not found: %s", err)
+		log.Printf("[CONSULTATION] %s: %v", errMsg, id)
+		response := models.ResponseData{
+			Error:   errMsg,
+			Message: "Failed to update consultation. Consultation not found.",
+		}
+		utils.RespondWithJSON(w, http.StatusNotFound, response)
+		return
+	}
+
+	// Check for a duplicate key error
+	if writeException, ok := err.(mongo.WriteException); ok {
+		for _, writeError := range writeException.WriteErrors {
+			if writeError.Code == utils.DUPLICATE_KEY_ERROR_CODE {
+				// Handle the case where a duplicate key error occurs
+				errMsg := fmt.Sprintf("Duplicate key error: %s", writeError.Error())
+				log.Printf("[CONSULTATION] Failed to update consultation to the database: %s\n", errMsg)
+
+				// Respond with an error using the ResponseData struct
+				response := models.ResponseData{
+					Error:   errMsg,
+					Message: "Failed to update consultation. Duplicate key violation.",
+				}
+				utils.RespondWithJSON(w, http.StatusConflict, response)
+				return
+			}
+		}
+	}
+
+	// Handle the case where an internal server error occurs during the update
+	errMsg := fmt.Sprintf("Internal server error: %s", err)
+	log.Printf("[CONSULTATION] Failed to update consultation by ID: %s\n", errMsg)
+	response := models.ResponseData{
+		Error:   errMsg,
+		Message: "Failed to update consultation. Internal server error.",
+	}
+	utils.RespondWithJSON(w, http.StatusInternalServerError, response)
 }

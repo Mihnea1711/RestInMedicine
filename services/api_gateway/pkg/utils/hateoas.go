@@ -50,10 +50,6 @@ var AppointmentEndpoints = []models.LinkData{
 	{FieldName: "create", EndpointData: models.EndpointData{Endpoint: CREATE_APPOINTMENT_ENDPOINT, Method: "POST"}},
 	{FieldName: "getAll", EndpointData: models.EndpointData{Endpoint: GET_ALL_APPOINTMENTS_ENDPOINT, Method: "GET"}},
 	{FieldName: "getById", EndpointData: models.EndpointData{Endpoint: GET_APPOINTMENT_BY_ID_ENDPOINT, Method: "GET"}},
-	{FieldName: "getByDoctorId", EndpointData: models.EndpointData{Endpoint: GET_APPOINTMENTS_BY_DOCTOR_ID_ENDPOINT, Method: "GET"}},
-	{FieldName: "getByPatientId", EndpointData: models.EndpointData{Endpoint: GET_APPOINTMENTS_BY_PATIENT_ID_ENDPOINT, Method: "GET"}},
-	{FieldName: "getByDate", EndpointData: models.EndpointData{Endpoint: GET_APPOINTMENTS_BY_DATE_ENDPOINT, Method: "GET"}},
-	{FieldName: "getByStatus", EndpointData: models.EndpointData{Endpoint: GET_APPOINTMENTS_BY_STATUS_ENDPOINT, Method: "GET"}},
 	{FieldName: "updateById", EndpointData: models.EndpointData{Endpoint: UPDATE_APPOINTMENT_BY_ID_ENDPOINT, Method: "PUT"}},
 	{FieldName: "deleteById", EndpointData: models.EndpointData{Endpoint: DELETE_APPOINTMENT_BY_ID_ENDPOINT, Method: "DELETE"}},
 }
@@ -61,9 +57,6 @@ var AppointmentEndpoints = []models.LinkData{
 var ConsultationEndpoints = []models.LinkData{
 	{FieldName: "create", EndpointData: models.EndpointData{Endpoint: CREATE_CONSULTATION_ENDPOINT, Method: "POST"}},
 	{FieldName: "getAll", EndpointData: models.EndpointData{Endpoint: GET_ALL_CONSULTATIONS_ENDPOINT, Method: "GET"}},
-	{FieldName: "getByDoctorId", EndpointData: models.EndpointData{Endpoint: GET_CONSULTATION_BY_DOCTOR_ID_ENDPOINT, Method: "GET"}},
-	{FieldName: "getByPatientId", EndpointData: models.EndpointData{Endpoint: GET_CONSULTATION_BY_PATIENT_ID_ENDPOINT, Method: "GET"}},
-	{FieldName: "getByDate", EndpointData: models.EndpointData{Endpoint: GET_CONSULTATION_BY_DATE_ENDPOINT, Method: "GET"}},
 	{FieldName: "getById", EndpointData: models.EndpointData{Endpoint: GET_CONSULTATION_BY_ID_ENDPOINT, Method: "GET"}},
 	{FieldName: "updateById", EndpointData: models.EndpointData{Endpoint: UPDATE_CONSULTATION_BY_ID_ENDPOINT, Method: "PUT"}},
 	{FieldName: "deleteById", EndpointData: models.EndpointData{Endpoint: DELETE_CONSULTATION_BY_ID_ENDPOINT, Method: "DELETE"}},
@@ -78,21 +71,23 @@ var AllEndpointsLinks = [][]models.LinkData{
 	ConsultationEndpoints,
 }
 
-func findAdjacentEndpoints(inputEndpoint, inputMethod string) []models.LinkData {
-	var result []models.LinkData
+func findAdjacentEndpoints(inputEndpoint, inputMethod string) models.EndpointMap {
+	// var result []models.LinkData
+	var endpoints models.EndpointMap = make(models.EndpointMap)
 
 	for _, endpointCategory := range AllEndpointsLinks {
 		for _, endpoint := range endpointCategory {
 			if strings.HasPrefix(endpoint.EndpointData.Endpoint, inputEndpoint) && (endpoint.EndpointData.Endpoint != inputEndpoint || endpoint.EndpointData.Method != inputMethod) {
-				linkData := models.LinkData{
-					FieldName:    endpoint.FieldName,
-					EndpointData: models.EndpointData{Endpoint: endpoint.EndpointData.Endpoint, Method: endpoint.EndpointData.Method},
-				}
-				result = append(result, linkData)
+				// linkData := models.LinkData{
+				// 	FieldName:    endpoint.FieldName,
+				// 	EndpointData: models.EndpointData{Endpoint: endpoint.EndpointData.Endpoint, Method: endpoint.EndpointData.Method},
+				// }
+				// result = append(result, linkData)
+				endpoints[endpoint.FieldName] = endpoint.EndpointData
 			}
 		}
 	}
-	return result
+	return endpoints
 }
 
 func getParentEndpoint(inputEndpoint string) string {
@@ -113,12 +108,47 @@ func getParentEndpoint(inputEndpoint string) string {
 	return parentEndpoint
 }
 
-func GetHateoasData(inputEndpoint, inputMethod string) []models.LinkData {
-	var matchingEndpoints []models.LinkData
+func GetHateoasData(inputEndpoint, inputMethod string) models.EndpointMap {
+	var matchingEndpoints models.EndpointMap = make(models.EndpointMap)
 
-	matchingEndpoints = append(matchingEndpoints, models.LinkData{FieldName: "self", EndpointData: models.EndpointData{Endpoint: inputEndpoint, Method: inputMethod}})
-	matchingEndpoints = append(matchingEndpoints, models.LinkData{FieldName: "parent", EndpointData: models.EndpointData{Endpoint: getParentEndpoint(inputEndpoint)}})
-	matchingEndpoints = append(matchingEndpoints, findAdjacentEndpoints(inputEndpoint, inputMethod)...)
+	if supportsAllMethods(inputEndpoint) {
+		matchingEndpoints["self"] = models.EndpointData{Endpoint: inputEndpoint}
+	} else {
+		matchingEndpoints["self"] = models.EndpointData{Endpoint: inputEndpoint, Method: inputMethod}
+	}
+	matchingEndpoints["parent"] = models.EndpointData{Endpoint: getParentEndpoint(inputEndpoint)}
+	adjacentEndpoints := findAdjacentEndpoints(inputEndpoint, inputMethod)
+	for key, value := range adjacentEndpoints {
+		matchingEndpoints[key] = value
+	}
 
 	return matchingEndpoints
+}
+
+// Check if the endpoint supports all four standard methods
+func supportsAllMethods(inputEndpoint string) bool {
+	// Iterate through all endpoint categories
+	for _, endpointCategory := range AllEndpointsLinks {
+		// Iterate through endpoints in the category
+		for _, endpoint := range endpointCategory {
+			// Check if the endpoint matches and supports all four methods
+			if strings.HasPrefix(endpoint.EndpointData.Endpoint, inputEndpoint) && endpoint.EndpointData.Endpoint != inputEndpoint {
+				return supportsStandardMethods(endpoint)
+			}
+		}
+	}
+	return false
+}
+
+// Check if an endpoint supports all four standard methods
+func supportsStandardMethods(endpointData models.LinkData) bool {
+	return containsMethod(endpointData, GET) &&
+		containsMethod(endpointData, POST) &&
+		containsMethod(endpointData, PUT) &&
+		containsMethod(endpointData, DELETE)
+}
+
+// Check if an endpoint supports a specific method
+func containsMethod(endpointData models.LinkData, method string) bool {
+	return endpointData.EndpointData.Method == method
 }

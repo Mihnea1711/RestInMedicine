@@ -68,3 +68,11 @@ const CNP_DATE_FORMAT = "060102"
 const (
 	MySQLDuplicateEntryErrorCode = 1062
 )
+
+const (
+	MaxNameLength       = 255
+	MaxEmailLength      = 255
+	PhoneNumberLength   = 10
+	MaxCNPLength        = 13
+	MaxRequestSizeBytes = 1 << 20 // 1MB
+)

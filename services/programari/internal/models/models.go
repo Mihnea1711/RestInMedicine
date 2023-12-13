@@ -4,14 +4,14 @@ import (
 	"time"
 )
 
-type StatusProgramare string
+type StatusAppointment string
 
 type Appointment struct {
-	IDProgramare int              `db:"id_programare" json:"idProgramare"`
-	IDPatient    int              `db:"id_pacient" json:"idPatient"`
-	IDDoctor     int              `db:"id_doctor" json:"idDoctor"`
-	Date         time.Time        `db:"date" json:"date"`
-	Status       StatusProgramare `db:"status" json:"status"`
+	IDProgramare int               `db:"id_programare" json:"idProgramare"`
+	IDPatient    int               `db:"id_pacient" json:"idPatient"`
+	IDDoctor     int               `db:"id_doctor" json:"idDoctor"`
+	Date         time.Time         `db:"date" json:"date"`
+	Status       StatusAppointment `db:"status" json:"status"`
 }
 
 type ResponseData struct {
@@ -21,9 +21,9 @@ type ResponseData struct {
 }
 
 type RowsAffected struct {
-	RowsAffected int `json:"rows_affected"`
+	RowsAffected int `json:"rowsAffected"`
 }
 
 type LastInsertedID struct {
-	LastInsertedID int `json:"last_inserted_id"`
+	LastInsertedID int `json:"lastInsertedID"`
 }

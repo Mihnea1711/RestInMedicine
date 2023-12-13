@@ -46,7 +46,7 @@ func (db *MySQLDatabase) FetchPatients(ctx context.Context, filters map[string]i
 	rows, err := db.QueryContext(ctx, query, args...)
 	if err != nil {
 		log.Printf("[DOCTOR] FetchPatients: Failed to query database: %v", err)
-		return nil, fmt.Errorf("internal server error")
+		return nil, fmt.Errorf("failed to fetch patients: %v", err)
 	}
 	defer rows.Close()
 

@@ -5,14 +5,14 @@ import "github.com/mihnea1711/POS_Project/services/programari/internal/models"
 type contextKey string
 
 const (
-	StatusScheduled  models.StatusProgramare = "scheduled"
-	StatusConfirmed  models.StatusProgramare = "confirmed"
-	StatusNotPresent models.StatusProgramare = "not_present"
-	StatusCanceled   models.StatusProgramare = "canceled"
-	StatusHonored    models.StatusProgramare = "honored"
+	StatusScheduled  models.StatusAppointment = "scheduled"
+	StatusConfirmed  models.StatusAppointment = "confirmed"
+	StatusNotPresent models.StatusAppointment = "not_present"
+	StatusCanceled   models.StatusAppointment = "canceled"
+	StatusHonored    models.StatusAppointment = "honored"
 )
 
-var ValidStatus = [...]models.StatusProgramare{StatusScheduled, StatusConfirmed, StatusNotPresent, StatusCanceled, StatusHonored}
+var ValidStatus = [...]models.StatusAppointment{StatusScheduled, StatusConfirmed, StatusNotPresent, StatusCanceled, StatusHonored}
 
 const CONFIG_PATH = "configs/config.yaml"
 

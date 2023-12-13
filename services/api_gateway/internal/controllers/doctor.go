@@ -30,7 +30,7 @@ func (gc *GatewayController) CreateDoctor(w http.ResponseWriter, r *http.Request
 	userResponse, err := gc.IDMClient.GetUserByID(ctx, &proto_files.UserIDRequest{UserID: &proto_files.UserID{ID: int64(doctorRequest.IDUser)}})
 	if err != nil {
 		log.Printf("[GATEWAY] Error fetching user by ID: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", "Failed to fetch user by ID: "+err.Error())
+		utils.SendErrorResponse(w, http.StatusBadGateway, "Internal Server Error", "Failed to fetch user by ID: "+err.Error())
 		return
 	}
 	// Check response for nils
@@ -40,10 +40,11 @@ func (gc *GatewayController) CreateDoctor(w http.ResponseWriter, r *http.Request
 	utils.CheckNilResponse(w, http.StatusInternalServerError, userResponse.Info.Message, userResponseWrapper.IsUserNil, "Received nil response.User while getting the user.")
 
 	// Check if there is already a patient associated with the user ID
-	_, statusPatient, err := gc.redirectRequestBody(ctx, utils.GET, utils.PATIENT_HOST, fmt.Sprintf("%s/%d", utils.PATIENT_FETCH_PATIENT_BY_USER_ID_ENDPOINT, doctorRequest.IDUser), utils.PATIENT_PORT, nil)
+	targetURL := fmt.Sprintf("%s/%d", utils.PATIENT_FETCH_PATIENT_BY_USER_ID_ENDPOINT, doctorRequest.IDUser)
+	_, statusPatient, err := gc.redirectRequestBody(ctx, utils.GET, utils.PATIENT_HOST, targetURL, utils.PATIENT_PORT, nil)
 	if err != nil {
 		log.Printf("[GATEWAY] Error redirecting doctor request: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", "Failed to redirect request: "+err.Error())
+		utils.SendErrorResponse(w, http.StatusBadGateway, "Failed to redirect request", "Failed to redirect request: "+err.Error())
 		return
 	}
 	if statusPatient == http.StatusOK {
@@ -56,14 +57,16 @@ func (gc *GatewayController) CreateDoctor(w http.ResponseWriter, r *http.Request
 	decodedResponse, status, err := gc.redirectRequestBody(ctx, utils.POST, utils.DOCTOR_HOST, utils.DOCTOR_CREATE_DOCTOR_ENDPOINT, utils.DOCTOR_PORT, doctorRequest)
 	if err != nil {
 		log.Printf("[GATEWAY] Error redirecting doctor request: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
+		utils.SendErrorResponse(w, http.StatusBadGateway, "Failed to redirect request", err.Error())
 		return
 	}
 
 	// Check the response status and handle accordingly
 	switch status {
-	case http.StatusOK:
+	case http.StatusCreated:
 		log.Printf("[GATEWAY] CreateDoctor: Request successful with status %d", status)
+		locationHeader := decodedResponse.Header.Get(utils.HEADER_LOCATION_KEY)
+		w.Header().Set(utils.HEADER_LOCATION_KEY, fmt.Sprintf("/api%s", locationHeader))
 		utils.SendMessageResponse(w, http.StatusOK, decodedResponse.Message, decodedResponse.Payload)
 		return
 	case http.StatusConflict:
@@ -86,10 +89,11 @@ func (gc *GatewayController) GetDoctors(w http.ResponseWriter, r *http.Request) 
 	defer cancel()
 
 	// Redirect the request to another module
-	decodedResponse, status, err := gc.redirectRequestBody(ctx, utils.GET, utils.DOCTOR_HOST, utils.DOCTOR_FETCH_ALL_DOCTORS_ENDPOINT, utils.DOCTOR_PORT, nil)
+	targetURL := fmt.Sprintf("%s?%s", utils.DOCTOR_FETCH_ALL_DOCTORS_ENDPOINT, r.URL.RawQuery)
+	decodedResponse, status, err := gc.redirectRequestBody(ctx, utils.GET, utils.DOCTOR_HOST, targetURL, utils.DOCTOR_PORT, nil)
 	if err != nil {
 		log.Printf("[GATEWAY] Error redirecting doctor request: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
+		utils.SendErrorResponse(w, http.StatusBadGateway, "Failed to redirect request", err.Error())
 		return
 	}
 
@@ -128,7 +132,7 @@ func (gc *GatewayController) GetDoctorByID(w http.ResponseWriter, r *http.Reques
 	decodedResponse, status, err := gc.redirectRequestBody(ctx, http.MethodGet, utils.DOCTOR_HOST, fmt.Sprintf("%s/%d", utils.DOCTOR_FETCH_DOCTOR_BY_ID_ENDPOINT, doctorID), utils.DOCTOR_PORT, nil)
 	if err != nil {
 		log.Printf("[GATEWAY] Error redirecting doctor request: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
+		utils.SendErrorResponse(w, http.StatusBadGateway, "Failed to redirect request", err.Error())
 		return
 	}
 
@@ -164,7 +168,7 @@ func (gc *GatewayController) GetDoctorByEmail(w http.ResponseWriter, r *http.Req
 	decodedResponse, status, err := gc.redirectRequestBody(ctx, http.MethodGet, utils.DOCTOR_HOST, fmt.Sprintf("%s/%s", utils.DOCTOR_FETCH_DOCTOR_BY_EMAIL_ENDPOINT, doctorEmail), utils.DOCTOR_PORT, nil)
 	if err != nil {
 		log.Printf("[GATEWAY] Error redirecting doctor request: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
+		utils.SendErrorResponse(w, http.StatusBadGateway, "Failed to redirect request", err.Error())
 		return
 	}
 
@@ -207,7 +211,7 @@ func (gc *GatewayController) GetDoctorByUserID(w http.ResponseWriter, r *http.Re
 	decodedResponse, status, err := gc.redirectRequestBody(ctx, http.MethodGet, utils.DOCTOR_HOST, fmt.Sprintf("%s/%d", utils.DOCTOR_FETCH_DOCTOR_BY_USER_ID_ENDPOINT, userID), utils.DOCTOR_PORT, nil)
 	if err != nil {
 		log.Printf("[GATEWAY] Error redirecting doctor request: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
+		utils.SendErrorResponse(w, http.StatusBadGateway, "Failed to redirect request", err.Error())
 		return
 	}
 
@@ -253,7 +257,7 @@ func (gc *GatewayController) UpdateDoctorByID(w http.ResponseWriter, r *http.Req
 	decodedResponse, status, err := gc.redirectRequestBody(ctx, http.MethodPut, utils.DOCTOR_HOST, fmt.Sprintf("%s/%d", utils.DOCTOR_UPDATE_DOCTOR_BY_ID_ENDPOINT, doctorID), utils.DOCTOR_PORT, doctorData)
 	if err != nil {
 		log.Printf("[GATEWAY] Error redirecting doctor request: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
+		utils.SendErrorResponse(w, http.StatusBadGateway, "Failed to redirect request", err.Error())
 		return
 	}
 
@@ -300,7 +304,7 @@ func (gc *GatewayController) DeleteDoctorByID(w http.ResponseWriter, r *http.Req
 	decodedResponse, status, err := gc.redirectRequestBody(ctx, http.MethodDelete, utils.DOCTOR_HOST, fmt.Sprintf("%s/%d", utils.DOCTOR_DELETE_DOCTOR_BY_ID_ENDPOINT, doctorID), utils.DOCTOR_PORT, nil)
 	if err != nil {
 		log.Printf("[GATEWAY] Error redirecting doctor request: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
+		utils.SendErrorResponse(w, http.StatusBadGateway, "Failed to redirect request", err.Error())
 		return
 	}
 
@@ -316,42 +320,6 @@ func (gc *GatewayController) DeleteDoctorByID(w http.ResponseWriter, r *http.Req
 		return
 	default:
 		log.Printf("[GATEWAY] DeleteDoctorByID: Request failed with unexpected status %d", status)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, decodedResponse.Message, "Unexpected status code: "+strconv.Itoa(status)+". Error: "+decodedResponse.Error)
-		return
-	}
-}
-
-// ToggleDoctorActivityByUserID handles updating the activity of patient by user ID.
-func (gc *GatewayController) ToggleDoctorActivityByUserID(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[GATEWAY] Attempting to update doctor activity by user ID.")
-
-	// Take patient activity data from context
-	reqData := r.Context().Value(utils.DECODED_DOCTOR_ACTIVITY_DATA).(*models.ActivityData)
-
-	// Create a context with a timeout (adjust the timeout as needed)
-	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_CONTEXT_TIMEOUT*time.Second)
-	defer cancel()
-
-	// Redirect the request body to another module
-	decodedResponse, status, err := gc.redirectRequestBody(ctx, http.MethodPatch, utils.DOCTOR_HOST, utils.DOCTOR_TOGGLE_DOCTOR_ACTIVITY_ENDPOINT, utils.DOCTOR_PORT, reqData)
-	if err != nil {
-		log.Printf("[GATEWAY] Error redirecting doctor request: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to redirect request", err.Error())
-		return
-	}
-
-	// Check the response status and handle accordingly
-	switch status {
-	case http.StatusOK:
-		log.Printf("[GATEWAY] ToggleDoctorActivityByUserID: Request successful with status %d", status)
-		utils.SendMessageResponse(w, http.StatusOK, decodedResponse.Message, decodedResponse.Payload)
-		return
-	case http.StatusNotFound:
-		log.Printf("[GATEWAY] ToggleDoctorActivityByUserID: Request failed with not found status %d", status)
-		utils.SendErrorResponse(w, http.StatusNotFound, decodedResponse.Message, "Patient not found: "+decodedResponse.Error)
-		return
-	default:
-		log.Printf("[GATEWAY] ToggleDoctorActivityByUserID: Request failed with unexpected status %d", status)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, decodedResponse.Message, "Unexpected status code: "+strconv.Itoa(status)+". Error: "+decodedResponse.Error)
 		return
 	}

@@ -51,7 +51,6 @@ const (
 	TOGGLE_DOCTOR_ACTIVITY_ENDPOINT   = "/doctors/{" + PATCH_DOCTOR_BY_ID_PARAMETER + "}"
 )
 
-// Doctor module parameters
 const (
 	FETCH_DOCTOR_BY_ID_PARAMETER       = "doctorID"
 	FETCH_DOCTOR_BY_EMAIL_PARAMETER    = "doctorEmail"
@@ -74,7 +73,7 @@ const (
 	ColumnIDDoctor       = "id_doctor"
 	ColumnIDUser         = "id_user"
 	ColumnFirstName      = "first_name"
-	ColumnSecondName     = "second_prenume"
+	ColumnSecondName     = "second_name"
 	ColumnEmail          = "email"
 	ColumnPhoneNumber    = "phone_number"
 	ColumnSpecialization = "specialization"
@@ -82,3 +81,10 @@ const (
 )
 
 const MySQLDuplicateEntryErrorCode = 1062
+
+const (
+	MaxNameLength       = 255
+	MaxEmailLength      = 255
+	PhoneNumberLength   = 10
+	MaxRequestSizeBytes = 1 << 20 // 1MB
+)

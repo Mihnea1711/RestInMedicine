@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"strconv"
 
 	"github.com/mihnea1711/POS_Project/services/gateway/internal/models"
@@ -108,7 +109,7 @@ func DecodeHTML(s string, v interface{}) error {
 	return json.Unmarshal([]byte(decoded), v)
 }
 
-func DecodeSanitizedResponse(response *http.Response) (*models.ResponseData, error) {
+func DecodeSanitizedResponse(response *http.Response) (*models.ResponseDataWrapper, error) {
 	// Read the HTML-encoded JSON string from the response body
 	htmlEncodedJSON, err := io.ReadAll(response.Body)
 	if err != nil {
@@ -117,11 +118,28 @@ func DecodeSanitizedResponse(response *http.Response) (*models.ResponseData, err
 	}
 
 	// Decode HTML-encoded JSON string to ResponseData
-	var decodedResponse models.ResponseData
+	var decodedResponse models.ResponseDataWrapper
 	if err := DecodeHTML(string(htmlEncodedJSON), &decodedResponse); err != nil {
 		log.Printf("[GATEWAY] Error decoding HTML-encoded JSON: %v", err)
 		return nil, err
 	}
 
 	return &decodedResponse, nil
+}
+
+func AppendQueryParam(rawQuery, key, value string) string {
+	// Parse the existing query parameters
+	params, _ := url.ParseQuery(rawQuery)
+
+	// Check if the key already exists
+	if _, exists := params[key]; exists {
+		// Key already exists, don't append it again
+		return rawQuery
+	}
+
+	// Append the new key-value pair
+	params.Add(key, value)
+
+	// Encode the updated parameters
+	return params.Encode()
 }

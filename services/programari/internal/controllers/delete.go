@@ -32,6 +32,8 @@ func (aController *AppointmentController) DeleteAppointmentByID(w http.ResponseW
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
+	aController.handleContextTimeout(ctx, w)
+
 	// Use aController.DbConn to delete the appointment by ID from the database
 	rowsAffected, err := aController.DbConn.DeleteAppointmentByID(ctx, appointmentID)
 	if err != nil {

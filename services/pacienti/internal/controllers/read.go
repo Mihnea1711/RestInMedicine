@@ -21,7 +21,7 @@ func (pController *PatientController) GetPatients(w http.ResponseWriter, r *http
 	filters, err := utils.ExtractFiltersFromRequest(r)
 	if err != nil {
 		errMsg := fmt.Sprintf("bad request: %s", err)
-		log.Printf("[DOCTOR] GetDoctors: Failed to extract filters: %s", errMsg)
+		log.Printf("[DOCTOR] GetPatients: Failed to extract filters: %s", errMsg)
 
 		// Respond with a bad request error
 		response := models.ResponseData{
@@ -39,11 +39,13 @@ func (pController *PatientController) GetPatients(w http.ResponseWriter, r *http
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
 
-	log.Printf("[PATIENT] Fetching active patients with limit: %d, page: %d", limit, page)
+	pController.handleContextTimeout(ctx, w)
+
+	log.Printf("[PATIENT] Fetching patients with limit: %d, page: %d", limit, page)
 
 	patients, err := pController.DbConn.FetchPatients(ctx, filters, page, limit)
 	if err != nil {
-		errMsg := fmt.Sprintf("Internal server error: %s", err)
+		errMsg := fmt.Sprintf("failed to fetch patients: %v", err)
 		log.Printf("[PATIENT] %s", errMsg)
 
 		// Use utils.RespondWithJSON for error response
@@ -75,6 +77,8 @@ func (pController *PatientController) GetPatientByID(w http.ResponseWriter, r *h
 	// Ensure a database operation doesn't take longer than 5 seconds
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
+
+	pController.handleContextTimeout(ctx, w)
 
 	patient, err := pController.DbConn.FetchPatientByID(ctx, patientID)
 	if err != nil {
@@ -119,6 +123,8 @@ func (pController *PatientController) GetPatientByEmail(w http.ResponseWriter, r
 	// Ensure a database operation doesn't take longer than 5 seconds
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
+
+	pController.handleContextTimeout(ctx, w)
 
 	patient, err := pController.DbConn.FetchPatientByEmail(ctx, patientEmail)
 	if err != nil {
@@ -173,6 +179,8 @@ func (pController *PatientController) GetPatientByUserID(w http.ResponseWriter, 
 	// Ensure a database operation doesn't take longer than 5 seconds
 	ctx, cancel := context.WithTimeout(r.Context(), utils.DB_REQ_TIMEOUT_SEC_MULTIPLIER*time.Second)
 	defer cancel()
+
+	pController.handleContextTimeout(ctx, w)
 
 	patient, err := pController.DbConn.FetchPatientByUserID(ctx, userID)
 	if err != nil {

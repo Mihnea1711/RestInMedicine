@@ -41,10 +41,6 @@ func loadPatientRoutes(router *mux.Router, gatewayController *controllers.Gatewa
 	router.Handle(utils.UPDATE_PATIENT_BY_ID_ENDPOINT, authorization.AdminAndPatientMiddleware(jwtConfig, validation.ValidatePatientData(patientUpdateByIDHandler))).Methods("PUT")
 	log.Printf("[GATEWAY] Route PUT %s registered.\n", utils.UPDATE_PATIENT_BY_ID_ENDPOINT)
 
-	toggleActivityHandler := http.HandlerFunc(gatewayController.TogglePatientActivityByUserID)
-	router.Handle(utils.TOGGLE_PATIENT_ACTIVITY_ENDPOINT, authorization.AdminOnlyMiddleware(jwtConfig, validation.ValidatePatientActivityData(toggleActivityHandler))).Methods("PATCH")
-	log.Println("[PATIENT] Route POST", utils.TOGGLE_PATIENT_ACTIVITY_ENDPOINT, "registered.")
-
 	// ---------------------------------------------------------- Delete --------------------------------------------------------------
 	patientDeleteByIDHandler := http.HandlerFunc(gatewayController.DeletePatientByID)
 	router.Handle(utils.DELETE_PATIENT_BY_ID_ENDPOINT, authorization.AdminOnlyMiddleware(jwtConfig, patientDeleteByIDHandler)).Methods("DELETE")

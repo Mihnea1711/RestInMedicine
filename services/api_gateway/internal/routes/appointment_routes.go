@@ -28,22 +28,6 @@ func loadAppointmentRoutes(router *mux.Router, gatewayController *controllers.Ga
 	router.HandleFunc(utils.GET_APPOINTMENT_BY_ID_ENDPOINT, authorization.AllRolesMiddleware(jwtConfig, appointmentFetchByIDHandler)).Methods("GET")
 	log.Println("[GATEWAY] Route GET", utils.GET_APPOINTMENT_BY_ID_ENDPOINT, "registered.")
 
-	appointmentFetchByDoctorIDHandler := http.HandlerFunc(gatewayController.GetAppointmentsByDoctorID)
-	router.HandleFunc(utils.GET_APPOINTMENTS_BY_DOCTOR_ID_ENDPOINT, authorization.AllRolesMiddleware(jwtConfig, appointmentFetchByDoctorIDHandler)).Methods("GET")
-	log.Println("[GATEWAY] Route GET", utils.GET_APPOINTMENTS_BY_DOCTOR_ID_ENDPOINT, "registered.")
-
-	appointmentFetchByPacientIDHandler := http.HandlerFunc(gatewayController.GetAppointmentsByPatientID)
-	router.HandleFunc(utils.GET_APPOINTMENTS_BY_PATIENT_ID_ENDPOINT, authorization.AllRolesMiddleware(jwtConfig, appointmentFetchByPacientIDHandler)).Methods("GET")
-	log.Println("[GATEWAY] Route GET", utils.GET_APPOINTMENTS_BY_PATIENT_ID_ENDPOINT, "registered.")
-
-	appointmentFetchByDateHandler := http.HandlerFunc(gatewayController.GetAppointmentsByDate)
-	router.HandleFunc(utils.GET_APPOINTMENTS_BY_DATE_ENDPOINT, authorization.AllRolesMiddleware(jwtConfig, appointmentFetchByDateHandler)).Methods("GET")
-	log.Println("[GATEWAY] Route GET", utils.GET_APPOINTMENTS_BY_DATE_ENDPOINT, "registered.")
-
-	appointmentFetchByStatusHandler := http.HandlerFunc(gatewayController.GetAppointmentsByStatus)
-	router.HandleFunc(utils.GET_APPOINTMENTS_BY_STATUS_ENDPOINT, authorization.AllRolesMiddleware(jwtConfig, appointmentFetchByStatusHandler)).Methods("GET")
-	log.Println("[GATEWAY] Route GET", utils.GET_APPOINTMENTS_BY_STATUS_ENDPOINT, "registered.")
-
 	// ---------------------------------------------------------- Update --------------------------------------------------------------
 	appointmentUpdateByIDHandler := http.HandlerFunc(gatewayController.UpdateAppointmentByID)
 	router.Handle(utils.UPDATE_APPOINTMENT_BY_ID_ENDPOINT, authorization.AdminAndDoctorMiddleware(jwtConfig, validation.ValidateAppointmentData(appointmentUpdateByIDHandler))).Methods("PUT")
