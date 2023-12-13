@@ -1,12 +1,4152 @@
 openapi: '3.0.2'
 info:
   title: RestInMedicine
+  description: API documentation for managing a medical institution
   version: '1.0'
+security:
+  - jwt: []
 servers:
-  - url: https://api.server.test/v1
+  - url: http://app_gateway:8080  
+  - url: http://app_idm:8081  
+  - url: https://app_patient:8082
+  - url: http://app_doctor:8083  
+  - url: http://app_appointment:8084  
+  - url: http://app_consultation:8085  
+  - url: http://app_rabbit:8089  
 paths:
-  /test:
+########################################################### GATEWAY paths #######################################################
+# IDM
+  /api/users:
+    servers:
+      - url: https://app_gateway:8080
     get:
+      summary: Get all users
+      security:
+        - jwt: [ admin ]
       responses:
         '200':
-          description: OK
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Request handled successfully
+                Payload:
+                  - user1:
+                      $ref: '#/components/schemas/UserData'
+                  - user2:
+                      $ref: '#/components/schemas/UserData'
+                  # ...
+        '403':
+          description: Forbidden, requires admin access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Forbidden, requires admin access
+                Payload: null
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Internal Server Error
+                Error: Internal Server Error
+                Payload: null
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Bad Gateway
+                Error: Failed to connect to the idm service
+    post:
+      summary: Register a new user
+      security:
+        - jwt: [ admin ]
+      requestBody:
+        description: User registration data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationData'
+      responses:
+        '200':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: User registered successfully
+                Payload: null
+        '400':
+          description: Bad request, invalid data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Bad request, invalid data
+                Payload: null
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Internal Server Error
+                Error: Internal Server Error
+                Payload: null
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Bad Gateway
+                Error: Failed to connect to the idm service
+
+  /api/login:
+    servers:
+      - url: https://app_gateway:8080
+    post:
+      summary: Login with user credentials
+      security:
+        - jwt: [ admin, patient, doctor ]
+      requestBody:
+        description: User login data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLoginData'
+      responses:
+        '200':
+          description: User logged in successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: User logged in successfully
+                Payload: null
+        '401':
+          description: Unauthorized, invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Unauthorized, invalid credentials
+                Payload: null
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Internal Server Error
+                Error: Internal Server Error
+                Payload: null  
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Bad Gateway
+                Error: Failed to connect to the idm service
+
+  /api/users/{userID}:
+    servers:
+      - url: https://app_gateway:8080
+    get:
+      summary: Get user by ID
+      security:
+        - jwt: [ admin ]
+      parameters:
+        - name: userID
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Request handled successfully
+                Payload:
+                  - user1:
+                      $ref: '#/components/schemas/UserData'
+        '403':
+          description: Forbidden, requires admin access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Forbidden, requires admin access
+                Payload: null
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: User not found
+                Payload: null
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Internal Server Error
+                Error: Internal Server Error
+                Payload: null
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Bad Gateway
+                Error: Failed to connect to the idm service
+    put:
+      summary: Update user by ID
+      security:
+        - jwt: [ admin, patient, doctor ]
+      parameters:
+        - name: userID
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Updated user data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserData'
+      responses:
+        '200':
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: User updated successfully
+                Payload:
+                  RowsAffected: 1
+        '403':
+          description: Forbidden, requires admin access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Forbidden, requires admin access
+                Payload: null
+        '404':
+          description: User not found or no changes made
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: User not found or no changes made
+                Payload: null
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Internal Server Error
+                Error: Internal Server Error
+                Payload: null
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Bad Gateway
+                Error: Failed to connect to the idm service
+    delete:
+      summary: Delete user by ID
+      security:
+        - jwt: [ admin ]
+      parameters:
+        - name: userID
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: User deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: User deleted successfully
+                Payload:
+                  RowsAffected: 1
+        '403':
+          description: Forbidden, requires admin access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Forbidden, requires admin access
+                Payload: null
+        '404':
+          description: User not found or no changes made
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: User not found or no changes made
+                Payload: null
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Internal Server Error
+                Error: Internal Server Error
+                Payload: null
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Bad Gateway
+                Error: Failed to connect to the idm service
+  
+  /api/users/{userID}/update-password:
+    servers:
+      - url: https://app_gateway:8080
+    post:
+      summary: Update user password by ID
+      security:
+        - jwt: [ admin, patient, doctor ]
+      parameters:
+        - name: userID
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Updated password data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordData'
+      responses:
+        '200':
+          description: Password updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Password updated successfully
+                Payload:
+                  RowsAffected: 1
+        '403':
+          description: Forbidden, requires admin access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Forbidden, requires admin access
+                Payload: null
+        '404':
+          description: User not found or no changes made
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: User not found or no changes made
+                Payload: null
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Internal Server Error
+                Error: Internal Server Error
+                Payload: null
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Bad Gateway
+                Error: Failed to connect to the idm service
+
+  /api/users/{userID}/update-role:
+    servers:
+      - url: https://app_gateway:8080
+    post:
+      summary: Update user role by ID
+      security:
+        - jwt: [ admin ]
+      parameters:
+        - name: userID
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Updated role data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoleData'
+      responses:
+        '200':
+          description: Role updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Role updated successfully
+                Payload:
+                  RowsAffected: 1
+        '403':
+          description: Forbidden, requires admin access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Forbidden, requires admin access
+                Payload: null
+        '404':
+          description: User not found or no changes made
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: User not found or no changes made
+                Payload: null
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Internal Server Error
+                Error: Internal Server Error
+                Payload: null
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Bad Gateway
+                Error: Failed to connect to the idm service
+
+  /api/blacklist:
+    servers:
+      - url: https://app_gateway:8080
+    post:
+      summary: Add user to the blacklist
+      security:
+        - jwt: [ admin ]
+      requestBody:
+        description: Blacklist data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlacklistData'
+      responses:
+        '200':
+          description: User added to the blacklist successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: User added to the blacklist successfully
+                Payload: null
+        '403':
+          description: Forbidden, requires admin access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Forbidden, requires admin access
+                Payload: null
+        '404':
+          description: User not found or no changes made
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: The specified user was not found or no changes were made
+                Payload: null
+        '409':
+          description: User is already in the blacklist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: The specified user is already in the blacklist. No changes were made.
+                Payload: null
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Internal Server Error
+                Error: Internal Server Error
+                Payload: null
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Bad Gateway
+                Error: Failed to connect to the idm service
+
+  /api/blacklist/{userID}:
+    servers:
+      - url: https://app_gateway:8080
+    get:
+      summary: Check if user is in the blacklist
+      security:
+        - jwt: [ admin ]
+      parameters:
+        - name: userID
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: User is in the blacklist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: User is in the blacklist
+                Payload: null
+        '403':
+          description: Forbidden, requires admin access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Forbidden, requires admin access
+                Payload: null
+        '404':
+          description: User not found or no changes made
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: The specified user was not found or no changes were made
+                Payload: null
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Internal Server Error
+                Error: Internal Server Error
+                Payload: null
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Bad Gateway
+                Error: Failed to connect to the idm service
+    delete:
+      summary: Remove user from the blacklist
+      security:
+        - jwt: [ admin ]
+      parameters:
+        - name: userID
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: User removed from the blacklist successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: User removed from the blacklist successfully
+                Payload: null
+        '403':
+          description: Forbidden, requires admin access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Forbidden, requires admin access
+                Payload: null
+        '404':
+          description: User not found or no changes made
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: The requested user was not found, or no changes were made
+                Payload: null
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Internal Server Error
+                Error: Internal Server Error
+                Payload: null
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Bad Gateway
+                Error: Failed to connect to the idm service
+
+# PATIENT
+  /api/patients:
+    servers:
+      - url: https://app_gateway:8080
+    get:
+      summary: Get all patients
+      security:
+        - jwt: [ admin, patient, doctor ]
+      parameters:
+        - name: isActive
+          in: query
+          description: Filter patients based on activity status
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Patients retrieved successfully
+                Payload:
+                  - patient1:
+                      $ref: '#/components/schemas/Patient'
+                  - patient2:
+                      $ref: '#/components/schemas/Patient'
+                  # ...
+        '403':
+          description: Forbidden, requires admin/patient/doctor access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Forbidden, requires admin access
+                Payload: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Internal Server Error
+                Error: Failed to retrieve patients
+                Payload: null
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Bad Gateway
+                Error: Failed to connect to the patient service
+    post:
+      summary: Create a new patient
+      security:
+        - jwt: [ admin ]
+      requestBody:
+        description: Patient data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Patient'
+      responses:
+        '201':
+          description: Patient created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Patient created successfully
+                Payload:
+                  lastInsertedID: 1
+                Error: ""
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Bad request
+                Error: Invalid input data
+        '403':
+          description: Forbidden, requires admin access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Forbidden
+                Error: Admin access required
+        '409':
+          description: Conflict, patient already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Conflict
+                Error: Patient with the same data already exists
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Internal Server Error
+                Error: Failed to create patient due to an internal error
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Bad Gateway
+                Error: Failed to connect to the patient service
+
+  /api/patients/{patientID}:
+    servers:
+      - url: https://app_gateway:8080
+    get:
+      summary: Retrieve a patient by ID
+      security:
+        - jwt: [ admin, patient, doctor ]
+      parameters:
+        - name: patientID
+          in: path
+          description: Patient ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Patient retrieved successfully
+                Payload:
+                  $ref: '#/components/schemas/Patient'
+        '403':
+          description: Forbidden, requires admin/patient/doctor access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Forbidden
+                Error: Admin access required
+        '404':
+          description: Patient not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Patient not found
+                Error: The requested patient was not found
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Internal Server Error
+                Error: Failed to retrieve patient
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Bad Gateway
+                Error: Failed to connect to the patient service
+    put:
+      summary: Update a patient by ID
+      security:
+        - jwt: [ admin, patient ]
+      parameters:
+        - name: patientID
+          in: path
+          description: Patient ID
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Updated patient data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Patient'
+      responses:
+        '200':
+          description: Patient updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Patient updated successfully
+                Payload:
+                  $ref: '#/components/schemas/Patient'
+        '403':
+          description: Forbidden, requires admin/patient access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Forbidden
+                Error: Admin access required
+        '404':
+          description: Patient not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Patient not found
+                Error: The requested patient was not found
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Update conflict
+                Error: Another patient with the same data exists
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Internal Server Error
+                Error: Failed to update patient
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Bad Gateway
+                Error: Failed to connect to the patient service
+    delete:
+      summary: Delete a patient by ID
+      security:
+        - jwt: [ admin ]
+      parameters:
+        - name: patientID
+          in: path
+          description: Patient ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Patient deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Patient deleted successfully
+                Payload: null
+        '403':
+          description: Forbidden, requires admin access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Forbidden
+                Error: Admin access required
+        '404':
+          description: Patient not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Patient not found
+                Error: The requested patient was not found
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Internal Server Error
+                Error: Failed to delete patient
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Bad Gateway
+                Error: Failed to connect to the patient service
+
+  /api/patients/email/{patientEmail}:
+    servers:
+      - url: https://app_gateway:8080
+    get:
+      summary: Retrieve a patient by email
+      security:
+        - jwt: [ admin, patient, doctor ]
+      parameters:
+        - name: patientEmail
+          in: path
+          description: Patient email
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Patient retrieved successfully
+                Payload: 
+                  # Include the structure of the Patient object here
+        '403':
+          description: Forbidden, requires admin/patient/doctor access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Forbidden
+                Error: Admin access required
+        '404':
+          description: Patient not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Patient not found
+                Error: The requested patient was not found
+
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Internal Server Error
+                Error: Failed to retrieve patient by email
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Bad Gateway
+                Error: Failed to connect to the patient service
+
+  /api/patients/users/{patientUserID}:
+    servers:
+      - url: https://app_gateway:8080
+    get:
+      summary: Retrieve a patient by user ID
+      security:
+        - jwt: [ admin, patient, doctor ]
+      parameters:
+        - name: patientUserID
+          in: path
+          description: Patient user ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Patient retrieved successfully
+                Payload: 
+                  # Include the structure of the Patient object here
+        '403':
+          description: Forbidden, requires admin/patient/doctor access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Forbidden
+                Error: Admin access required
+        '404':
+          description: Patient not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Patient not found
+                Error: The requested patient was not found
+
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Internal Server Error
+                Error: Failed to retrieve patient by user ID
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Bad Gateway
+                Error: Failed to connect to the patient service
+
+# DOCTOR
+  /api/doctors:
+    servers:
+      - url: https://app_gateway:8080
+    get:
+      summary: Get all doctors
+      security:
+        - jwt: [admin, patient, doctor]
+      parameters:
+        - name: isActive
+          in: query
+          description: Filter doctors based on activity status
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Doctors retrieved successfully
+                Payload:
+                  - doctor1:
+                      $ref: '#/components/schemas/Doctor'
+                  - doctor2:
+                      $ref: '#/components/schemas/Doctor'
+                  # ...
+        '403':
+          description: Forbidden, requires admin, patient or doctor access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Forbidden
+                Error: Admin, patient or doctor access required
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Internal Server Error
+                Error: Failed to retrieve doctors
+                Payload: null
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Bad Gateway
+                Error: Failed to connect to the doctor service
+    post:
+      summary: Create a new doctor
+      security:
+        - jwt: [admin]
+      requestBody:
+        description: Doctor data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Doctor'
+      responses:
+        '201':
+          description: Doctor created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Doctor created successfully
+                Payload:
+                  lastInsertedID: 1
+                Error: ""
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Bad request
+                Error: Invalid input data
+        '403':
+          description: Forbidden, requires admin access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Forbidden
+                Error: Admin access required
+        '409':
+          description: Conflict, doctor already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Conflict
+                Error: Doctor with the same data already exists
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Internal Server Error
+                Error: Failed to create doctor due to an internal error
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Bad Gateway
+                Error: Failed to connect to the doctor service
+
+  /api/doctors/{doctorID}:
+    servers:
+      - url: https://app_gateway:8080
+    get:
+      summary: Retrieve a doctor by ID
+      security:
+        - jwt: [admin, doctor]
+      parameters:
+        - name: doctorID
+          in: path
+          description: Doctor ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Doctor retrieved successfully
+                Payload:
+                  $ref: '#/components/schemas/Doctor'
+        '403':
+          description: Forbidden, requires admin or doctor access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Forbidden
+                Error: Admin or doctor access required
+        '404':
+          description: Doctor not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Doctor not found
+                Error: The requested doctor was not found
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Internal Server Error
+                Error: Failed to retrieve doctor
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Bad Gateway
+                Error: Failed to connect to the doctor service
+    put:
+      summary: Update a doctor by ID
+      security:
+        - jwt: [admin, doctor]
+      parameters:
+        - name: doctorID
+          in: path
+          description: Doctor ID
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Updated doctor data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Doctor'
+      responses:
+        '200':
+          description: Doctor updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Doctor updated successfully
+                Payload:
+                  $ref: '#/components/schemas/Doctor'
+        '403':
+          description: Forbidden, requires admin or doctor access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Forbidden
+                Error: Admin or doctor access required
+        '404':
+          description: Doctor not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Doctor not found
+                Error: The requested doctor was not found
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Update conflict
+                Error: Another doctor with the same data exists
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Internal Server Error
+                Error: Failed to update doctor
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Bad Gateway
+                Error: Failed to connect to the doctor service
+    delete:
+      summary: Delete a doctor by ID
+      security:
+        - jwt: [admin, doctor]
+      parameters:
+        - name: doctorID
+          in: path
+          description: Doctor ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Doctor deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Doctor deleted successfully
+                Payload: null
+        '403':
+          description: Forbidden, requires admin or doctor access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Forbidden
+                Error: Admin or doctor access required
+        '404':
+          description: Doctor not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Doctor not found
+                Error: The requested doctor was not found
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Internal Server Error
+                Error: Failed to delete doctor
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Bad Gateway
+                Error: Failed to connect to the doctor service
+
+  /api/doctors/email/{doctorEmail}:
+    servers:
+      - url: https://app_gateway:8080
+    get:
+      summary: Retrieve a doctor by email
+      security:
+      - jwt: [admin, patient, doctor]
+      parameters:
+        - name: doctorEmail
+          in: path
+          description: Doctor email
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Doctor retrieved successfully
+                Payload: 
+                  - $ref: '#/components/schemas/Doctor'
+        '403':
+          description: Forbidden, requires admin, patient or doctor access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Forbidden
+                Error: Admin, patient or doctor access required
+        '404':
+          description: Doctor not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Doctor not found
+                Error: The requested doctor was not found
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Internal Server Error
+                Error: Failed to retrieve doctor by email
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Bad Gateway
+                Error: Failed to connect to the doctor service
+
+  /api/doctors/users/{doctorUserID}:
+    servers:
+      - url: https://app_gateway:8080
+    get:
+      summary: Retrieve a doctor by user ID
+      security:
+      - jwt: [admin, patient, doctor]
+      parameters:
+        - name: doctorUserID
+          in: path
+          description: Doctor user ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Doctor retrieved successfully
+                Payload: 
+                  # Include the structure of the Doctor object here
+        '403':
+          description: Forbidden, requires admin, patient or doctor access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Forbidden
+                Error: Admin, patient or doctor access required
+        '404':
+          description: Doctor not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Doctor not found
+                Error: The requested doctor was not found
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Internal Server Error
+                Error: Failed to retrieve doctor by user ID
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Bad Gateway
+                Error: Failed to connect to the doctor service
+
+# APPOINTMENT
+  /api/appointments:
+    servers:
+      - url: https://app_gateway:8080
+    get:
+      summary: Get all appointments
+      security:
+      - jwt: [admin, doctor, patient]
+      parameters:
+        - name: patientID
+          in: query
+          description: Filter appointments based on patient ID
+          schema:
+            type: integer
+        - name: doctorID
+          in: query
+          description: Filter appointments based on doctor ID
+          schema:
+            type: integer
+        - name: date
+          in: query
+          description: Filter appointments based on date
+          schema:
+            type: string
+            format: date
+        - name: status
+          in: query
+          description: Filter appointments based on status
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: Page number for pagination
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          description: Number of items to return per page
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Appointments retrieved successfully
+                Payload:
+                  - $ref: '#/components/schemas/Appointment'
+        '403':
+          description: Forbidden, requires admin, doctor access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Forbidden
+                Error: Admin, doctor access required
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Internal Server Error
+                Error: Failed to retrieve appointments
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Bad Gateway
+                Error: Failed to connect to the appointment service
+    post:
+      summary: Create a new appointment
+      security:
+      - jwt: [admin, doctor]
+      requestBody:
+        description: Appointment data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Appointment'
+      responses:
+        '201':
+          description: Appointment created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Appointment created successfully
+                Payload:
+                  lastInsertedID: 1
+                Error: ""
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Bad Request
+                Error: Invalid appointment data
+        '403':
+          description: Forbidden, requires admin, doctor, or patient access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Forbidden
+                Error: Admin, doctor, or patient access required
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Not Found
+                Error: Doctor or Patient not found
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Conflict
+                Error: Appointment scheduling conflict
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Internal Server Error
+                Error: Failed to create appointment
+        '502':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Failed to redirect request
+                Error: Bad Gateway error
+   
+  /api/appointments/{appointmentID}:
+    servers:
+      - url: https://app_gateway:8080
+    get:
+      summary: Retrieve an appointment by ID
+      security:
+      - jwt: [admin, doctor, patient]
+      parameters:
+        - name: appointmentID
+          in: path
+          description: Appointment ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Appointment retrieved successfully
+                Payload:
+                  - $ref: '#/components/schemas/Appointment'
+        '403':
+          description: Forbidden, requires admin, doctor, or patient access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Forbidden
+                Error: Admin, doctor, or patient access required
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Not Found
+                Error: Appointment not found
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Internal Server Error
+                Error: Unexpected error while fetching the appointment
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Bad Gateway
+                Error: Failed to connect to the appointment service
+    put:
+      summary: Update an appointment by ID
+      security:
+      - jwt: [admin, doctor]
+      parameters:
+        - name: appointmentID
+          in: path
+          description: Appointment ID
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Updated appointment data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Appointment'
+      responses:
+        '200':
+          description: Appointment updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Appointment updated successfully
+                Payload:
+                  RowsAffected:
+                      RowsAffected: 1
+                Error: ""
+        '403':
+          description: Forbidden, requires admin, doctor, or patient access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Forbidden
+                Error: Admin, doctor, or patient access required
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Not Found
+                Error: Appointment not found
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Conflict
+                Error: Appointment update conflict
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Internal Server Error
+                Error: Unexpected error while updating the appointment
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Bad Gateway
+                Error: Failed to connect to the appointment service
+    delete:
+      summary: Delete an appointment by ID
+      security:
+      - jwt: [admin, doctor]
+      parameters:
+        - name: appointmentID
+          in: path
+          description: Appointment ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Appointment deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Appointment deleted successfully
+                Payload: null
+        '403':
+          description: Forbidden, requires admin, doctor access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Forbidden
+                Error: Admin, doctor access required
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Not Found
+                Error: Appointment not found
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Internal Server Error
+                Error: Unexpected error while deleting the appointment
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Bad Gateway
+                Error: Failed to connect to the appointment service
+
+
+# CONSULTATION
+  /api/consultation:
+    servers:
+      - url: https://app_gateway:8080
+    get:
+      summary: Get all consultation
+      security:
+      - jwt: [admin, doctor, patient]
+      parameters:
+        - name: patientID
+          in: query
+          description: Filter consultation based on patient ID
+          schema:
+            type: integer
+        - name: doctorID
+          in: query
+          description: Filter consultation based on doctor ID
+          schema:
+            type: integer
+        - name: date
+          in: query
+          description: Filter consultation based on date
+          schema:
+            type: string
+            format: date
+        - name: status
+          in: query
+          description: Filter consultation based on status
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: Page number for pagination
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          description: Number of items to return per page
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Consultations retrieved successfully
+                Payload:
+                  - $ref: '#/components/schemas/Consultation'
+        '403':
+          description: Forbidden, requires admin, doctor access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Forbidden
+                Error: Admin, doctor access required
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Internal Server Error
+                Error: Failed to retrieve consultation
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Bad Gateway
+                Error: Failed to connect to the consultation service
+    post:
+      summary: Create a new consultation
+      security:
+      - jwt: [admin, doctor]
+      requestBody:
+        description: Consultation data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Consultation'
+      responses:
+        '201':
+          description: Consultation created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Consultation created successfully
+                Payload:
+                  lastInsertedID: 1
+                Error: ""
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Bad Request
+                Error: Invalid consultation data
+        '403':
+          description: Forbidden, requires admin, doctor, or patient access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Forbidden
+                Error: Admin, doctor, or patient access required
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Not Found
+                Error: Doctor or Patient not found
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Conflict
+                Error: Consultation scheduling conflict
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Internal Server Error
+                Error: Failed to create consultation
+        '502':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Failed to redirect request
+                Error: Bad Gateway error
+   
+  /api/consultation/{consultationID}:
+    servers:
+      - url: https://app_gateway:8080
+    get:
+      summary: Retrieve an consultation by ID
+      security:
+      - jwt: [admin, doctor, patient]
+      parameters:
+        - name: consultationID
+          in: path
+          description: Consultation ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Consultation retrieved successfully
+                Payload:
+                  - $ref: '#/components/schemas/Consultation'
+        '403':
+          description: Forbidden, requires admin, doctor, or patient access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Forbidden
+                Error: Admin, doctor, or patient access required
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Not Found
+                Error: Consultation not found
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Internal Server Error
+                Error: Unexpected error while fetching the consultation
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Bad Gateway
+                Error: Failed to connect to the consultation service
+    put:
+      summary: Update an consultation by ID
+      security:
+      - jwt: [admin, doctor]
+      parameters:
+        - name: consultationID
+          in: path
+          description: Consultation ID
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Updated consultation data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Consultation'
+      responses:
+        '200':
+          description: Consultation updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Consultation updated successfully
+                Payload:
+                  RowsAffected:
+                      RowsAffected: 1
+                Error: ""
+        '403':
+          description: Forbidden, requires admin, doctor, or patient access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Forbidden
+                Error: Admin, doctor, or patient access required
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Not Found
+                Error: Consultation not found
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Conflict
+                Error: Consultation update conflict
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Internal Server Error
+                Error: Unexpected error while updating the consultation
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Bad Gateway
+                Error: Failed to connect to the consultation service
+    delete:
+      summary: Delete an consultation by ID
+      security:
+      - jwt: [admin, doctor]
+      parameters:
+        - name: consultationID
+          in: path
+          description: Consultation ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Consultation deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Consultation deleted successfully
+                Payload: null
+        '403':
+          description: Forbidden, requires admin, doctor access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Forbidden
+                Error: Admin, doctor access required
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Not Found
+                Error: Consultation not found
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Internal Server Error
+                Error: Unexpected error while deleting the consultation
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                Message: Bad Gateway
+                Error: Failed to connect to the consultation service
+
+
+########################################################### PATIENT paths #######################################################
+  /patients:
+    servers:
+      - url: https://app_patient:8082
+    get:
+      summary: Retrieve a list of patients
+      parameters:
+        - name: isActive
+          in: query
+          description: Filter patients based on activity status
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/ResponseData'
+                properties:
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  payload:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Patient'
+              example:
+                message: Successfully fetched patients
+                payload:
+                  patient1:
+                    - $ref: '#/components/schemas/Patient'
+                  patient2:
+                    - $ref: '#/components/schemas/Patient'
+                  # ...
+                error: ""
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/ResponseData'
+                example:
+                  message: Bad Request
+                  error: "Invalid request parameters"
+                  payload: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/ResponseData'
+                example:
+                  message: Internal Server Error
+                  error: "Unexpected server error"
+                  payload: null
+    post:
+      summary: Create a new patient
+      requestBody:
+        description: Patient data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Patient'
+      responses:
+        '201':
+          description: Patient created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/ResponseData'
+                properties:
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  payload:
+                    type: object
+                    $ref: '#/components/schemas/LastInsertedID'
+                example:
+                  message: Patient created successfully
+                  payload:
+                    lastInsertedID: 1
+                  error: ""
+        '400':
+          description: Bad request, invalid data
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/ResponseData'
+                example:
+                  message: 
+                    type: string
+                    value: Bad Request
+                  error: 
+                    type: string
+                    value: "Invalid request parameters"
+                  payload: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/ResponseData'
+                example:
+                  message: 
+                    type: string
+                    value: Internal Server Error
+                  error: 
+                    type: string
+                    value: "Unexpected server error"
+                  payload: null
+  
+  /patients/{id}:
+    servers:
+    - url: https://app_patient:8082
+    get:
+      summary: Retrieve a patient by ID
+      parameters:
+        - name: id
+          in: path
+          description: Patient ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/ResponseData'
+                properties:
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  payload:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Patient'
+                example:
+                  message: Successfully fetched patient
+                  payload:
+                    patient1:
+                      - $ref: '#/components/schemas/Patient'
+                  error: ""
+        '404':
+          description: Patient not found
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/ResponseData'
+                example:
+                  message: Patient not found
+                  error: "Patient with the specified ID not found"
+                  payload: null
+    put:
+      summary: Update a patient by ID
+      parameters:
+        - name: id
+          in: path
+          description: Patient ID
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Updated patient data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Patient'
+      responses:
+        '200':
+          description: Patient updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+        '400':
+          description: Bad request, invalid data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+        '404':
+          description: Patient not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+    patch:
+      summary: Set patient activity (true/false) -> mask a delete
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the patient to be updated
+          schema:
+            type: integer
+      requestBody:
+        description: Patient activity data
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                isActive:
+                  type: boolean
+                  description: The new activity status of the patient
+              required:
+                - isActive
+      responses:
+        '200':
+          description: Patient updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Patient updated successfully
+                payload:
+                  rowsAffected: 1
+                error: ""
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Bad Request
+                error: "Invalid request parameters"
+                payload: null
+        '404':
+          description: Patient not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Patient not found
+                error: "Patient with ID not found"
+                payload: null
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Internal Server Error
+                error: "Unexpected server error"
+                payload: null
+    delete:
+      summary: Delete a patient by ID
+      parameters:
+        - name: id
+          in: path
+          description: Patient ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Patient deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Patient deleted successfully
+                payload:
+                  rowsAffected: 1
+                error: ""
+        '404':
+          description: Patient not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Patient not found
+                error: "Patient with ID not found"
+                payload: null
+  
+  /patients/email/{email}:
+    servers:
+    - url: https://app_patient:8082
+    get:
+      summary: Retrieve a patient by email
+      parameters:
+        - name: email
+          in: path
+          required: true
+          description: Email address of the patient
+          schema:
+            type: string
+            format: email
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Patient fetched successfully
+                payload:
+                  id: 1
+                  firstName: John
+                  lastName: Doe
+                  email: john.doe@example.com
+                  isActive: true
+                error: ""
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Bad Request
+                error: "Invalid request parameters"
+                payload: null
+        '404':
+          description: Patient not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Patient not found
+                error: "Patient with email not found"
+                payload: null
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Internal Server Error
+                error: "Unexpected server error"
+                payload: null
+  
+  /patients/users/{userID}:
+    servers:
+    - url: https://app_patient:8082
+    get:
+      summary: Retrieve a patient by user ID
+      parameters:
+        - name: userID
+          in: path
+          required: true
+          description: User ID of the patient
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Patient fetched successfully
+                payload:
+                  id: 1
+                  firstName: John
+                  lastName: Doe
+                  email: john.doe@example.com
+                  isActive: true
+                error: ""
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Bad Request
+                error: "Invalid request parameters"
+                payload: null
+        '404':
+          description: Patient not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Patient not found
+                error: "Patient with user ID not found"
+                payload: null
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Internal Server Error
+                error: "Unexpected server error"
+                payload: null
+    delete:
+      summary: Delete a patient by its user ID
+      parameters:
+        - name: userID
+          in: path
+          description: Patient userID
+          required: true
+          schema:
+            type: integer
+        - name: authorization
+          in: header
+          description: JWT token for authorization
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Patient deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Patient with user ID deleted successfully
+                payload:
+                  rowsAffected: 1
+                  deletedID: 123
+                error: ""
+        '404':
+          description: Patient not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Patient not found
+                error: "Patient with user ID not found"
+                payload: null
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Internal Server Error
+                error: "Unexpected server error"
+                payload: null
+  
+  /patients/health-check:
+    servers:
+    - url: https://app_patient:8082
+    get:
+        summary: Performs health check on the container server
+        responses:
+          '200':
+            description: Successful response
+
+########################################################### DOCTOR paths ##########################################################
+  /doctors:
+    servers:
+    - url: https://app_doctor:8083
+    get:
+      summary: Retrieve a list of doctors
+      parameters:
+        - name: isActive
+          in: query
+          description: Filter doctors based on activity status
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/ResponseData'
+                properties:
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  payload:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Doctor'
+              example:
+                message: Successfully fetched doctors
+                payload:
+                  patient1:
+                    - $ref: '#/components/schemas/Doctor'
+                  patient2:
+                    - $ref: '#/components/schemas/Doctor'
+                  # ...
+                error: ""
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/ResponseData'
+                example:
+                  message: Bad Request
+                  error: "Invalid request parameters"
+                  payload: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/ResponseData'
+                example:
+                  message: Internal Server Error
+                  error: "Unexpected server error"
+                  payload: null
+    post:
+      summary: Create a new doctor
+      requestBody:
+        description: Doctor data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Doctor'
+      responses:
+        '201':
+          description: Doctor created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/ResponseData'
+                properties:
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  payload:
+                    type: object
+                    $ref: '#/components/schemas/LastInsertedID'
+                example:
+                  message: Doctor created successfully
+                  payload:
+                    lastInsertedID: 1
+                  error: ""
+        '400':
+          description: Bad request, invalid data
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/ResponseData'
+                example:
+                  message: 
+                    type: string
+                    value: Bad Request
+                  error: 
+                    type: string
+                    value: "Invalid request parameters"
+                  payload: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/ResponseData'
+                example:
+                  message: 
+                    type: string
+                    value: Internal Server Error
+                  error: 
+                    type: string
+                    value: "Unexpected server error"
+                  payload: null
+  
+  /doctors/{id}:
+    servers:
+      - url: https://app_doctor:8083
+    get:
+      summary: Retrieve a doctor by ID
+      parameters:
+        - name: id
+          in: path
+          description: Doctor ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/ResponseData'
+                properties:
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  payload:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Doctor'
+                example:
+                  message: Successfully fetched doctor
+                  payload:
+                    doctor1:
+                      - $ref: '#/components/schemas/Doctor'
+                  error: ""
+        '404':
+          description: Doctor not found
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/ResponseData'
+                example:
+                  message: Doctor not found
+                  error: "Doctor with the specified ID not found"
+                  payload: null
+    put:
+      summary: Update a doctor by ID
+      parameters:
+        - name: id
+          in: path
+          description: Doctor ID
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Updated doctor data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Doctor'
+      responses:
+        '200':
+          description: Doctor updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+        '400':
+          description: Bad request, invalid data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+        '404':
+          description: Doctor not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+    patch:
+      summary: Set doctor activity (true/false) -> mask a delete
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the doctor to be updated
+          schema:
+            type: integer
+      requestBody:
+        description: Doctor activity data
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                isActive:
+                  type: boolean
+                  description: The new activity status of the doctor
+              required:
+                - isActive
+      responses:
+        '200':
+          description: Doctor updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Doctor updated successfully
+                payload:
+                  rowsAffected: 1
+                error: ""
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Bad Request
+                error: "Invalid request parameters"
+                payload: null
+        '404':
+          description: Doctor not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Doctor not found
+                error: "Doctor with ID not found"
+                payload: null
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Internal Server Error
+                error: "Unexpected server error"
+                payload: null
+    delete:
+      summary: Delete a doctor by ID
+      parameters:
+        - name: id
+          in: path
+          description: Doctor ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Doctor deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Doctor deleted successfully
+                payload:
+                  rowsAffected: 1
+                error: ""
+        '404':
+          description: Doctor not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Doctor not found
+                error: "Doctor with ID not found"
+                payload: null
+  
+  /doctors/email/{email}:
+    servers:
+      - url: https://app_doctor:8083
+    get:
+      summary: Retrieve a doctor by email
+      parameters:
+        - name: email
+          in: path
+          required: true
+          description: Email address of the doctor
+          schema:
+            type: string
+            format: email
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Doctor fetched successfully
+                payload:
+                  id: 1
+                  firstName: John
+                  lastName: Doe
+                  email: john.doe@example.com
+                  isActive: true
+                error: ""
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Bad Request
+                error: "Invalid request parameters"
+                payload: null
+        '404':
+          description: Doctor not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Doctor not found
+                error: "Doctor with email not found"
+                payload: null
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Internal Server Error
+                error: "Unexpected server error"
+                payload: null
+  
+  /doctors/users/{userID}:
+    servers:
+      - url: https://app_doctor:8083
+    get:
+      summary: Retrieve a doctor by user ID
+      parameters:
+        - name: userID
+          in: path
+          required: true
+          description: User ID of the doctor
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Doctor fetched successfully
+                payload:
+                  id: 1
+                  firstName: John
+                  lastName: Doe
+                  email: john.doe@example.com
+                  isActive: true
+                error: ""
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Bad Request
+                error: "Invalid request parameters"
+                payload: null
+        '404':
+          description: Doctor not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Doctor not found
+                error: "Doctor with user ID not found"
+                payload: null
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Internal Server Error
+                error: "Unexpected server error"
+                payload: null
+    delete:
+      summary: Delete a doctor by its user ID
+      parameters:
+        - name: userID
+          in: path
+          description: Doctor userID
+          required: true
+          schema:
+            type: integer
+        - name: authorization
+          in: header
+          description: JWT token for authorization
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Doctor deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Doctor with user ID deleted successfully
+                payload:
+                  rowsAffected: 1
+                  deletedID: 123
+                error: ""
+        '404':
+          description: Doctor not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Doctor not found
+                error: "Doctor with user ID not found"
+                payload: null
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Internal Server Error
+                error: "Unexpected server error"
+                payload: null
+  
+  /doctors/health-check:
+    servers:
+      - url: https://app_doctor:8083
+    get:
+      summary: Performs health check on the container server
+      responses:
+        '200':
+          description: Successful response
+
+######################################################### APPOINTMENT paths ########################################################
+  /appointments:
+    servers:
+      - url: https://app_appointment:8084
+    get:
+      summary: Retrieve a list of appointments
+      parameters:
+        - name: patientID
+          in: query
+          description: Filter appointments based on patient ID
+          schema:
+            type: integer
+        - name: doctorID
+          in: query
+          description: Filter appointments based on doctor ID
+          schema:
+            type: integer
+        - name: date
+          in: query
+          description: Filter appointments based on date
+          schema:
+            type: string
+            format: date
+        - name: status
+          in: query
+          description: Filter appointments based on status
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: Page number for pagination
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          description: Number of items to return per page
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+                properties:
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  payload:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Appointment'
+              example:
+                message: Successfully fetched appointments
+                payload:
+                  - appointment1:
+                      $ref: '#/components/schemas/Appointment'
+                  - appointment2:
+                      $ref: '#/components/schemas/Appointment'
+                  # ...
+                error: ""
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+                example:
+                  message: Bad Request
+                  error: "Invalid request parameters"
+                  payload: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+                example:
+                  message: Internal Server Error
+                  error: "Unexpected server error"
+                  payload: null
+    post:
+      summary: Create a new appointment
+      requestBody:
+        description: Appointment data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Appointment'
+      responses:
+        '201':
+          description: Appointment created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+                properties:
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  payload:
+                    type: object
+                    $ref: '#/components/schemas/LastInsertedID'
+              example:
+                message: Appointment created successfully
+                payload:
+                  lastInsertedID: 1
+                error: ""
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Bad Request
+                error: "Invalid request body"
+                payload: null
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Failed to create appointment. Duplicate entry violation
+                error: "Conflict error: Duplicate entry violation"
+                payload: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Failed to create appointment
+                error: "Internal server error: Unexpected server error"
+                payload: null
+  
+  /appointments/{appointmentID}:
+    servers:
+      - url: https://app_appointment:8084
+    get:
+      summary: Retrieve an appointment by ID
+      parameters:
+        - name: appointmentID
+          in: path
+          description: Appointment ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+                properties:
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  payload:
+                    type: object
+                    $ref: '#/components/schemas/Appointment'
+              example:
+                message: Successfully fetched appointment
+                payload:
+                 - appointment1:
+                      $ref: '#/components/schemas/Appointment'
+                error: ""
+        '404':
+          description: Appointment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Appointment not found
+                error: "Appointment with the specified ID not found"
+                payload: null
+    put:
+      summary: Update an appointment by ID
+      parameters:
+        - name: appointmentID
+          in: path
+          description: Appointment ID
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Updated appointment data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Appointment'
+      responses:
+        '200':
+          description: Appointment updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Appointment with ID 1 updated successfully
+                payload:
+                  rowsAffected:
+                    rowsAffected: 1
+                error: ""
+        '400':
+          description: Bad request, invalid data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Invalid appointment update request
+                error: "Invalid appointment ID: 0"
+                payload: null
+        '404':
+          description: Appointment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Failed to update appointment. Appointment not found
+                error: "Error updating appointment: sql: no rows in result set"
+                payload: null
+    delete:
+      summary: Delete an appointment by ID
+      parameters:
+        - name: appointmentID
+          in: path
+          description: Appointment ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Appointment deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: "Appointment with ID: 1 deleted successfully"
+                payload:
+                  rowsAffected:
+                    rowsAffected: 1
+                error: ""
+        '404':
+          description: Appointment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Failed to delete appointment. Appointment not found
+                error: "Error deleting appointment: sql: no rows in result set"
+                payload: null
+  
+  /appointments/health-check:
+    servers:
+      - url: https://app_appointment:8084
+    get:
+      summary: Performs health check on the appointments module
+      responses:
+        '200':
+          description: Successful response
+
+######################################################### CONSULTATION paths #######################################################
+  /consultations:
+    servers:
+      - url: https://app_consultation:8085
+    get:
+      summary: Retrieve a list of consultations
+      parameters:
+        - name: patientID
+          in: query
+          description: Filter consultations based on patient ID
+          schema:
+            type: integer
+        - name: doctorID
+          in: query
+          description: Filter consultations based on doctor ID
+          schema:
+            type: integer
+        - name: date
+          in: query
+          description: Filter consultations based on date
+          schema:
+            type: string
+            format: date
+        - name: status
+          in: query
+          description: Filter consultations based on status
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: Page number for pagination
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          description: Number of items to return per page
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+                properties:
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  payload:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Consultation'
+              example:
+                message: Successfully fetched consultations
+                payload:
+                  - consultation1:
+                      $ref: '#/components/schemas/Consultation'
+                  - consultation2:
+                      $ref: '#/components/schemas/Consultation'
+                  # ...
+                error: ""
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+                example:
+                  message: Bad Request
+                  error: "Invalid request parameters"
+                  payload: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+                example:
+                  message: Internal Server Error
+                  error: "Unexpected server error"
+                  payload: null
+    post:
+      summary: Create a new consultation
+      requestBody:
+        description: Consultation data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Consultation'
+      responses:
+        '201':
+          description: Consultation created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+                properties:
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  payload:
+                    type: object
+                    $ref: '#/components/schemas/LastInsertedID'
+              example:
+                message: Consultation created successfully
+                payload:
+                  lastInsertedID: 1
+                error: ""
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Bad Request
+                error: "Invalid request body"
+                payload: null
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Failed to create consultation. Duplicate entry violation
+                error: "Conflict error: Duplicate entry violation"
+                payload: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Failed to create consultation
+                error: "Internal server error: Unexpected server error"
+                payload: null
+  
+  /consultations/{consultationID}:
+    servers:
+      - url: https://app_consultation:8085
+    get:
+      summary: Retrieve an consultation by ID
+      parameters:
+        - name: consultationID
+          in: path
+          description: Consultation ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+                properties:
+                  message:
+                    type: string
+                  error:
+                    type: string
+                  payload:
+                    type: object
+                    $ref: '#/components/schemas/Consultation'
+              example:
+                message: Successfully fetched consultation
+                payload:
+                 - consultation1:
+                      $ref: '#/components/schemas/Consultation'
+                error: ""
+        '404':
+          description: Consultation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Consultation not found
+                error: "Consultation with the specified ID not found"
+                payload: null
+    put:
+      summary: Update an consultation by ID
+      parameters:
+        - name: consultationID
+          in: path
+          description: Consultation ID
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Updated consultation data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Consultation'
+      responses:
+        '200':
+          description: Consultation updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Consultation with ID 1 updated successfully
+                payload:
+                  rowsAffected:
+                    rowsAffected: 1
+                error: ""
+        '400':
+          description: Bad request, invalid data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Invalid consultation update request
+                error: "Invalid consultation ID: 0"
+                payload: null
+        '404':
+          description: Consultation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Failed to update consultation. Consultation not found
+                error: "Error updating consultation: sql: no rows in result set"
+                payload: null
+    delete:
+      summary: Delete an consultation by ID
+      parameters:
+        - name: consultationID
+          in: path
+          description: Consultation ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Consultation deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: "Consultation with ID: 1 deleted successfully"
+                payload:
+                  rowsAffected:
+                    rowsAffected: 1
+                error: ""
+        '404':
+          description: Consultation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseData'
+              example:
+                message: Failed to delete consultation. Consultation not found
+                error: "Error deleting consultation: sql: no rows in result set"
+                payload: null
+  
+  /consultations/health-check:
+    servers:
+      - url: https://app_consultation:8085
+    get:
+      summary: Performs health check on the consultations module
+      responses:
+        '200':
+          description: Successful response
+
+############################################################ RABBIT paths ##########################################################
+  /rabbit/health-check:
+    get:
+      summary: Performs health check on the container server
+      responses:
+        '200':
+          description: Successful response
+
+
+components:
+  schemas:
+    UserData:
+      type: object
+      properties:
+        idUser:
+          type: integer
+          format: int64
+        username:
+          type: string
+          minLength: 5
+          maxLength: 255
+      required:
+        - username
+      example:
+        idUser: 1
+        username: "example_user"
+    PasswordData:
+      type: object
+      properties:
+        password:
+          type: string
+          minLength: 8
+          maxLength: 255
+      required:
+        - password
+      example:
+        password: "example_password"
+
+    RoleData:
+      type: object
+      properties:
+        role:
+          type: string
+          minLength: 1
+          maxLength: 50
+          enum:
+            - admin
+            - patient
+            - doctor
+      required:
+        - role
+      example:
+        role: "admin"
+    BlacklistData:
+      type: object
+      properties:
+        idUser:
+          type: integer
+          format: int64
+        token:
+          type: string
+          minLength: 1
+      required:
+        - idUser
+        - token
+      example:
+        idUser: 1
+        token: "example_token"
+
+    UserRegistrationData:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 5
+          maxLength: 255
+        password:
+          type: string
+          minLength: 8
+          maxLength: 255
+        role:
+          type: string
+          minLength: 1
+          maxLength: 50
+          enum:
+            - admin
+            - patient
+            - doctor
+      required:
+        - username
+        - password
+        - role
+      example:
+        username: "example_user"
+        password: "example_password"
+        role: "admin"
+    UserLoginData:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 5
+          maxLength: 255
+        password:
+          type: string
+          minLength: 8
+          maxLength: 255
+      required:
+        - username
+        - password
+      example:
+        username: "example_user"
+        password: "example_password"
+
+    Patient:
+      type: object
+      properties:
+        idPatient:
+          type: integer
+          description: The unique identifier for the patient.
+        idUser:
+          type: integer
+          description: The ID of the associated user account.
+        firstName:
+          type: string
+          maxLength: 50
+          description: The first name of the patient.
+        secondName:
+          type: string
+          maxLength: 50
+          description: The second name of the patient.
+        email:
+          type: string
+          format: email
+          maxLength: 70
+          description: The email address of the patient.
+        phoneNumber:
+          type: string
+          pattern: '^[0-9]{10}$'
+          description: The phone number of the patient (10 digits).
+        birthDay:
+          type: string
+          format: date
+          description: The date of birth of the patient.
+        cnp:
+          type: string
+          pattern: '^[0-9]{13}$'
+          description: The personal identification number of the patient (13 digits).
+        isActive:
+          type: boolean
+          description: Indicates whether the patient is active.
+      required:
+        - idUser
+        - firstName
+        - secondName
+        - email
+        - phoneNumber
+        - birthDay
+        - cnp
+        - isActive
+      example:
+        idPatient: 1
+        idUser: 123
+        firstName: John
+        secondName: Doe
+        email: john.doe@example.com
+        phoneNumber: '1234567890'
+        birthDay: '1990-01-01'
+        cnp: '1234567890123'
+        isActive: true
+    
+    DoctorSpecialization:
+      type: string
+      enum:
+        - Cardiology
+        - Neurology
+        - Orthopedics
+        - Pediatrics
+        - Dermatology
+        - Radiology
+        - Surgery
+      description: The specialization of the doctor.
+    Doctor:
+      type: object
+      properties:
+        idDoctor:
+          type: integer
+          description: The unique identifier for the doctor.
+        idUser:
+          type: integer
+          description: The ID of the associated user.
+        firstName:
+          type: string
+          maxLength: 50
+          description: The first name of the doctor.
+        secondName:
+          type: string
+          maxLength: 50
+          description: The second name of the doctor.
+        email:
+          type: string
+          format: email
+          maxLength: 70
+          description: The email address of the doctor.
+        phoneNumber:
+          type: string
+          pattern: '^[0-9]{10}$'
+          description: The phone number of the doctor (10 digits).
+        specialization:
+          $ref: '#/components/schemas/DoctorSpecialization'
+          description: The specialization of the doctor.
+        isActive:
+          type: boolean
+          description: Indicates whether the doctor is active.
+      required:
+        - idUser
+        - firstName
+        - secondName
+        - email
+        - phoneNumber
+        - specialization
+        - isActive
+      example:
+        idDoctor: 1
+        idUser: 123
+        firstName: John
+        secondName: Doe
+        email: john.doe@example.com
+        phoneNumber: '1234567890'
+        specialization: Cardiology
+        isActive: true
+    
+    StatusAppointment:
+      type: string
+      enum:
+        - scheduled
+        - confirmed
+        - not_present
+        - canceled
+        - honored
+      description: The status of the appointment.
+    Appointment:
+      type: object
+      properties:
+        idProgramare:
+          type: integer
+          description: The unique identifier for the appointment.
+        idPatient:
+          type: integer
+          description: The ID of the associated patient.
+        idDoctor:
+          type: integer
+          description: The ID of the associated doctor.
+        date:
+          type: string
+          format: date-time
+          description: The date and time of the appointment.
+        status:
+          $ref: '#/components/schemas/StatusAppointment'
+          description: Status of the appointment
+      required:
+        - idPatient
+        - idDoctor
+        - date
+        - status
+      example:
+        idProgramare: 1
+        idPatient: 123
+        idDoctor: 456
+        date: '2023-01-01T10:00:00Z'
+        status: confirmed    
+    
+    Consultation:
+      type: object
+      properties:
+        idConsultation:
+          type: string
+          format: uuid
+          description: The unique identifier for the consultation.
+        idPatient:
+          type: integer
+          description: The ID of the patient associated with the consultation.
+        idDoctor:
+          type: integer
+          description: The ID of the doctor associated with the consultation.
+        date:
+          type: string
+          format: date-time
+          description: The date and time of the consultation.
+        diagnostic:
+          type: string
+          description: The diagnostic information from the consultation.
+        investigations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Investigation'
+      required:
+        - idPatient
+        - idDoctor
+        - date
+        - diagnostic
+        - result
+      example:
+        idConsultation: "5f72b32cbe6700c1443d39a5"
+        idPatient: 1
+        idDoctor: 2
+        date: "2023-01-01T12:00:00Z"
+        diagnostic: "Hypertension"
+        investigations:
+          - idInvestigation: "5f72b32cbe6700c1443d39a6"
+            name: "Blood Pressure"
+            processingTime: 30
+            result: "Normal"
+          - idInvestigation: "5f72b32cbe6700c1443d39a7"
+            name: "Cholesterol Level"
+            processingTime: 45
+            result: "High"
+    Investigation:
+      type: object
+      properties:
+        idInvestigation:
+          type: string
+          format: uuid
+          description: The unique identifier for the investigation.
+        name:
+          type: string
+          description: The name of the investigation.
+        processingTime:
+          type: integer
+          description: The processing time required for the investigation in minutes.
+        result:
+          type: string
+          description: The result of the investigation.
+      required:
+        - name
+        - processingTime
+        - result
+      example:
+        idInvestigation: "5f72b32cbe6700c1443d39a6"
+        name: "Blood Pressure"
+        processingTime: 30
+        result: "Normal"
+
+    ResponseData:
+      type: object
+      properties:
+        message:
+          type: string
+        error:
+          type: string
+        payload:
+          type: object
+  
+  securitySchemes:
+    jwt:
+      type: apiKey
+      in: header
+      name: Authorization
+      

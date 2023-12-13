@@ -26,7 +26,7 @@ func (gc *GatewayController) GetAllUsers(w http.ResponseWriter, r *http.Request)
 	response, err := gc.IDMClient.GetUsers(ctx, &proto_files.EmptyRequest{})
 	if err != nil {
 		log.Println("[GATEWAY] Error fetching all users:", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", err.Error())
+		utils.SendErrorResponse(w, http.StatusBadGateway, "Internal Server Error", err.Error())
 		return
 	}
 
@@ -81,7 +81,7 @@ func (gc *GatewayController) GetUserByID(w http.ResponseWriter, r *http.Request)
 	response, err := gc.IDMClient.GetUserByID(ctx, &proto_files.UserIDRequest{UserID: &proto_files.UserID{ID: userID}})
 	if err != nil {
 		log.Printf("[GATEWAY] Error fetching user by ID: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", err.Error())
+		utils.SendErrorResponse(w, http.StatusBadGateway, "Internal Server Error", err.Error())
 		return
 	}
 
@@ -145,7 +145,7 @@ func (gc *GatewayController) UpdateUser(w http.ResponseWriter, r *http.Request) 
 	})
 	if err != nil {
 		log.Printf("[GATEWAY] Error updating user: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", "Failed to update user: "+err.Error())
+		utils.SendErrorResponse(w, http.StatusBadGateway, "Internal Server Error", "Failed to update user: "+err.Error())
 		return
 	}
 
@@ -196,7 +196,7 @@ func (gc *GatewayController) DeleteUser(w http.ResponseWriter, r *http.Request) 
 	response, err := gc.IDMClient.DeleteUserByID(ctx, &proto_files.UserIDRequest{UserID: &proto_files.UserID{ID: userID}})
 	if err != nil {
 		log.Printf("[GATEWAY] Error deleting user: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", "Failed to delete user: "+err.Error())
+		utils.SendErrorResponse(w, http.StatusBadGateway, "Internal Server Error", "Failed to delete user: "+err.Error())
 		return
 	}
 
@@ -257,7 +257,7 @@ func (gc *GatewayController) UpdatePassword(w http.ResponseWriter, r *http.Reque
 	})
 	if err != nil {
 		log.Printf("[GATEWAY] Error updating user password: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", "Failed to update user password: "+err.Error())
+		utils.SendErrorResponse(w, http.StatusBadGateway, "Internal Server Error", "Failed to update user password: "+err.Error())
 		return
 	}
 
@@ -315,7 +315,7 @@ func (gc *GatewayController) UpdateRole(w http.ResponseWriter, r *http.Request) 
 
 	if err != nil {
 		log.Printf("[GATEWAY] Error updating user role: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", "Failed to update user role: "+err.Error())
+		utils.SendErrorResponse(w, http.StatusBadGateway, "Internal Server Error", "Failed to update user role: "+err.Error())
 		return
 	}
 
@@ -362,7 +362,7 @@ func (gc *GatewayController) AddToBlacklist(w http.ResponseWriter, r *http.Reque
 	})
 	if err != nil {
 		log.Printf("[GATEWAY] Error adding user to blacklist: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", "Failed to add user to the blacklist: "+err.Error())
+		utils.SendErrorResponse(w, http.StatusBadGateway, "Internal Server Error", "Failed to add user to the blacklist: "+err.Error())
 		return
 	}
 
@@ -417,7 +417,7 @@ func (gc *GatewayController) CheckBlacklist(w http.ResponseWriter, r *http.Reque
 	})
 	if err != nil {
 		log.Printf("[GATEWAY] Error checking user in blacklist: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", "Failed to check if the user is in the blacklist: "+err.Error())
+		utils.SendErrorResponse(w, http.StatusBadGateway, "Internal Server Error", "Failed to check if the user is in the blacklist: "+err.Error())
 		return
 	}
 
@@ -467,7 +467,7 @@ func (gc *GatewayController) RemoveFromBlacklist(w http.ResponseWriter, r *http.
 	})
 	if err != nil {
 		log.Printf("[GATEWAY] Error removing user from blacklist: %v", err)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error", "Error removing user from blacklist: "+err.Error())
+		utils.SendErrorResponse(w, http.StatusBadGateway, "Internal Server Error", "Error removing user from blacklist: "+err.Error())
 		return
 	}
 
