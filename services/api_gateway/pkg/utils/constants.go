@@ -67,6 +67,7 @@ const (
 
 const (
 	CHECK_HEALTH_ENDPOINT = "/api/gateway/health-check"
+	GET_DOC_ENDPOINT      = "/api/openapi-docs"
 )
 
 const (

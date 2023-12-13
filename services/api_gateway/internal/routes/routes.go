@@ -45,13 +45,17 @@ func loadRoutes(router *mux.Router, gatewayController *controllers.GatewayContro
 	loadDoctorRoutes(router, gatewayController, jwtConfig)
 	loadAppointmentRoutes(router, gatewayController, jwtConfig)
 	loadConsultationRoutes(router, gatewayController, jwtConfig)
-	loadHealthRoutes(router, gatewayController)
+	loadOtherRoutes(router, gatewayController)
 	log.Println("[GATEWAY] All routes for GATEWAY entity loaded successfully.")
 }
 
 // loadUserRoutes loads all the CRUD routes for the User entity
-func loadHealthRoutes(router *mux.Router, gatewayController *controllers.GatewayController) {
+func loadOtherRoutes(router *mux.Router, gatewayController *controllers.GatewayController) {
 	healthHandler := http.HandlerFunc(gatewayController.HealthCheck)
 	router.Handle(utils.CHECK_HEALTH_ENDPOINT, healthHandler).Methods("GET")
-	log.Println("[GATEWAY] Route POST", utils.CHECK_HEALTH_ENDPOINT, "registered.")
+	log.Println("[GATEWAY] Route GET", utils.CHECK_HEALTH_ENDPOINT, "registered.")
+
+	docsHandler := http.HandlerFunc(gatewayController.GetDocs)
+	router.Handle(utils.GET_DOC_ENDPOINT, docsHandler).Methods("GET")
+	log.Println("[GATEWAY] Route GET", utils.GET_DOC_ENDPOINT, "registered.")
 }
