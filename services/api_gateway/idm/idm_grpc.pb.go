@@ -23,7 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type IDMClient interface {
-	Register(ctx context.Context, in *proto_files.RegisterRequest, opts ...grpc.CallOption) (*proto_files.InfoResponse, error)
+	Register(ctx context.Context, in *proto_files.RegisterRequest, opts ...grpc.CallOption) (*proto_files.IDInfoResponse, error)
 	Login(ctx context.Context, in *proto_files.LoginRequest, opts ...grpc.CallOption) (*proto_files.LoginResponse, error)
 	GetUsers(ctx context.Context, in *proto_files.EmptyRequest, opts ...grpc.CallOption) (*proto_files.UsersResponse, error)
 	GetUserByID(ctx context.Context, in *proto_files.UserIDRequest, opts ...grpc.CallOption) (*proto_files.UserResponse, error)
@@ -46,8 +46,8 @@ func NewIDMClient(cc grpc.ClientConnInterface) IDMClient {
 	return &iDMClient{cc}
 }
 
-func (c *iDMClient) Register(ctx context.Context, in *proto_files.RegisterRequest, opts ...grpc.CallOption) (*proto_files.InfoResponse, error) {
-	out := new(proto_files.InfoResponse)
+func (c *iDMClient) Register(ctx context.Context, in *proto_files.RegisterRequest, opts ...grpc.CallOption) (*proto_files.IDInfoResponse, error) {
+	out := new(proto_files.IDInfoResponse)
 	err := c.cc.Invoke(ctx, "/IDM/Register", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -167,7 +167,7 @@ func (c *iDMClient) RemoveUserFromBlacklist(ctx context.Context, in *proto_files
 // All implementations must embed UnimplementedIDMServer
 // for forward compatibility
 type IDMServer interface {
-	Register(context.Context, *proto_files.RegisterRequest) (*proto_files.InfoResponse, error)
+	Register(context.Context, *proto_files.RegisterRequest) (*proto_files.IDInfoResponse, error)
 	Login(context.Context, *proto_files.LoginRequest) (*proto_files.LoginResponse, error)
 	GetUsers(context.Context, *proto_files.EmptyRequest) (*proto_files.UsersResponse, error)
 	GetUserByID(context.Context, *proto_files.UserIDRequest) (*proto_files.UserResponse, error)
@@ -187,7 +187,7 @@ type IDMServer interface {
 type UnimplementedIDMServer struct {
 }
 
-func (UnimplementedIDMServer) Register(context.Context, *proto_files.RegisterRequest) (*proto_files.InfoResponse, error) {
+func (UnimplementedIDMServer) Register(context.Context, *proto_files.RegisterRequest) (*proto_files.IDInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
 }
 func (UnimplementedIDMServer) Login(context.Context, *proto_files.LoginRequest) (*proto_files.LoginResponse, error) {

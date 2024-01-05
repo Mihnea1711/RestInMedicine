@@ -29,7 +29,7 @@ func loadUserRoutes(router *mux.Router, gatewayController *controllers.GatewayCo
 	log.Printf("[GATEWAY] Route GET %s registered.\n", utils.GET_ALL_USERS_ENDPOINT)
 
 	getByIDUserHandler := http.HandlerFunc(gatewayController.GetUserByID)
-	router.Handle(utils.GET_USER_BY_ID_ENDPOINT, authorization.AdminOnlyMiddleware(jwtConfig, getByIDUserHandler)).Methods("GET")
+	router.Handle(utils.GET_USER_BY_ID_ENDPOINT, authorization.AllRolesMiddleware(jwtConfig, getByIDUserHandler)).Methods("GET")
 	log.Printf("[GATEWAY] Route GET %s registered.\n", utils.GET_USER_BY_ID_ENDPOINT)
 
 	// ---------------------------------------------------------- Update --------------------------------------------------------------

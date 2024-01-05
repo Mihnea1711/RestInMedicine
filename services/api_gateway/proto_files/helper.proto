@@ -20,3 +20,8 @@ message EnhancedInfoResponse {
     int64 RowsAffected = 1;
     Info Info = 2;
 }
+
+message IDInfoResponse {
+    int64 LastInsertID = 1;
+    Info Info = 2;
+}

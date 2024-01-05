@@ -40,7 +40,7 @@ func New(config *config.AppConfig, parentCtx context.Context) (*App, error) {
 	log.Println("[RABBIT] RabbitMQ connection successfully established.")
 
 	// Setup router for the app with the rabbit in case the web part wants to publish to queues or smth
-	router := routes.SetupRoutes(rabbit)
+	router := routes.SetupRoutes(rabbit, config.JWT)
 	log.Println("[RABBIT] HTTP Routes successfully loaded.")
 
 	// Setup server

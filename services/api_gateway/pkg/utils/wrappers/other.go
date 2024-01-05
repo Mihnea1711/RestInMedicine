@@ -27,3 +27,17 @@ func (eir *EnhancedInfoResponse) IsResponseNil() bool {
 func (eir *EnhancedInfoResponse) IsInfoNil() bool {
 	return eir.Response != nil && eir.Response.Info == nil
 }
+
+// --------------------------------------------------------- IDInfoResponse ---------------------------------------------------------
+
+type IDInfoResponse struct {
+	Response *proto_files.IDInfoResponse
+}
+
+func (eir *IDInfoResponse) IsResponseNil() bool {
+	return eir.Response == nil
+}
+
+func (eir *IDInfoResponse) IsInfoNil() bool {
+	return eir.Response != nil && eir.Response.Info == nil
+}

@@ -44,7 +44,7 @@ func respondWithError(w http.ResponseWriter, status int, message string) {
 
 func writeJSONResponse(w http.ResponseWriter, status int, response []byte) {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
+	w.WriteHeader(status) // for some reason this is seen as superfluous
 	w.Write(response)
 	w.Write([]byte("\n"))
 }

@@ -16,7 +16,7 @@ import (
 func loadPatientRoutes(router *mux.Router, gatewayController *controllers.GatewayController, jwtConfig config.JWTConfig) {
 	// ---------------------------------------------------------- Create --------------------------------------------------------------
 	patientCreationHandler := http.HandlerFunc(gatewayController.CreatePatient)
-	router.Handle(utils.CREATE_PATIENT_ENDPOINT, authorization.AdminOnlyMiddleware(jwtConfig, validation.ValidatePatientData(patientCreationHandler))).Methods("POST")
+	router.Handle(utils.CREATE_PATIENT_ENDPOINT, authorization.AdminAndDoctorMiddleware(jwtConfig, validation.ValidatePatientData(patientCreationHandler))).Methods("POST")
 	log.Printf("[GATEWAY] Route POST %s registered.\n", utils.CREATE_PATIENT_ENDPOINT)
 
 	// ---------------------------------------------------------- Retrieve --------------------------------------------------------------

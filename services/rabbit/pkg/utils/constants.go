@@ -2,6 +2,8 @@ package utils
 
 import "github.com/mihnea1711/POS_Project/services/rabbit/internal/models"
 
+type contextKey string
+
 const CONFIG_PATH = "configs/config.yaml"
 const CLEAR_DB_RESOURCES_TIMEOUT = 10
 const RABBIT_CLOSE_TIMEOUT = 5
@@ -12,6 +14,8 @@ const (
 	// QueueDirectionPublish represents a queue for publishing
 	QueueDirectionPublish string = "publish"
 )
+
+const JWT_CLAIMS_CONTEXT_KEY contextKey = "jwtClaims"
 
 const (
 	DELETE_QUEUE = "delete_queue"
@@ -49,37 +53,26 @@ const (
 )
 
 const (
-	// endpoints
-	DELETE_PATIENT_BY_USER_ID_ENDPOINT         = "/api/patients/users"         // followed by userID
-	DELETE_DOCTOR_BY_USER_ID_ENDPOINT          = "/api/doctors/users"          // followed by userID
-	DELETE_APPOINTMENT_BY_PATIENT_ID_ENDPOINT  = "/api/appointments/patients"  // followed by patientID
-	DELETE_APPOINTMENT_BY_DOCTOR_ID_ENDPOINT   = "/api/appointments/doctors"   // followed by doctorID
-	DELETE_CONSULTATION_BY_PATIENT_ID_ENDPOINT = "/api/consultations/patients" // followed by patientID
-	DELETE_CONSULTATION_BY_DOCTOR_ID_ENDPOINT  = "/api/consultations/doctors"  // followed by doctorID
-
 	HEALTH_CHECK_ENDPOINT = "/api/rabbit/health-check"
+	PUBLISH_ENDPOINT      = "/api/rabbit/publish"
 )
 
 const (
-	PREPARE_PATIENT_ENDPOINT  = "/patients/health-check"
-	COMMIT_PATIENT_ENDPOINT   = "/patients"
-	ABORT_PATIENT_ENDPOINT    = "/patients/transaction/abort"
-	ROLLBACK_PATIENT_ENDPOINT = "/patients/transaction/rollback"
+	PREPARE_PATIENT_ENDPOINT = "/patients/health-check"
+	COMMIT_PATIENT_ENDPOINT  = "/patients"
+	// ABORT_PATIENT_ENDPOINT    = "/patients/transaction/abort"
+	// ROLLBACK_PATIENT_ENDPOINT = "/patients/transaction/rollback"
 
-	PREPARE_DOCTOR_ENDPOINT  = "/doctors/health-check"
-	COMMIT_DOCTOR_ENDPOINT   = "/doctors"
-	ABORT_DOCTOR_ENDPOINT    = "/doctors/transaction/abort"
-	ROLLBACK_DOCTOR_ENDPOINT = "/doctors/transaction/rollback"
+	PREPARE_DOCTOR_ENDPOINT = "/doctors/health-check"
+	COMMIT_DOCTOR_ENDPOINT  = "/doctors"
+	// ABORT_DOCTOR_ENDPOINT    = "/doctors/transaction/abort"
+	// ROLLBACK_DOCTOR_ENDPOINT = "/doctors/transaction/rollback"
 )
 
 const (
-	IDM          models.ParticipantType = "IDM"
-	PATIENT      models.ParticipantType = "PATIENT"
-	DOCTOR       models.ParticipantType = "DOCTOR"
-	APPOINTMENT  models.ParticipantType = "APPOINTMENT"
-	CONSULTATION models.ParticipantType = "CONSULTATION"
+	IDM     models.ParticipantType = "IDM"
+	PATIENT models.ParticipantType = "PATIENT"
+	DOCTOR  models.ParticipantType = "DOCTOR"
 )
 
 const REQUEST_TIMEOUT_MULTIPLIER = 5
-
-const ()

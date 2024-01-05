@@ -39,7 +39,7 @@ func (gc *GatewayController) RegisterUser(w http.ResponseWriter, r *http.Request
 	}
 
 	// Wrap the gRPC response in InfoResponse for nil checks
-	infoResponse := &wrappers.InfoResponse{Response: response}
+	infoResponse := &wrappers.IDInfoResponse{Response: response}
 	utils.CheckNilResponse(w, http.StatusInternalServerError, "Register response is nil", infoResponse.IsResponseNil, "Register response is nil")
 	utils.CheckNilResponse(w, http.StatusInternalServerError, "Register response info is nil", infoResponse.IsInfoNil, "Register response.Info is nil")
 
@@ -48,7 +48,7 @@ func (gc *GatewayController) RegisterUser(w http.ResponseWriter, r *http.Request
 	case http.StatusOK:
 		// Registration successful
 		log.Println("[GATEWAY] Registration successful. Proceed to login.")
-		utils.SendMessageResponse(w, http.StatusOK, response.Info.Message, nil)
+		utils.SendMessageResponse(w, http.StatusOK, response.Info.Message, response.LastInsertID)
 	case http.StatusConflict:
 		// User not added
 		log.Printf("[GATEWAY] Registration failed: %s", response.Info.Message)
@@ -88,7 +88,7 @@ func (gc *GatewayController) LoginUser(w http.ResponseWriter, r *http.Request) {
 	loginResponse := &wrappers.LoginResponse{Response: response}
 	utils.CheckNilResponse(w, http.StatusInternalServerError, "Internal Server Error. Login response is nil", loginResponse.IsResponseNil, "Login response is nil")
 	utils.CheckNilResponse(w, http.StatusInternalServerError, "Internal Server Error. Login response info is nil", loginResponse.IsInfoNil, "Login response.Info is nil")
-	utils.CheckNilResponse(w, http.StatusBadRequest, "Bad Request. Login response token is empty", loginResponse.IsTokenEmpty, "Login response.Token is empty")
+	// utils.CheckNilResponse(w, http.StatusBadRequest, "Bad Request. Login response token is empty", loginResponse.IsTokenEmpty, "Login response.Token is empty")
 
 	// Check the gRPC response status and handle accordingly
 	switch response.Info.Status {
@@ -96,17 +96,17 @@ func (gc *GatewayController) LoginUser(w http.ResponseWriter, r *http.Request) {
 		// Login successful
 		log.Println("[GATEWAY] Login successful.")
 
-		// Set the JWT token in a cookie
-		cookie := http.Cookie{
-			Name:     utils.COOKIE_NAME,
-			Value:    response.Token, // Assuming Token is the field in your response containing the JWT token
-			Path:     utils.COOKIE_PATH,
-			MaxAge:   utils.COOKIE_MAX_AGE, // Max age of the cookie in seconds (e.g., 1 hour)
-			HttpOnly: true,                 // This is important for security; prevents JavaScript access to the cookie
-		}
-		http.SetCookie(w, &cookie)
+		// // Set the JWT token in a cookie
+		// cookie := http.Cookie{
+		// 	Name:     utils.COOKIE_NAME,
+		// 	Value:    response.Token, // Assuming Token is the field in your response containing the JWT token
+		// 	Path:     utils.COOKIE_PATH,
+		// 	MaxAge:   utils.COOKIE_MAX_AGE, // Max age of the cookie in seconds (e.g., 1 hour)
+		// 	HttpOnly: true,                 // This is important for security; prevents JavaScript access to the cookie
+		// }
+		// http.SetCookie(w, &cookie)
 
-		utils.SendMessageResponse(w, http.StatusOK, response.Info.Message, nil)
+		utils.SendMessageResponse(w, http.StatusOK, response.Info.Message, response.Token)
 	case http.StatusNotFound:
 		// User not found
 		log.Printf("[GATEWAY] User not found: %s", response.Info.Message)

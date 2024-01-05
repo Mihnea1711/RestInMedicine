@@ -3,6 +3,7 @@ package validation
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -67,7 +68,7 @@ func ValidateLoginData(next http.Handler) http.Handler {
 		if !contentTypeFlag {
 			errMsg := "Unsupported media type. Content-Type must be application/json"
 			log.Printf("[MIDDLEWARE_GATEWAY] %s in request: %s", errMsg, r.RequestURI)
-			utils.RespondWithJSON(w, http.StatusUnsupportedMediaType, models.ResponseData{Error: errMsg, Message: "Patient validation failed due to unsupported media type"})
+			utils.RespondWithJSON(w, http.StatusUnsupportedMediaType, models.ResponseData{Error: errMsg, Message: "Login validation failed due to unsupported media type"})
 			return
 		}
 
@@ -77,12 +78,15 @@ func ValidateLoginData(next http.Handler) http.Handler {
 		err := dec.Decode(&loginData)
 		decodeFlag, decodeStatus := checkErrorOnDecode(err, w)
 		if decodeFlag || decodeStatus != http.StatusOK {
-			logAndRespondWithError(w, http.StatusBadRequest, "Error decoding registration request body", err)
+			logAndRespondWithError(w, http.StatusBadRequest, "Error decoding login request body", err)
 			return
 		}
 
+		fmt.Println(loginData)
+
 		// Validate UserLoginData
 		if err := validateUserLoginData(loginData); err != nil {
+			fmt.Println("im here")
 			utils.SendErrorResponse(w, http.StatusBadRequest, "Validation error", err.Error())
 			return
 		}

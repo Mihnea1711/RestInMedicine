@@ -118,7 +118,7 @@ func (s *MyIDMServer) CheckUserInBlacklist(ctx context.Context, req *proto_files
 		return &proto_files.InfoResponse{
 			Info: &proto_files.Info{
 				Message: "User ID does not exist or an unexpected error occured.",
-				Status:  int64(http.StatusNotFound),
+				Status:  int64(http.StatusInternalServerError),
 			},
 		}, nil
 	}
@@ -137,7 +137,7 @@ func (s *MyIDMServer) CheckUserInBlacklist(ctx context.Context, req *proto_files
 		return &proto_files.InfoResponse{
 			Info: &proto_files.Info{
 				Message: "User is in the blacklist",
-				Status:  http.StatusOK,
+				Status:  http.StatusForbidden,
 			},
 		}, nil
 	}

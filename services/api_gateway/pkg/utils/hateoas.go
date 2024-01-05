@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/mihnea1711/POS_Project/services/gateway/internal/models"
@@ -108,21 +110,34 @@ func getParentEndpoint(inputEndpoint string) string {
 	return parentEndpoint
 }
 
-func GetHateoasData(inputEndpoint, inputMethod string) models.EndpointMap {
+func GetHateoasData(request *http.Request, inputMethod string) models.EndpointMap {
 	var matchingEndpoints models.EndpointMap = make(models.EndpointMap)
 
-	if supportsAllMethods(inputEndpoint) {
-		matchingEndpoints["self"] = models.EndpointData{Endpoint: inputEndpoint}
+	fullPath, _ := extractPathAndQuery(request.URL.String())
+	if supportsAllMethods(request.URL.Path) {
+		matchingEndpoints["self"] = models.EndpointData{Endpoint: fullPath}
 	} else {
-		matchingEndpoints["self"] = models.EndpointData{Endpoint: inputEndpoint, Method: inputMethod}
+		matchingEndpoints["self"] = models.EndpointData{Endpoint: fullPath, Method: inputMethod}
 	}
-	matchingEndpoints["parent"] = models.EndpointData{Endpoint: getParentEndpoint(inputEndpoint)}
-	adjacentEndpoints := findAdjacentEndpoints(inputEndpoint, inputMethod)
+	matchingEndpoints["parent"] = models.EndpointData{Endpoint: getParentEndpoint(request.URL.Path)}
+	adjacentEndpoints := findAdjacentEndpoints(request.URL.Path, inputMethod)
 	for key, value := range adjacentEndpoints {
 		matchingEndpoints[key] = value
 	}
 
 	return matchingEndpoints
+}
+
+func extractPathAndQuery(inputURL string) (string, error) {
+	parsedURL, err := url.Parse(inputURL)
+	if err != nil {
+		return "", err
+	}
+
+	// Combine path, query, and fragment to get everything after the domain
+	pathAndQuery := parsedURL.Path + parsedURL.RawQuery + parsedURL.Fragment
+
+	return pathAndQuery, nil
 }
 
 // Check if the endpoint supports all four standard methods

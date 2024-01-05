@@ -11,6 +11,8 @@ import (
 
 func (db *MySQLDatabase) UpdateAppointmentByID(ctx context.Context, appointment *models.Appointment) (int, error) {
 	// Construct the SQL insert query
+	fmt.Println(appointment)
+
 	query := fmt.Sprintf(
 		"UPDATE %s SET %s = ?, %s = ?, %s = ?, %s = ? WHERE %s = ?",
 		utils.AppointmentTableName,

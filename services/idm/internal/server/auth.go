@@ -16,7 +16,7 @@ import (
 )
 
 // Register implements the Register RPC method
-func (s *MyIDMServer) Register(ctx context.Context, req *proto_files.RegisterRequest) (*proto_files.InfoResponse, error) {
+func (s *MyIDMServer) Register(ctx context.Context, req *proto_files.RegisterRequest) (*proto_files.IDInfoResponse, error) {
 	if req == nil || req.UserCredentials == nil {
 		log.Println("[IDM] Registration request or user credentials is nil")
 		return nil, errors.New("request or user credentials is nil")
@@ -50,7 +50,7 @@ func (s *MyIDMServer) Register(ctx context.Context, req *proto_files.RegisterReq
 		if ok && mysqlErr.Number == utils.MySQLDuplicateEntryErrorCode {
 			log.Printf("[IDM] Registration unsuccessful. Conflict occurred for username: %s", userCredentials.Username)
 			// Return a conflict error status
-			return &proto_files.InfoResponse{
+			return &proto_files.IDInfoResponse{
 				Info: &proto_files.Info{
 					Message: fmt.Sprintf("Registration unsuccessful. Conflict occurred: %v", err),
 					Status:  http.StatusConflict,
@@ -65,7 +65,7 @@ func (s *MyIDMServer) Register(ctx context.Context, req *proto_files.RegisterReq
 	if lastUserID == 0 {
 		log.Printf("[IDM] User not added to the db for username: %s", userCredentials.Username)
 		// No rows were affected, which means the user was not added
-		return &proto_files.InfoResponse{
+		return &proto_files.IDInfoResponse{
 			Info: &proto_files.Info{
 				Message: "Failed to register user",
 				Status:  http.StatusInternalServerError,
@@ -75,7 +75,8 @@ func (s *MyIDMServer) Register(ctx context.Context, req *proto_files.RegisterReq
 
 	log.Printf("[IDM] Registration successful for username: %s. Proceed to login.", userCredentials.Username)
 	// Return a successful response
-	return &proto_files.InfoResponse{
+	return &proto_files.IDInfoResponse{
+		LastInsertID: int64(lastUserID),
 		Info: &proto_files.Info{
 			Message: "Registration successful. Proceed to login.",
 			Status:  http.StatusOK,

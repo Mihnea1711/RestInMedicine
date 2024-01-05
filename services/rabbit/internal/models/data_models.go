@@ -16,8 +16,7 @@ type ClientResponse struct {
 }
 
 type DeleteMessageData struct {
-	JWT    string `json:"jwt"`
-	IDUser int    `json:"idUser"`
+	IDUser int `json:"idUser"`
 }
 
 type ResponseData struct {
@@ -32,7 +31,6 @@ type ActivityData struct {
 }
 
 type MessageWrapper struct {
-	JWT           string `json:"jwt"`
 	IDUser        int    `json:"idUser"`
 	TransactionID string `json:"transactionID"`
 }

@@ -213,6 +213,14 @@ const (
 	REQUEST_CONTEXT_TIMEOUT = 10
 )
 
+const TIME_PARSE = "2006-01-02"
+
 const (
 	HEADER_LOCATION_KEY = "Location"
 )
+
+var EXCLUDED_PATHS = [...]string{
+	REGISTER_USER_ENDPOINT,
+	LOGIN_USER_ENDPOINT,
+	"/api/test",
+}

@@ -18,15 +18,15 @@ func (ri *ResponseInterceptor) Write(data []byte) (int, error) {
 	var responseData models.ResponseData
 	err := json.Unmarshal(data, &responseData)
 	if err == nil {
-		responseData.LinkList = utils.GetHateoasData(ri.request.URL.Path, ri.request.Method)
+		responseData.LinkList = utils.GetHateoasData(ri.request, ri.request.Method)
 		updatedData, err := json.Marshal(responseData)
 		if err == nil {
 			return ri.ResponseWriter.Write(updatedData)
 		} else {
-			log.Printf("Error marshaling updated response data: %v", err)
+			log.Printf("[GATEWAY_HATEOAS] Error marshaling updated response data: %v", err)
 		}
 	} else {
-		log.Printf("Error unmarshaling response data: %v", err)
+		log.Printf("[GATEWAY_HATEOAS] Error unmarshaling response data: %v", err)
 	}
 
 	return ri.ResponseWriter.Write(data)

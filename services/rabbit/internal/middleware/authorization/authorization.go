@@ -6,16 +6,17 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/mihnea1711/POS_Project/services/gateway/internal/models"
-	"github.com/mihnea1711/POS_Project/services/gateway/pkg/config"
-	"github.com/mihnea1711/POS_Project/services/gateway/pkg/utils"
+	"github.com/mihnea1711/POS_Project/services/rabbit/internal/middleware"
+	"github.com/mihnea1711/POS_Project/services/rabbit/internal/models"
+	"github.com/mihnea1711/POS_Project/services/rabbit/pkg/config"
+	"github.com/mihnea1711/POS_Project/services/rabbit/pkg/utils"
 )
 
 // RoleMiddleware is a middleware function that checks if the user has any of the required roles.
 func RoleMiddleware(allowedRoles []string, jwtConfig config.JWTConfig, next http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Extract and parse the JWT token from the Authorization header
-		tokenString := ExtractJWTFromHeader(r)
+		tokenString := middleware.ExtractJWTFromHeader(r)
 		if tokenString == "" {
 			log.Println("[GATEWAY_AUTH] An unexpected error occurred while trying to parse the token. Token is empty")
 			utils.RespondWithJSON(w, http.StatusUnauthorized, models.ResponseData{
@@ -27,7 +28,7 @@ func RoleMiddleware(allowedRoles []string, jwtConfig config.JWTConfig, next http
 		log.Println("sunt aici: " + tokenString)
 
 		// Get the claims from the jwt
-		claims, err := ParseJWT(tokenString, jwtConfig)
+		claims, err := middleware.ParseJWT(tokenString, jwtConfig)
 		if err != nil {
 			log.Printf("[GATEWAY_AUTH] An unexpected error occurred while trying to parse the token: %v", err)
 			utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{
@@ -79,23 +80,5 @@ func RoleMiddleware(allowedRoles []string, jwtConfig config.JWTConfig, next http
 // AdminOnlyMiddleware is a middleware function that allows only admin access.
 func AdminOnlyMiddleware(jwtConfig config.JWTConfig, next http.Handler) http.HandlerFunc {
 	allowedRoles := []string{utils.ADMIN_ROLE}
-	return RoleMiddleware(allowedRoles, jwtConfig, next)
-}
-
-// AdminAndPatientMiddleware is a middleware function that allows admin and patient access.
-func AdminAndPatientMiddleware(jwtConfig config.JWTConfig, next http.Handler) http.HandlerFunc {
-	allowedRoles := []string{utils.ADMIN_ROLE, utils.PATIENT_ROLE}
-	return RoleMiddleware(allowedRoles, jwtConfig, next)
-}
-
-// AdminAndDoctorMiddleware is a middleware function that allows admin and doctor access.
-func AdminAndDoctorMiddleware(jwtConfig config.JWTConfig, next http.Handler) http.HandlerFunc {
-	allowedRoles := []string{utils.ADMIN_ROLE, utils.DOCTOR_ROLE}
-	return RoleMiddleware(allowedRoles, jwtConfig, next)
-}
-
-// AllRolesMiddleware is a middleware function that allows admin, doctor, and patient access.
-func AllRolesMiddleware(jwtConfig config.JWTConfig, next http.Handler) http.HandlerFunc {
-	allowedRoles := []string{utils.ADMIN_ROLE, utils.DOCTOR_ROLE, utils.PATIENT_ROLE}
 	return RoleMiddleware(allowedRoles, jwtConfig, next)
 }

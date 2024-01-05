@@ -33,7 +33,7 @@ type UserRegistrationData struct {
 
 type UserLoginData struct {
 	Username string `json:"username" validate:"required,min=5,max=255"`
-	Password string `json:"password" validate:"required,min=8,max=255"`
+	Password string `json:"password" validate:"required,min=5,max=255"`
 }
 
 type PatientData struct {
@@ -71,15 +71,15 @@ type AppointmentData struct {
 
 type ConsultationData struct {
 	IDConsultation primitive.ObjectID `json:"idConsultation" bson:"_id"`
-	IDPatient      int                `json:"id_patient" bson:"id_patient" validate:"required"`
-	IDDoctor       int                `json:"id_doctor" bson:"id_doctor" validate:"required"`
+	IDPatient      int                `json:"idPatient" bson:"id_patient" validate:"required"`
+	IDDoctor       int                `json:"idDoctor" bson:"id_doctor" validate:"required"`
 	Date           time.Time          `json:"date" bson:"date" validate:"required"`
 	Diagnostic     string             `json:"diagnostic" bson:"diagnostic" validate:"required"`
 	Investigations []Investigation    `json:"investigations" bson:"investigations" validate:"required"`
 }
 
 type Investigation struct {
-	ID             primitive.ObjectID `json:"id_investigatie" bson:"id_investigatie" validate:"required"`
+	ID             primitive.ObjectID `json:"idInvestigation" bson:"id_investigatie"`
 	Name           string             `json:"name" bson:"name" validate:"required"`
 	ProcessingTime int                `json:"processingTime" bson:"processing_time" validate:"required"`
 	Result         string             `json:"result" bson:"result" validate:"required"`

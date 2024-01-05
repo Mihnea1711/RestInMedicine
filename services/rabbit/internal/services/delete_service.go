@@ -1,11 +1,11 @@
 package services
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 
-	"github.com/mihnea1711/POS_Project/services/rabbit/internal/middleware/authorization"
 	"github.com/mihnea1711/POS_Project/services/rabbit/internal/models"
 	twophasecommit "github.com/mihnea1711/POS_Project/services/rabbit/internal/two_phase_commit"
 	"github.com/mihnea1711/POS_Project/services/rabbit/pkg/utils"
@@ -47,22 +47,31 @@ func (s *ServiceContainer) DeleteUserMessageHandler(message []byte) error {
 		TransactionID: transactionID,
 	}
 
-	// parse jwt and roles
-	// Authorize the client based on the JWT in the message
-	messageData, err := authorization.AuthorizeClient(message, s.JWTConfig)
-	if err != nil {
-		// Log the authorization error
-		log.Printf("[RABBIT] Authorization error while deleting user: %v", err)
+	// // parse jwt and roles
+	// // Authorize the client based on the JWT in the message
+	// messageData, err := authorization.AuthorizeClient(message, s.JWTConfig)
+	// if err != nil {
+	// 	// Log the authorization error
+	// 	log.Printf("[RABBIT] Authorization error while deleting user: %v", err)
+	// 	twophasecommit.InformClient("clientID", messageWrapper, models.ClientResponse{
+	// 		Code:    http.StatusUnauthorized,
+	// 		Message: "Authorization error",
+	// 	})
+	// 	return err
+	// }
+
+	var deleteMessageData models.DeleteMessageData
+	if err := json.Unmarshal(message, &deleteMessageData); err != nil {
+		log.Printf("[2PC] Failed to unmarshal message: %v", err)
+		// Inform client about the error
 		twophasecommit.InformClient("clientID", messageWrapper, models.ClientResponse{
-			Code:    http.StatusUnauthorized,
-			Message: "Authorization error",
+			Code:    http.StatusInternalServerError,
+			Message: "Internal Server Error during message decoding.",
 		})
+
 		return err
 	}
-
-	// get the rest of fields
-	messageWrapper.JWT = messageData.JWT
-	messageWrapper.IDUser = messageData.IDUser
+	messageWrapper.IDUser = deleteMessageData.IDUser
 
 	// hardcoded list of participants
 	// participants := []models.Transactional{&participants.IDM{IDMClient: s.IDMClient}, &participants.Patient{}, &participants.Doctor{}}

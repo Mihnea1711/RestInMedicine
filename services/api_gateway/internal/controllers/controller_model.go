@@ -103,8 +103,8 @@ func (gc *GatewayController) GenerateTargetURL(r *http.Request, baseEndpoint str
 	case utils.DOCTOR_ROLE:
 		// Doctors can only view their own data
 
-		// get patient id from user id
-		result, status, err := gc.redirectRequestBody(r.Context(), utils.GET, utils.PATIENT_HOST, fmt.Sprintf("%s/%s", utils.PATIENT_FETCH_PATIENT_BY_USER_ID_ENDPOINT, userID), utils.PATIENT_PORT, nil)
+		// get doctor id from user id
+		result, status, err := gc.redirectRequestBody(r.Context(), utils.GET, utils.DOCTOR_HOST, fmt.Sprintf("%s/%s", utils.DOCTOR_FETCH_DOCTOR_BY_USER_ID_ENDPOINT, userID), utils.DOCTOR_PORT, nil)
 		if status != http.StatusOK {
 			return "", fmt.Errorf("failed to redirect to patient module to get patientID: %v", err)
 		}

@@ -43,6 +43,6 @@ func loadDoctorRoutes(router *mux.Router, gatewayController *controllers.Gateway
 
 	// ---------------------------------------------------------- Delete --------------------------------------------------------------
 	doctorDeleteByIDHandler := http.HandlerFunc(gatewayController.DeleteDoctorByID)
-	router.Handle(utils.DELETE_DOCTOR_BY_ID_ENDPOINT, authorization.AdminAndDoctorMiddleware(jwtConfig, doctorDeleteByIDHandler)).Methods("DELETE")
+	router.Handle(utils.DELETE_DOCTOR_BY_ID_ENDPOINT, authorization.AdminOnlyMiddleware(jwtConfig, doctorDeleteByIDHandler)).Methods("DELETE")
 	log.Println("[GATEWAY] Route DELETE", utils.DELETE_DOCTOR_BY_ID_ENDPOINT, "registered.")
 }

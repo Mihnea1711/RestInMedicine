@@ -48,7 +48,7 @@ func (cController *ConsultationController) CreateConsultation(w http.ResponseWri
 				LastInsertedID: insertedID.String(),
 			},
 		}
-		utils.RespondWithJSON(w, http.StatusOK, response)
+		utils.RespondWithJSON(w, http.StatusCreated, response)
 		return
 	} else {
 		// Log the failure to get a valid inserted ID
