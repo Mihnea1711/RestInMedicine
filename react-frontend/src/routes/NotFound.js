@@ -1,13 +1,13 @@
 import React from 'react';
-import NotFoundComponent from '../components/other/NotFoundComponenet';
+import NotFoundComponent from '../components/other/NotFoundComponent';
 
-const Home = () => {
+const NotFound = () => {
   return (
-    <div>
-        <h1>404 NOT FOUND</h1>
-        <NotFoundComponent />
+    <div className="container text-center mt-5">
+      <h1 className="display-1">404 NOT FOUND</h1>
+      <NotFoundComponent />
     </div>
   );
 };
 
-export default Home;
+export default NotFound;

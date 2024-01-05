@@ -6,6 +6,9 @@ import { toast } from 'react-toastify';
 
 import Input from '../common/Input'; // Update the path to the actual location of your Input component
 import { GATEWAY_LOGIN, HOME_ENDPOINT } from '../../utils/endpoints';
+import { JWT_COOKIE_DURATION_DAYS, JWT_COOKIE_NAME, JWT_COOKIE_SAME_SITE, JWT_COOKIE_SECURE_FLAG } from '../../utils/constants';
+import { LoginData } from '../../models/LoginData';
+import { buildURL, handleResponse } from '../../utils/utils';
 import decodeSanitizedResponse from '../../services/Decoder';
 
 const LoginComponent = () => {
@@ -14,7 +17,7 @@ const LoginComponent = () => {
     password: '',
   });
 
-  const navigate = useNavigate(); // Hook for navigation
+  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -26,35 +29,26 @@ const LoginComponent = () => {
 
     // Basic form validation
     if (!formData.username || !formData.password) {
-      alert('Username and password are required');
+      toast.error('Username and password are required');
       return;
     }
 
     try {
-      console.log(formData);
+      const loginData = new LoginData(formData.username, formData.password); 
 
       // Send POST request to the server for login
-      const response = await axios.post(`${GATEWAY_LOGIN}`, formData);
+      const loginURL = buildURL(GATEWAY_LOGIN, "");
+      const responseData = await handleResponse(axios.post(loginURL, loginData));
 
-      // Handle the login success, e.g., store user token, navigate to another page, etc.
-      console.log('Login successful:', response.data);
-
-      const responseData = decodeSanitizedResponse(response.data);
-      console.log(responseData);
-
-      // Check if the login was successful
-      if (responseData.status === 200 && responseData.data.jwt) {
-        // Store the JWT in cookies
-        Cookies.set('jwt', response.data.jwt, { expires: 7 }); // Set the expiration as needed
-        toast.success('Login successful');
-        navigate(HOME_ENDPOINT);
-      } else {
-        toast.error('Login failed');
-        console.error('Login failed:', response.data.message);
-      }
+      const jwt = responseData.payload;
+      // Store the JWT in cookies
+      Cookies.set(JWT_COOKIE_NAME, jwt, { expires: JWT_COOKIE_DURATION_DAYS, sameSite: JWT_COOKIE_SAME_SITE, secure: JWT_COOKIE_SECURE_FLAG });
+      toast.success('Login successful');
+      navigate(HOME_ENDPOINT);
+      
     } catch (error) {
       console.error('Login failed:', error.message);
-      // Handle login failure, e.g., display an error message to the user
+      toast.error(decodeSanitizedResponse(error.response.data).message);
     }
   };
 
@@ -76,7 +70,7 @@ const LoginComponent = () => {
         onChange={handleInputChange}
         required
       />
-      <button type="submit">Login</button>
+      <button type="submit" className="btn btn-primary btn-block mt-4">Login</button>
     </form>
   );
 };

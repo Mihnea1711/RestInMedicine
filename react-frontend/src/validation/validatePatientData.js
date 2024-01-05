@@ -2,9 +2,9 @@ import { toast } from 'react-toastify';
 
 // Validate patient data
 export const validatePatientData = (data) => {
-    const {firstName, lastName, email, phoneNumber, cnp, birthDay} = data;
+    const {username ,password, firstName, secondName, email, phoneNumber, cnp, birthDay} = data;
 
-    if (!firstName || !lastName || !email || !phoneNumber || !cnp || !birthDay) {
+    if (!username || !password || !firstName || !secondName || !email || !phoneNumber || !cnp || !birthDay) {
         toast.error('All fields are required');
         return false;
       }
@@ -14,7 +14,7 @@ export const validatePatientData = (data) => {
       return false;
     }
   
-    if (!lastName.trim()) {
+    if (!secondName.trim()) {
         toast.error('Second Name is required');
         return false;
     }
@@ -46,8 +46,6 @@ export const validatePatientData = (data) => {
         toast.error('Birth Day is required');
         return false;
     }
-
-    // Additional validation checks can be added as needed
   
     return true;
   };
@@ -67,7 +65,7 @@ export const validatePatientData = (data) => {
   };
   
   // Helper function to validate CNP (personal identification number)
-  const isValidCNP = (cnp) => {
+  export const isValidCNP = (cnp) => {
     // You can implement a more sophisticated CNP validation if needed
     const cnpRegex = /^[0-9]{13}$/;
     return cnpRegex.test(cnp);

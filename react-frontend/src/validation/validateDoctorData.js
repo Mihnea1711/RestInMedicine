@@ -1,5 +1,5 @@
 import { toast } from 'react-toastify';
-import { specializations } from '../utils/constants';
+import { ValidSpecializations } from '../utils/constants';
 
 export const validateDoctorData = (data) => {
   const { firstName, secondName, email, phoneNumber, specialization } = data;
@@ -33,7 +33,7 @@ export const validateDoctorData = (data) => {
   if (!specialization) {
     toast.error('Specialization is required');
     return false;
-  } else if (!specializations.map(specialization => specialization.value).includes(specialization)) {
+  } else if (!ValidSpecializations.includes(specialization)) {
     toast.error('Invalid specialization');
     return false;
   }
