@@ -23,9 +23,9 @@ service IDM {
     rpc GetUserPassword(UsernameRequest) returns (PasswordResponse);
     rpc UpdateUserPassword(UpdatePasswordRequest) returns (EnhancedInfoResponse);
 
-    rpc AddUserToBlacklist(BlacklistRequest) returns (InfoResponse);
-    rpc CheckUserInBlacklist(UserIDRequest) returns (InfoResponse);
-    rpc RemoveUserFromBlacklist(UserIDRequest) returns (EnhancedInfoResponse);
+    rpc AddTokenToBlacklist(BlacklistRequest) returns (InfoResponse);
+    rpc CheckTokenInBlacklist(BlacklistRequest) returns (InfoResponse);
+    rpc RemoveTokenFromBlacklist(BlacklistRequest) returns (EnhancedInfoResponse);
 
     rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
 }

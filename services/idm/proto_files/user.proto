@@ -42,8 +42,7 @@ message UsernameRequest {
 }
 
 message BlacklistRequest {
-    UserID UserID = 1;
-    string Token = 2;
+    string Token = 1;
 }
 
 message UsersResponse {

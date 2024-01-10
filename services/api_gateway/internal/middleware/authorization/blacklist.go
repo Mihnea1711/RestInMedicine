@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/mihnea1711/POS_Project/services/gateway/idm"
@@ -15,7 +14,7 @@ import (
 	"github.com/mihnea1711/POS_Project/services/gateway/pkg/utils/wrappers"
 )
 
-// BlacklistMiddleware is a middleware function that takes an idmClient as a parameter and checks if the user's jwt is in the blacklist or not
+// BlacklistMiddleware is a middleware function that takes an idmClient as a parameter and checks if the Token's jwt is in the blacklist or not
 func BlacklistMiddleware(idmClient idm.IDMClient, jwtConfig config.JWTConfig) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -40,48 +39,18 @@ func BlacklistMiddleware(idmClient idm.IDMClient, jwtConfig config.JWTConfig) mu
 				return
 			}
 
-			// Get the claims from the jwt
-			claims, err := ParseJWT(tokenString, jwtConfig)
+			response, err := idmClient.CheckTokenInBlacklist(r.Context(), &proto_files.BlacklistRequest{Token: tokenString})
 			if err != nil {
-				log.Printf("[GATEWAY_AUTH] An unexpected error occurred while trying to parse the token: %v", err)
+				log.Printf("[GATEWAY] CheckTokenInBlacklist error: %v", err)
 				utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{
-					Error:   fmt.Sprintf("An unexpected error occurred while trying to parse the token: %v", err),
-					Message: "Access denied: An unexpected error occurred",
-				})
-				return
-			}
-
-			userIDString, err := claims.GetSubject()
-			if err != nil {
-				log.Printf("[GATEWAY_AUTH] Error getting user ID from claims: %v", err)
-				utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{
-					Error:   fmt.Sprintf("Error getting user ID from claims: %v", err),
-					Message: "Access denied: An unexpected error occurred",
-				})
-				return
-			}
-
-			userID, err := strconv.Atoi(userIDString)
-			if err != nil {
-				log.Printf("[GATEWAY_AUTH] Error converting user ID to integer: %v", err)
-				utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{
-					Error:   fmt.Sprintf("Error converting user ID to integer: %v", err),
-					Message: "Access denied: An unexpected error occurred",
-				})
-				return
-			}
-			response, err := idmClient.CheckUserInBlacklist(r.Context(), &proto_files.UserIDRequest{UserID: &proto_files.UserID{ID: int64(userID)}})
-			if err != nil {
-				log.Printf("[GATEWAY] CheckUserInBlacklist error: %v", err)
-				utils.RespondWithJSON(w, http.StatusInternalServerError, models.ResponseData{
-					Error:   fmt.Sprintf("CheckUserInBlacklist error: %v", err),
+					Error:   fmt.Sprintf("CheckTokenInBlacklist error: %v", err),
 					Message: "Access denied: An unexpected error occurred",
 				})
 				return
 			}
 			infoResponse := &wrappers.InfoResponse{Response: response}
-			utils.CheckNilResponse(w, http.StatusInternalServerError, "Check User in Blacklist response is nil", infoResponse.IsResponseNil, "Received nil response while checking the user in the blacklist.")
-			utils.CheckNilResponse(w, http.StatusInternalServerError, "Check User in Blacklist response info is nil", infoResponse.IsInfoNil, "Received nil response.Info while checking the user in the blacklist.")
+			utils.CheckNilResponse(w, http.StatusInternalServerError, "Check Token in Blacklist response is nil", infoResponse.IsResponseNil, "Received nil response while checking the Token in the blacklist.")
+			utils.CheckNilResponse(w, http.StatusInternalServerError, "Check Token in Blacklist response info is nil", infoResponse.IsInfoNil, "Received nil response.Info while checking the Token in the blacklist.")
 
 			// Check the gRPC response status and handle accordingly
 			switch response.Info.Status {
@@ -90,12 +59,12 @@ func BlacklistMiddleware(idmClient idm.IDMClient, jwtConfig config.JWTConfig) mu
 				next.ServeHTTP(w, r)
 				return
 			case http.StatusNotFound:
-				log.Println("[GATEWAY] User not found or no changes made.")
-				utils.SendErrorResponse(w, http.StatusNotFound, response.Info.Message, "The user has not been found")
+				log.Println("[GATEWAY] Token not found or no changes made.")
+				utils.SendErrorResponse(w, http.StatusNotFound, response.Info.Message, "The Token has not been found")
 				return
 			case http.StatusForbidden:
-				log.Printf("[GATEWAY] User is in the blacklist: %v", response.Info.Message)
-				utils.SendErrorResponse(w, http.StatusForbidden, response.Info.Message, "Access denied: User is in the blacklist")
+				log.Printf("[GATEWAY] Token is in the blacklist: %v", response.Info.Message)
+				utils.SendErrorResponse(w, http.StatusForbidden, response.Info.Message, "Access denied: Token is in the blacklist")
 				return
 			default:
 				log.Printf("[GATEWAY] Unexpected response status: %d", response.Info.Status)

@@ -21,8 +21,7 @@ type RoleData struct {
 }
 
 type BlacklistData struct {
-	IDUser int    `json:"idUser" validate:"required,min=1"`
-	Token  string `json:"token" validate:"required,min=1"`
+	Token string `json:"token" validate:"required,min=1"`
 }
 
 type UserRegistrationData struct {

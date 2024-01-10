@@ -67,6 +67,8 @@ export const GATEWAY_GET_PATIENT = "/api/patients/"
 export const GATEWAY_GET_PATIENT_BY_USER_ID = "/api/patients/users/";
 export const GATEWAY_UPDATE_PATIENT = "/api/patients/";
 
+export const GATEWAY_BLACKLIST_TOKEN = "/api/blacklist";
+
 export const GATEWAY_UPDATE_PASSWORD = (userID) => `/api/users/${userID}/update-password`;
 
 export const RABBIT_PUBLISH_ENDPOINT = "/api/rabbit/publish"

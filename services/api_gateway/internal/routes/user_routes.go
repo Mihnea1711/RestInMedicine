@@ -52,14 +52,14 @@ func loadUserRoutes(router *mux.Router, gatewayController *controllers.GatewayCo
 
 	// ---------------------------------------------------------- Blacklist --------------------------------------------------------------
 	addToBlacklistHandler := http.HandlerFunc(gatewayController.AddToBlacklist)
-	router.Handle(utils.ADD_TO_BLACKLIST_ENDPOINT, authorization.AdminOnlyMiddleware(jwtConfig, validation.ValidateBlacklistData(addToBlacklistHandler))).Methods("POST")
+	router.Handle(utils.ADD_TO_BLACKLIST_ENDPOINT, authorization.AllRolesMiddleware(jwtConfig, validation.ValidateBlacklistData(addToBlacklistHandler))).Methods("POST")
 	log.Printf("[GATEWAY] Route POST %s registered.\n", utils.ADD_TO_BLACKLIST_ENDPOINT)
 
-	checkBlacklistHandler := http.HandlerFunc(gatewayController.CheckBlacklist)
-	router.Handle(utils.CHECK_BLACKLIST_ENDPOINT, authorization.AdminOnlyMiddleware(jwtConfig, checkBlacklistHandler)).Methods("GET")
-	log.Printf("[GATEWAY] Route POST %s registered.\n", utils.CHECK_BLACKLIST_ENDPOINT)
+	// checkBlacklistHandler := http.HandlerFunc(gatewayController.CheckBlacklist)
+	// router.Handle(utils.CHECK_BLACKLIST_ENDPOINT, authorization.AdminOnlyMiddleware(jwtConfig, checkBlacklistHandler)).Methods("GET")
+	// log.Printf("[GATEWAY] Route POST %s registered.\n", utils.CHECK_BLACKLIST_ENDPOINT)
 
-	removeFromBlacklistHandler := http.HandlerFunc(gatewayController.RemoveFromBlacklist)
-	router.Handle(utils.DELETE_FROM_BLACKLIST_ENDPOINT, authorization.AdminOnlyMiddleware(jwtConfig, removeFromBlacklistHandler)).Methods("DELETE")
-	log.Printf("[GATEWAY] Route POST %s registered.\n", utils.DELETE_FROM_BLACKLIST_ENDPOINT)
+	// removeFromBlacklistHandler := http.HandlerFunc(gatewayController.RemoveFromBlacklist)
+	// router.Handle(utils.DELETE_FROM_BLACKLIST_ENDPOINT, authorization.AdminOnlyMiddleware(jwtConfig, removeFromBlacklistHandler)).Methods("DELETE")
+	// log.Printf("[GATEWAY] Route POST %s registered.\n", utils.DELETE_FROM_BLACKLIST_ENDPOINT)
 }

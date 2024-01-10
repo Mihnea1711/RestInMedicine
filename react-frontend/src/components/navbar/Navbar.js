@@ -1,15 +1,30 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
-import { HOME_ENDPOINT, LOGIN_ENDPOINT } from '../../utils/endpoints';
+import { GATEWAY_BLACKLIST_TOKEN, HOME_ENDPOINT, LOGIN_ENDPOINT } from '../../utils/endpoints';
 import { JWT_COOKIE_NAME } from '../../utils/constants';
+import { BlacklistData } from '../../models/BlacklistData';
+import { buildURL, handleResponse } from '../../utils/utils';
+import axios from 'axios';
 
 export const Navbar = () => {
   const navigate = useNavigate();
   const jwtToken = Cookies.get(JWT_COOKIE_NAME);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     // Implement logout logic here (e.g., clear JWT from cookies)
+    const jwt = Cookies.get(JWT_COOKIE_NAME);
+    const headers = {
+      Authorization: `Bearer ${jwt}`,
+    };
+    // send request to add jwt to blacklist
+    const blacklistRequest = new BlacklistData(jwt);
+    // If editing an existing appointment, use the update endpoint
+    const blacklistTokenURL = buildURL(GATEWAY_BLACKLIST_TOKEN, "");
+    const request = axios.post(blacklistTokenURL, blacklistRequest, { headers });
+    const responseData = await handleResponse(request);
+    console.log(responseData.message);
+
     Cookies.remove(JWT_COOKIE_NAME);
     // Redirect to home after logout
     navigate(HOME_ENDPOINT);

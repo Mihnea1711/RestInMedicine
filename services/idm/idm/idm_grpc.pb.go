@@ -34,9 +34,9 @@ type IDMClient interface {
 	UpdateUserRole(ctx context.Context, in *proto_files.UpdateRoleRequest, opts ...grpc.CallOption) (*proto_files.EnhancedInfoResponse, error)
 	GetUserPassword(ctx context.Context, in *proto_files.UsernameRequest, opts ...grpc.CallOption) (*proto_files.PasswordResponse, error)
 	UpdateUserPassword(ctx context.Context, in *proto_files.UpdatePasswordRequest, opts ...grpc.CallOption) (*proto_files.EnhancedInfoResponse, error)
-	AddUserToBlacklist(ctx context.Context, in *proto_files.BlacklistRequest, opts ...grpc.CallOption) (*proto_files.InfoResponse, error)
-	CheckUserInBlacklist(ctx context.Context, in *proto_files.UserIDRequest, opts ...grpc.CallOption) (*proto_files.InfoResponse, error)
-	RemoveUserFromBlacklist(ctx context.Context, in *proto_files.UserIDRequest, opts ...grpc.CallOption) (*proto_files.EnhancedInfoResponse, error)
+	AddTokenToBlacklist(ctx context.Context, in *proto_files.BlacklistRequest, opts ...grpc.CallOption) (*proto_files.InfoResponse, error)
+	CheckTokenInBlacklist(ctx context.Context, in *proto_files.BlacklistRequest, opts ...grpc.CallOption) (*proto_files.InfoResponse, error)
+	RemoveTokenFromBlacklist(ctx context.Context, in *proto_files.BlacklistRequest, opts ...grpc.CallOption) (*proto_files.EnhancedInfoResponse, error)
 	HealthCheck(ctx context.Context, in *proto_files.HealthCheckRequest, opts ...grpc.CallOption) (*proto_files.HealthCheckResponse, error)
 }
 
@@ -147,27 +147,27 @@ func (c *iDMClient) UpdateUserPassword(ctx context.Context, in *proto_files.Upda
 	return out, nil
 }
 
-func (c *iDMClient) AddUserToBlacklist(ctx context.Context, in *proto_files.BlacklistRequest, opts ...grpc.CallOption) (*proto_files.InfoResponse, error) {
+func (c *iDMClient) AddTokenToBlacklist(ctx context.Context, in *proto_files.BlacklistRequest, opts ...grpc.CallOption) (*proto_files.InfoResponse, error) {
 	out := new(proto_files.InfoResponse)
-	err := c.cc.Invoke(ctx, "/IDM/AddUserToBlacklist", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/IDM/AddTokenToBlacklist", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *iDMClient) CheckUserInBlacklist(ctx context.Context, in *proto_files.UserIDRequest, opts ...grpc.CallOption) (*proto_files.InfoResponse, error) {
+func (c *iDMClient) CheckTokenInBlacklist(ctx context.Context, in *proto_files.BlacklistRequest, opts ...grpc.CallOption) (*proto_files.InfoResponse, error) {
 	out := new(proto_files.InfoResponse)
-	err := c.cc.Invoke(ctx, "/IDM/CheckUserInBlacklist", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/IDM/CheckTokenInBlacklist", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *iDMClient) RemoveUserFromBlacklist(ctx context.Context, in *proto_files.UserIDRequest, opts ...grpc.CallOption) (*proto_files.EnhancedInfoResponse, error) {
+func (c *iDMClient) RemoveTokenFromBlacklist(ctx context.Context, in *proto_files.BlacklistRequest, opts ...grpc.CallOption) (*proto_files.EnhancedInfoResponse, error) {
 	out := new(proto_files.EnhancedInfoResponse)
-	err := c.cc.Invoke(ctx, "/IDM/RemoveUserFromBlacklist", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/IDM/RemoveTokenFromBlacklist", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -198,9 +198,9 @@ type IDMServer interface {
 	UpdateUserRole(context.Context, *proto_files.UpdateRoleRequest) (*proto_files.EnhancedInfoResponse, error)
 	GetUserPassword(context.Context, *proto_files.UsernameRequest) (*proto_files.PasswordResponse, error)
 	UpdateUserPassword(context.Context, *proto_files.UpdatePasswordRequest) (*proto_files.EnhancedInfoResponse, error)
-	AddUserToBlacklist(context.Context, *proto_files.BlacklistRequest) (*proto_files.InfoResponse, error)
-	CheckUserInBlacklist(context.Context, *proto_files.UserIDRequest) (*proto_files.InfoResponse, error)
-	RemoveUserFromBlacklist(context.Context, *proto_files.UserIDRequest) (*proto_files.EnhancedInfoResponse, error)
+	AddTokenToBlacklist(context.Context, *proto_files.BlacklistRequest) (*proto_files.InfoResponse, error)
+	CheckTokenInBlacklist(context.Context, *proto_files.BlacklistRequest) (*proto_files.InfoResponse, error)
+	RemoveTokenFromBlacklist(context.Context, *proto_files.BlacklistRequest) (*proto_files.EnhancedInfoResponse, error)
 	HealthCheck(context.Context, *proto_files.HealthCheckRequest) (*proto_files.HealthCheckResponse, error)
 	mustEmbedUnimplementedIDMServer()
 }
@@ -242,14 +242,14 @@ func (UnimplementedIDMServer) GetUserPassword(context.Context, *proto_files.User
 func (UnimplementedIDMServer) UpdateUserPassword(context.Context, *proto_files.UpdatePasswordRequest) (*proto_files.EnhancedInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateUserPassword not implemented")
 }
-func (UnimplementedIDMServer) AddUserToBlacklist(context.Context, *proto_files.BlacklistRequest) (*proto_files.InfoResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddUserToBlacklist not implemented")
+func (UnimplementedIDMServer) AddTokenToBlacklist(context.Context, *proto_files.BlacklistRequest) (*proto_files.InfoResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddTokenToBlacklist not implemented")
 }
-func (UnimplementedIDMServer) CheckUserInBlacklist(context.Context, *proto_files.UserIDRequest) (*proto_files.InfoResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CheckUserInBlacklist not implemented")
+func (UnimplementedIDMServer) CheckTokenInBlacklist(context.Context, *proto_files.BlacklistRequest) (*proto_files.InfoResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CheckTokenInBlacklist not implemented")
 }
-func (UnimplementedIDMServer) RemoveUserFromBlacklist(context.Context, *proto_files.UserIDRequest) (*proto_files.EnhancedInfoResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RemoveUserFromBlacklist not implemented")
+func (UnimplementedIDMServer) RemoveTokenFromBlacklist(context.Context, *proto_files.BlacklistRequest) (*proto_files.EnhancedInfoResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveTokenFromBlacklist not implemented")
 }
 func (UnimplementedIDMServer) HealthCheck(context.Context, *proto_files.HealthCheckRequest) (*proto_files.HealthCheckResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method HealthCheck not implemented")
@@ -465,56 +465,56 @@ func _IDM_UpdateUserPassword_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
-func _IDM_AddUserToBlacklist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _IDM_AddTokenToBlacklist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(proto_files.BlacklistRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(IDMServer).AddUserToBlacklist(ctx, in)
+		return srv.(IDMServer).AddTokenToBlacklist(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/IDM/AddUserToBlacklist",
+		FullMethod: "/IDM/AddTokenToBlacklist",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IDMServer).AddUserToBlacklist(ctx, req.(*proto_files.BlacklistRequest))
+		return srv.(IDMServer).AddTokenToBlacklist(ctx, req.(*proto_files.BlacklistRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _IDM_CheckUserInBlacklist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(proto_files.UserIDRequest)
+func _IDM_CheckTokenInBlacklist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(proto_files.BlacklistRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(IDMServer).CheckUserInBlacklist(ctx, in)
+		return srv.(IDMServer).CheckTokenInBlacklist(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/IDM/CheckUserInBlacklist",
+		FullMethod: "/IDM/CheckTokenInBlacklist",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IDMServer).CheckUserInBlacklist(ctx, req.(*proto_files.UserIDRequest))
+		return srv.(IDMServer).CheckTokenInBlacklist(ctx, req.(*proto_files.BlacklistRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _IDM_RemoveUserFromBlacklist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(proto_files.UserIDRequest)
+func _IDM_RemoveTokenFromBlacklist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(proto_files.BlacklistRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(IDMServer).RemoveUserFromBlacklist(ctx, in)
+		return srv.(IDMServer).RemoveTokenFromBlacklist(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/IDM/RemoveUserFromBlacklist",
+		FullMethod: "/IDM/RemoveTokenFromBlacklist",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IDMServer).RemoveUserFromBlacklist(ctx, req.(*proto_files.UserIDRequest))
+		return srv.(IDMServer).RemoveTokenFromBlacklist(ctx, req.(*proto_files.BlacklistRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -589,16 +589,16 @@ var IDM_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _IDM_UpdateUserPassword_Handler,
 		},
 		{
-			MethodName: "AddUserToBlacklist",
-			Handler:    _IDM_AddUserToBlacklist_Handler,
+			MethodName: "AddTokenToBlacklist",
+			Handler:    _IDM_AddTokenToBlacklist_Handler,
 		},
 		{
-			MethodName: "CheckUserInBlacklist",
-			Handler:    _IDM_CheckUserInBlacklist_Handler,
+			MethodName: "CheckTokenInBlacklist",
+			Handler:    _IDM_CheckTokenInBlacklist_Handler,
 		},
 		{
-			MethodName: "RemoveUserFromBlacklist",
-			Handler:    _IDM_RemoveUserFromBlacklist_Handler,
+			MethodName: "RemoveTokenFromBlacklist",
+			Handler:    _IDM_RemoveTokenFromBlacklist_Handler,
 		},
 		{
 			MethodName: "HealthCheck",

@@ -356,9 +356,8 @@ func (gc *GatewayController) AddToBlacklist(w http.ResponseWriter, r *http.Reque
 	defer cancel()
 
 	// Implement gRPC call to add a user to the blacklist in IDM server.
-	response, err := gc.IDMClient.AddUserToBlacklist(ctx, &proto_files.BlacklistRequest{
-		UserID: &proto_files.UserID{ID: int64(blacklistRequest.IDUser)},
-		Token:  blacklistRequest.Token,
+	response, err := gc.IDMClient.AddTokenToBlacklist(ctx, &proto_files.BlacklistRequest{
+		Token: blacklistRequest.Token,
 	})
 	if err != nil {
 		log.Printf("[GATEWAY] Error adding user to blacklist: %v", err)
@@ -393,105 +392,55 @@ func (gc *GatewayController) AddToBlacklist(w http.ResponseWriter, r *http.Reque
 
 }
 
-// CheckBlacklist handles checking if a user is in the blacklist.
-func (gc *GatewayController) CheckBlacklist(w http.ResponseWriter, r *http.Request) {
-	log.Println("[GATEWAY] Handling CheckBlacklist request...")
+// // RemoveFromBlacklist handles removing a user from the blacklist.
+// func (gc *GatewayController) RemoveFromBlacklist(w http.ResponseWriter, r *http.Request) {
+// 	log.Println("[GATEWAY] Handling RemoveFromBlacklist request...")
 
-	// Get UserID from request params
-	userIDString := mux.Vars(r)[utils.BLACKLIST_USER_ID_PARAMETER]
-	// Convert userIDString to int64
-	userID, err := strconv.ParseInt(userIDString, 10, 64)
-	if err != nil {
-		log.Println("[GATEWAY] Invalid user ID:", err)
-		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid user ID", err.Error())
-		return
-	}
+// 	// Get UserID from request params
+// 	userIDString := mux.Vars(r)[utils.BLACKLIST_USER_ID_PARAMETER]
+// 	// Convert userIDString to int64
+// 	userID, err := strconv.ParseInt(userIDString, 10, 64)
+// 	if err != nil {
+// 		log.Println("[GATEWAY] Invalid user ID:", err)
+// 		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid user ID", err.Error())
+// 		return
+// 	}
 
-	// Create a context with a timeout (adjust the timeout as needed)
-	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_CONTEXT_TIMEOUT*time.Second)
-	defer cancel()
+// 	// Create a context with a timeout (adjust the timeout as needed)
+// 	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_CONTEXT_TIMEOUT*time.Second)
+// 	defer cancel()
 
-	// Implement gRPC call to check if a user is in the blacklist in IDM server.
-	response, err := gc.IDMClient.CheckUserInBlacklist(ctx, &proto_files.UserIDRequest{
-		UserID: &proto_files.UserID{ID: userID},
-	})
-	if err != nil {
-		log.Printf("[GATEWAY] Error checking user in blacklist: %v", err)
-		utils.SendErrorResponse(w, http.StatusBadGateway, "Internal Server Error", "Failed to check if the user is in the blacklist: "+err.Error())
-		return
-	}
+// 	// Implement gRPC call to remove a user from the blacklist in IDM server.
+// 	response, err := gc.IDMClient.RemoveTokenFromBlacklist(ctx, &proto_files.UserIDRequest{
+// 		UserID: &proto_files.UserID{ID: userID},
+// 	})
+// 	if err != nil {
+// 		log.Printf("[GATEWAY] Error removing user from blacklist: %v", err)
+// 		utils.SendErrorResponse(w, http.StatusBadGateway, "Internal Server Error", "Error removing user from blacklist: "+err.Error())
+// 		return
+// 	}
 
-	// Check response for nils
-	infoResponse := &wrappers.InfoResponse{Response: response}
-	utils.CheckNilResponse(w, http.StatusInternalServerError, "Check User in Blacklist response is nil", infoResponse.IsResponseNil, "Received nil response while checking the user in the blacklist.")
-	utils.CheckNilResponse(w, http.StatusInternalServerError, "Check User in Blacklist response info is nil", infoResponse.IsInfoNil, "Received nil response.Info while checking the user in the blacklist.")
+// 	// Check response for nils
+// 	enhancedInfoResponse := &wrappers.EnhancedInfoResponse{Response: response}
+// 	utils.CheckNilResponse(w, http.StatusInternalServerError, "Remove User from Blacklist response is nil", enhancedInfoResponse.IsResponseNil, "Received nil response while removing the user from the blacklist")
+// 	utils.CheckNilResponse(w, http.StatusInternalServerError, "Remove User from Blacklist response info is nil", enhancedInfoResponse.IsInfoNil, "Received nil response.Info while removing the user from the blacklist.")
 
-	// Check the gRPC response status and handle accordingly
-	switch response.Info.Status {
-	case http.StatusOK:
-		log.Println("[GATEWAY] CheckBlacklist request handled successfully.")
-		utils.SendMessageResponse(w, http.StatusOK, "User is in the blacklist.", nil)
-		return
-	case http.StatusNotFound:
-		log.Println("[GATEWAY] User not found or no changes made.")
-		utils.SendErrorResponse(w, http.StatusNotFound, response.Info.Message, "The specified user was not found or no changes were made.")
-		return
-	default:
-		log.Printf("[GATEWAY] CheckUserInBlacklist failed with status %d: %s", response.Info.Status, response.Info.Message)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, response.Info.Message, "An unexpected error occurred while checking if the user is in the blacklist. Unexpected status code: "+strconv.Itoa(int(response.Info.Status)))
-		return
-	}
-}
-
-// RemoveFromBlacklist handles removing a user from the blacklist.
-func (gc *GatewayController) RemoveFromBlacklist(w http.ResponseWriter, r *http.Request) {
-	log.Println("[GATEWAY] Handling RemoveFromBlacklist request...")
-
-	// Get UserID from request params
-	userIDString := mux.Vars(r)[utils.BLACKLIST_USER_ID_PARAMETER]
-	// Convert userIDString to int64
-	userID, err := strconv.ParseInt(userIDString, 10, 64)
-	if err != nil {
-		log.Println("[GATEWAY] Invalid user ID:", err)
-		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid user ID", err.Error())
-		return
-	}
-
-	// Create a context with a timeout (adjust the timeout as needed)
-	ctx, cancel := context.WithTimeout(r.Context(), utils.REQUEST_CONTEXT_TIMEOUT*time.Second)
-	defer cancel()
-
-	// Implement gRPC call to remove a user from the blacklist in IDM server.
-	response, err := gc.IDMClient.RemoveUserFromBlacklist(ctx, &proto_files.UserIDRequest{
-		UserID: &proto_files.UserID{ID: userID},
-	})
-	if err != nil {
-		log.Printf("[GATEWAY] Error removing user from blacklist: %v", err)
-		utils.SendErrorResponse(w, http.StatusBadGateway, "Internal Server Error", "Error removing user from blacklist: "+err.Error())
-		return
-	}
-
-	// Check response for nils
-	enhancedInfoResponse := &wrappers.EnhancedInfoResponse{Response: response}
-	utils.CheckNilResponse(w, http.StatusInternalServerError, "Remove User from Blacklist response is nil", enhancedInfoResponse.IsResponseNil, "Received nil response while removing the user from the blacklist")
-	utils.CheckNilResponse(w, http.StatusInternalServerError, "Remove User from Blacklist response info is nil", enhancedInfoResponse.IsInfoNil, "Received nil response.Info while removing the user from the blacklist.")
-
-	// Check the gRPC response status and handle accordingly
-	switch response.Info.Status {
-	case http.StatusOK:
-		log.Println("[GATEWAY] User role updated successfully.")
-		enhancedResponse := models.RowsAffected{
-			RowsAffected: int(response.RowsAffected),
-		}
-		utils.SendMessageResponse(w, http.StatusOK, response.Info.Message, enhancedResponse)
-		return
-	case http.StatusNotFound:
-		log.Println("[GATEWAY] User not found or no changes made.")
-		utils.SendErrorResponse(w, http.StatusNotFound, response.Info.Message, "The requested user was not found, or no changes were made")
-		return
-	default:
-		log.Printf("[GATEWAY] RemoveFromBlacklist failed with status %d: %s", response.Info.Status, response.Info.Message)
-		utils.SendErrorResponse(w, http.StatusInternalServerError, response.Info.Message, "RemoveFromBlacklist failed. Unexpected status code: "+strconv.Itoa(int(response.Info.Status)))
-		return
-	}
-}
+// 	// Check the gRPC response status and handle accordingly
+// 	switch response.Info.Status {
+// 	case http.StatusOK:
+// 		log.Println("[GATEWAY] User role updated successfully.")
+// 		enhancedResponse := models.RowsAffected{
+// 			RowsAffected: int(response.RowsAffected),
+// 		}
+// 		utils.SendMessageResponse(w, http.StatusOK, response.Info.Message, enhancedResponse)
+// 		return
+// 	case http.StatusNotFound:
+// 		log.Println("[GATEWAY] User not found or no changes made.")
+// 		utils.SendErrorResponse(w, http.StatusNotFound, response.Info.Message, "The requested user was not found, or no changes were made")
+// 		return
+// 	default:
+// 		log.Printf("[GATEWAY] RemoveFromBlacklist failed with status %d: %s", response.Info.Status, response.Info.Message)
+// 		utils.SendErrorResponse(w, http.StatusInternalServerError, response.Info.Message, "RemoveFromBlacklist failed. Unexpected status code: "+strconv.Itoa(int(response.Info.Status)))
+// 		return
+// 	}
+// }
