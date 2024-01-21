@@ -42,7 +42,7 @@ func ValidateUserData(next http.Handler) http.Handler {
 		// Decode the request body into UserData
 		err := json.NewDecoder(r.Body).Decode(&userData)
 		if err != nil {
-			logAndRespondWithError(w, http.StatusBadRequest, "Error decoding user request body", err)
+			logAndRespondWithError(w, http.StatusUnprocessableEntity, "Error decoding user request body", err)
 			return
 		}
 
@@ -66,7 +66,7 @@ func ValidatePasswordData(next http.Handler) http.Handler {
 		// Decode the request body into PasswordData
 		err := json.NewDecoder(r.Body).Decode(&passwordData)
 		if err != nil {
-			logAndRespondWithError(w, http.StatusBadRequest, "Error decoding password request body", err)
+			logAndRespondWithError(w, http.StatusUnprocessableEntity, "Error decoding password request body", err)
 			return
 		}
 
@@ -90,7 +90,7 @@ func ValidateRoleData(next http.Handler) http.Handler {
 		// Decode the request body into RoleData
 		err := json.NewDecoder(r.Body).Decode(&roleData)
 		if err != nil {
-			logAndRespondWithError(w, http.StatusBadRequest, "Error decoding role request body", err)
+			logAndRespondWithError(w, http.StatusUnprocessableEntity, "Error decoding role request body", err)
 			return
 		}
 

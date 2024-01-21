@@ -18,11 +18,6 @@ func main() {
 
 	log.Println("[GATEWAY] Application starting...")
 
-	// err := godotenv.Load()
-	// if err != nil {
-	// 	log.Fatalf("Error loading .env file: %v", err)
-	// }
-
 	// load config file
 	conf, err := config.LoadConfig(utils.CONFIG_PATH)
 	if err != nil {
@@ -54,21 +49,4 @@ func main() {
 	} else {
 		log.Println("[GATEWAY] Application started successfully!")
 	}
-
-	// inputEndpoint := "/api/patients"
-	// inputMethod := "GET"
-
-	// endpoints := utils.GetHateoasData(inputEndpoint, inputMethod)
-
-	// fmt.Println(endpoints)
-
-	// // Convert the map to JSON
-	// jsonData, err := json.Marshal(endpoints)
-	// if err != nil {
-	// 	fmt.Println("Error marshaling to JSON:", err)
-	// 	return
-	// }
-
-	// // Print the JSON data as a string
-	// fmt.Println("JSON Data:", string(jsonData))
 }

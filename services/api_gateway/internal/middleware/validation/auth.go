@@ -43,7 +43,7 @@ func ValidateRegistrationData(next http.Handler) http.Handler {
 		err := dec.Decode(&registrationData)
 		decodeFlag, decodeStatus := checkErrorOnDecode(err, w)
 		if decodeFlag || decodeStatus != http.StatusOK {
-			logAndRespondWithError(w, http.StatusBadRequest, "Error decoding registration request body", err)
+			logAndRespondWithError(w, http.StatusUnprocessableEntity, "Error decoding registration request body", err)
 			return
 		}
 

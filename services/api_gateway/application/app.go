@@ -34,14 +34,19 @@ func (a *App) Start(ctx context.Context) error {
 	log.Println("[GATEWAY] Starting server...")
 
 	// Setup gRPC connection
-	creds := insecure.NewCredentials()
+	credentials := insecure.NewCredentials()
 	log.Printf("[GATEWAY] Initializing IDM client connection on %s:%d.", utils.IDM_HOST, utils.IDM_PORT)
-	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", utils.IDM_HOST, utils.IDM_PORT), grpc.WithTransportCredentials(creds))
+	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", utils.IDM_HOST, utils.IDM_PORT), grpc.WithTransportCredentials(credentials))
 	if err != nil {
 		return fmt.Errorf("failed to connect to IDM gRPC server: %v", err)
 	}
 	// Manually close te connection to the IDM
-	defer conn.Close()
+	defer func(conn *grpc.ClientConn) {
+		err := conn.Close()
+		if err != nil {
+			log.Println("[GATEWAY] Connection error. Connection did not close.")
+		}
+	}(conn)
 	// Create IDM client
 	a.idmClient = idm.NewIDMClient(conn)
 

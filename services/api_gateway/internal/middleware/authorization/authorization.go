@@ -24,7 +24,6 @@ func RoleMiddleware(allowedRoles []string, jwtConfig config.JWTConfig, next http
 			})
 			return
 		}
-		log.Println("sunt aici: " + tokenString)
 
 		// Get the claims from the jwt
 		claims, err := ParseJWT(tokenString, jwtConfig)
@@ -37,8 +36,6 @@ func RoleMiddleware(allowedRoles []string, jwtConfig config.JWTConfig, next http
 			return
 		}
 
-		log.Printf("claims %v", claims)
-
 		// Check if the user has any of the required roles
 		userRole := claims.Role
 		authorized := false
@@ -48,9 +45,6 @@ func RoleMiddleware(allowedRoles []string, jwtConfig config.JWTConfig, next http
 				break
 			}
 		}
-
-		log.Printf("Role %s", userRole)
-		log.Printf("Auth: %v", authorized)
 
 		if !authorized {
 			err := "You don't have access to this resource"
