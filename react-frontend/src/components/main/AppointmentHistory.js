@@ -16,6 +16,7 @@ const AppointmentHistoryComponent = ({claims, jwt}) => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const [links, setLinks] = useState([]);
 
   useEffect(() => {
     const fetchAppointments = async () => {
@@ -25,6 +26,8 @@ const AppointmentHistoryComponent = ({claims, jwt}) => {
         const responseData = await handleResponse(request);
 
         setAppointments(responseData.payload);
+        setLinks(responseData.links);
+        
         setLoading(false);
         toast.success("Appointments loaded successfully.");
       } catch (error) {
@@ -59,6 +62,7 @@ const AppointmentHistoryComponent = ({claims, jwt}) => {
                     key={appointment.idProgramare}
                     appointment={appointment}
                     claims={claims}
+                    links={links}
                   />
                 ))}
               </tbody>

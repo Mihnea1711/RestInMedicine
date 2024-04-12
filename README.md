@@ -50,3 +50,8 @@ Getting Started
     Clone the repository.
     Run the start script to deploy the backend services.
     Access the frontend to interact with the application.
+
+<img src="images/home.png" alt="NoPainNoGain" width="500"/> 
+<img src="images/users.png" alt="NoPainNoGain" width="500"/>
+<img src="images/patient.png" alt="NoPainNoGain" width="500"/> 
+<img src="images/consultation.png" alt="NoPainNoGain" width="500"/>

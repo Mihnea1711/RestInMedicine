@@ -23,9 +23,9 @@ const (
 )
 
 const (
-	RoleAdministrator UserRole = "administrator"
-	RoleDoctor        UserRole = "doctor"
-	RolePatient       UserRole = "pacient"
+	RoleAdmin   UserRole = "admin"
+	RoleDoctor  UserRole = "doctor"
+	RolePatient UserRole = "pacient"
 )
 
 // UserTable and RoleTable are constants for table names

@@ -28,6 +28,7 @@ export const Navbar = () => {
     Cookies.remove(JWT_COOKIE_NAME);
     // Redirect to home after logout
     navigate(HOME_ENDPOINT);
+    window.location.reload();
   };
 
   return (

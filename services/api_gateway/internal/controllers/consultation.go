@@ -62,14 +62,16 @@ func (gc *GatewayController) CreateConsultation(w http.ResponseWriter, r *http.R
 	log.Println(targetURL)
 	log.Println(targetQuery)
 	decodedResponseAppointment, statusAppointment, errAppointment := gc.redirectRequestBody(ctx, http.MethodGet, utils.APPOINTMENT_HOST, targetURL, utils.APPOINTMENT_PORT, nil)
+	log.Println("aici --------------------------------------------------------------------------")
+	log.Println(decodedResponseAppointment, statusAppointment, errAppointment)
 	if errAppointment != nil {
 		log.Printf("[GATEWAY] Error redirecting appointment ID request: %v", errAppointment)
 		utils.SendErrorResponse(w, http.StatusBadGateway, "Failed to validate appointment ID", errAppointment.Error())
 		return
 	}
-	if statusAppointment != http.StatusOK {
+	if statusAppointment != http.StatusOK || decodedResponseAppointment.Payload == nil {
 		log.Printf("[GATEWAY] Appointment doesn't exist for this consultation or an unexpected error occured with status: %d", statusAppointment)
-		utils.SendErrorResponse(w, statusAppointment, decodedResponseAppointment.Message, decodedResponseAppointment.Error)
+		utils.SendErrorResponse(w, http.StatusFailedDependency, decodedResponseAppointment.Message, decodedResponseAppointment.Error)
 		return
 	}
 
